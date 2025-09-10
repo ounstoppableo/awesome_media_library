@@ -1,5 +1,5 @@
 "use client";
-import { Folder, RotateCcw, Search, Upload } from "lucide-react";
+import { ArrowBigUp, Folder, RotateCcw, Search, Upload } from "lucide-react";
 import {
   Card,
   CardAction,
@@ -144,7 +144,7 @@ export default function MediaLibrary() {
   }, [mediaData, dataLoading]);
 
   return (
-    <>
+    <div className="w-full h-full relative translate-0">
       <div
         className="w-full h-full flex flex-col overflow-auto"
         ref={listContainerRef}
@@ -349,6 +349,14 @@ export default function MediaLibrary() {
           )}
         </main>
       </div>
-    </>
+      <Button
+        className="fixed bottom-8 left-8 cursor-pointer rounded-full w-8 h-8"
+        onClick={() => {
+          listContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      >
+        <ArrowBigUp></ArrowBigUp>
+      </Button>
+    </div>
   );
 }

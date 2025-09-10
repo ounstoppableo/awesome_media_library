@@ -1,5 +1,5 @@
 import smoothDisposeArrayUnitFactory from "@/utils/smoothDisposeArrayUnitFactory";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function useVitualScrollLogic(props: {
   data: any[];
@@ -25,6 +25,8 @@ export default function useVitualScrollLogic(props: {
   const [ghostDomHeight, setGhostDomHeight] = useState({ up: 0, down: 0 });
   const [showData, setShowData] = useState<any[]>([]);
 
+  const rowBaseCountRef = useRef(0);
+
   useEffect(() => {
     const smoothGetMessagesInScreenFn = smoothDisposeArrayUnitFactory(
       () => data,
@@ -39,10 +41,7 @@ export default function useVitualScrollLogic(props: {
           listContainerScrollTop +
           headerHeight();
 
-        if (
-          listItemY >= headerHeight() &&
-          listItemY < listContainerRect.height
-        ) {
+        if (listItemY >= 0 && listItemY <= listContainerRect.height) {
           return true;
         } else {
           return false;
@@ -138,6 +137,7 @@ export default function useVitualScrollLogic(props: {
       "scroll",
       smoothGetMessagesInScreenFn.execute
     );
+
     return () => {
       scrollContainerRef.current?.removeEventListener(
         "scroll",
@@ -145,6 +145,20 @@ export default function useVitualScrollLogic(props: {
       );
     };
   }, [data]);
+
+  useEffect(() => {
+    rowBaseCountRef.current = rowBaseCount();
+    const _cb = () => {
+      if (rowBaseCountRef.current === rowBaseCount()) return;
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      rowBaseCountRef.current = rowBaseCount();
+    };
+    window.addEventListener("resize", _cb);
+
+    return () => {
+      window.removeEventListener("resize", _cb);
+    };
+  }, []);
 
   return { ghostDomHeight, showData };
 }
