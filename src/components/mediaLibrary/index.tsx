@@ -1,5 +1,18 @@
 "use client";
-import { ArrowBigUp, Folder, RotateCcw, Search, Upload } from "lucide-react";
+import {
+  ArrowBigUp,
+  BookImage,
+  Clapperboard,
+  FileAudio,
+  Folder,
+  Image,
+  Music,
+  Play,
+  Plus,
+  RotateCcw,
+  Search,
+  Upload,
+} from "lucide-react";
 import {
   Card,
   CardAction,
@@ -20,12 +33,26 @@ import {
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import useVitualScrollLogic from "./hooks/useVitualScrollLogic";
-import dynamic from "next/dynamic";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import { ProgressRadial } from "../progress-1";
+import MediaItem from "./components/mediaItem";
 
 export default function MediaLibrary() {
   const listContainerRef = useRef<any>(null);
   const headerRef = useRef<any>(null);
   const filterCardRef = useRef<any>(null);
+  const fileUploadRef = useRef<any>(null);
   const mediaItemHeight = 320;
   const rowBaseCount = () => {
     return innerWidth > 1024
@@ -78,7 +105,7 @@ export default function MediaLibrary() {
           {
             id: 1 * index,
             title: "Mountain Landscape",
-            type: "image",
+            type: ["image", "video", "audio"][Math.floor(Math.random() * 3)],
             category: "nature",
             date: "2023-05-15",
             url: mediaUrl[Math.floor(Math.random() * mediaUrl.length)],
@@ -143,6 +170,13 @@ export default function MediaLibrary() {
     return () => listContainerRef.current?.removeEventListener("scroll", _cb);
   }, [mediaData, dataLoading]);
 
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files) {
+      console.log(e.dataTransfer.files);
+    }
+  };
+
   return (
     <div className="w-full h-full relative translate-0">
       <div
@@ -150,7 +184,8 @@ export default function MediaLibrary() {
         ref={listContainerRef}
       >
         <header
-          className="bg-gradient-to-r from-[#1D2671] to-[#C33764]  text-white shadow-lg"
+          className="bg-gradient-to-r from-purple-900 via-indigo-900 to-cyan-900
+            bg-size-[var(--bg-size-glow)] animate-glow-flow text-white shadow-lg"
           ref={headerRef}
         >
           <div className="container mx-auto px-4 py-6">
@@ -222,10 +257,112 @@ export default function MediaLibrary() {
                   <RotateCcw />
                   重置
                 </Button>
-                <Button className="cursor-pointer">
-                  <Upload className="w-4 h-4 mr-2" />
-                  上传媒体
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="cursor-pointer">
+                      <Upload />
+                      上传
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="min-w-[80vw] max-w-[80vw] min-h-[80vh] max-h-[80vh] flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>媒体上传</DialogTitle>
+                      <DialogDescription>
+                        请将你的媒体文件拖拽到此处，或点击下方按钮选择文件进行上传。
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-hidden flex flex-col gap-2">
+                      <div className="text-xs h-fit w-full flex justify-end text-gray-600">
+                        0 / 100
+                      </div>
+                      <div className="flex-1 flex overflow-hidden flex-col relative">
+                        <input
+                          ref={fileUploadRef}
+                          name="file-upload"
+                          type="file"
+                          multiple
+                          className="sr-only"
+                          accept=".png,.jpg,.jpeg,.webp,.svg,.gif,.mp4,.mp3"
+                        />
+                        {/* <div
+                        onClick={() => {
+                          fileUploadRef.current?.click();
+                        }}
+                        onDrop={handleDrop}
+                        onDragOver={(e) => e.preventDefault()}
+                        className="relative w-full flex-1 border border-dashed border-gray-400 rounded-xl cursor-pointer flex flex-col items-center justify-center"
+                      >
+                      
+                        <div className="flex gap-4 w-full justify-center items-center">
+                          <Image className="w-1/12 h-1/12 text-gray-400" />
+                          <Clapperboard className="w-1/12 h-1/12 text-gray-400" />
+                          <FileAudio className="w-1/12 h-1/12 text-gray-400" />
+                        </div>
+                        <div className="flex text-sm text-gray-600 mt-4">
+                          <label className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
+                            <span>Upload a file</span>
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, WEBP, SVG, GIF, MP4, MP3 up to 500MB
+                        </p>
+                      </div> */}
+                        <div
+                          onDrop={handleDrop}
+                          onDragOver={(e) => e.preventDefault()}
+                          className="border border-dashed border-gray-400 rounded-xl flex-1 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 overflow-auto p-4"
+                        >
+                          {showData.map((media) => (
+                            <div
+                              key={media.id}
+                              className="relative rounded-xl h-80"
+                            >
+                              {/* <div className="rounded-[inherit] overflow-hidden absolute flex items-center justify-center inset-0 z-10 after:absolute after:z-10 after:inset-0 after:bg-gray-800 after:opacity-50">
+                                <ProgressRadial
+                                  value={40}
+                                  size={80}
+                                  startAngle={-90}
+                                  endAngle={269}
+                                  strokeWidth={5}
+                                  indicatorClassName="text-green-400"
+                                  className="text-green-400 z-20"
+                                >
+                                  <div className="text-center">
+                                    <div className="text-base font-bold">
+                                      {Math.round(40)}%
+                                    </div>
+                                    <div className="text-xs text-gray-200">
+                                      Upload
+                                    </div>
+                                  </div>
+                                </ProgressRadial>
+                              </div> */}
+
+                              <MediaItem media={media} />
+                            </div>
+                          ))}
+                          <div
+                            onClick={() => {
+                              fileUploadRef.current?.click();
+                            }}
+                            className="h-80 border border-dashed border-gray-400 rounded-xl flex items-center justify-center"
+                          >
+                            <Plus className="w-1/4 h-1/4 text-gray-400" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter className="h-fit">
+                      <DialogClose asChild>
+                        <Button type="button" variant="secondary">
+                          关闭
+                        </Button>
+                      </DialogClose>
+                      <Button>确认</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardContent>
           </Card>
@@ -239,88 +376,9 @@ export default function MediaLibrary() {
                   marginBottom: ghostDomHeight.down + "px",
                 }}
               >
-                {showData.map((media) => {
-                  const mediaContent = () => {
-                    if (media.type === "video") {
-                      return (
-                        <>
-                          <div className="flex-1 relative overflow-hidden transition-all group-hover/mediaHover:scale-[1.02]">
-                            <img
-                              src={media.thumbnail}
-                              alt={media.title}
-                              className="w-full h-full object-cover transition-transform duration-500"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="bg-black bg-opacity-50 rounded-full p-3">
-                                <i
-                                  data-feather="play"
-                                  className="text-white w-6 h-6"
-                                ></i>
-                              </div>
-                            </div>
-                          </div>
-                        </>
-                      );
-                    } else if (media.type === "audio") {
-                      return (
-                        <div className="flex-1 relative  overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center ">
-                          <i
-                            data-feather="music"
-                            className="w-16 h-16 text-indigo-500 animate-pulse"
-                          ></i>
-                        </div>
-                      );
-                    } else {
-                      return (
-                        <div className="flex-1 relative  overflow-hidden transition-all group-hover/mediaHover:scale-[1.02]">
-                          <img
-                            src={media.thumbnail}
-                            alt={media.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      );
-                    }
-                  };
-
-                  return (
-                    <div
-                      key={media.id}
-                      className="animate-ocure h-80 flex flex-col bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-500 perspective-dramatic hover:translate-y-[-5px] group/mediaHover hover:shadow-indigo-200"
-                    >
-                      {mediaContent()}
-                      <div className="p-4 flex flex-col gap-2">
-                        <h3 className="font-semibold text-lg truncate">
-                          {media.title}
-                        </h3>
-                        <div className="flex-1 flex justify-between text-sm text-gray-600 pb-2 relative">
-                          <span className="capitalize">{media.type}</span>
-                          <span>{dayjs(media.date).format("YYYY-MM-DD")}</span>
-                          <div className="opacity-0 absolute inset-0 -top-2 bg-white border-t border-gray-100 transition-all translate-y-[100%] group-hover/mediaHover:translate-y-0 group-hover/mediaHover:opacity-100">
-                            <div className="flex justify-between items-end h-full">
-                              <div className="flex-1 overflow-hidden">
-                                <div className="inline-block px-2 py-1 bg-gray-100 rounded-full text-xs capitalize">
-                                  {media.category}
-                                </div>
-                              </div>
-                              <a
-                                href={media.url}
-                                target="_blank"
-                                className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center transition-all"
-                              >
-                                View{" "}
-                                <i
-                                  data-feather="external-link"
-                                  className="w-3 h-3 ml-1"
-                                ></i>
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {showData.map((media) => (
+                  <MediaItem media={media} key={media.id}></MediaItem>
+                ))}
               </div>
               {dataLoading && (
                 <div className="flex items-center justify-center w-full p-1">

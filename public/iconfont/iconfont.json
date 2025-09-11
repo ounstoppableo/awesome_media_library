@@ -1,0 +1,23 @@
+{
+  "id": "5018765",
+  "name": "awesome-media-library",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "27677184",
+      "name": "icf_tag",
+      "font_class": "icf_tag",
+      "unicode": "e76e",
+      "unicode_decimal": 59246
+    },
+    {
+      "icon_id": "45509849",
+      "name": "icf_tag",
+      "font_class": "icf_tag-copy",
+      "unicode": "e76f",
+      "unicode_decimal": 59247
+    }
+  ]
+}
