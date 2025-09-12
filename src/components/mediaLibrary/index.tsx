@@ -47,6 +47,7 @@ import {
 
 import { ProgressRadial } from "../progress-1";
 import MediaItem from "./components/mediaItem";
+import useWebsocketLogic from "./hooks/useWebsocketLogic";
 
 export default function MediaLibrary() {
   const listContainerRef = useRef<any>(null);
@@ -176,6 +177,8 @@ export default function MediaLibrary() {
       console.log(e.dataTransfer.files);
     }
   };
+
+  useWebsocketLogic();
 
   return (
     <div className="w-full h-full relative translate-0">

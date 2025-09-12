@@ -1,5 +1,4 @@
 import { Button } from "@/components/button-1";
-import { Input } from "@douyinfe/semi-ui";
 import dayjs from "dayjs";
 import {
   Check,
@@ -19,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Select } from "antd";
+import { Input, Select } from "antd";
 
 export default function MediaItem(props: { media: any; showSelect?: boolean }) {
   const { media: defaultMediaData, showSelect = false } = props;
@@ -114,13 +113,12 @@ export default function MediaItem(props: { media: any; showSelect?: boolean }) {
               <div className="w-full">
                 <Input
                   ref={mediaItemTitleRef}
-                  className={styles.customInput}
                   value={media.title}
                   onBlur={() => {
                     setMediaItemTitleEdit(false);
                   }}
-                  onChange={(value: string) => {
-                    setMedia({ ...media, title: value });
+                  onChange={(e: any) => {
+                    setMedia({ ...media, title: e.target.value });
                   }}
                 />
               </div>
@@ -145,6 +143,8 @@ export default function MediaItem(props: { media: any; showSelect?: boolean }) {
                           width: 100,
                           height: `calc(var(--spacing) * 6)`,
                         }}
+                        allowClear
+                        defaultOpen
                         showSearch
                         optionFilterProp="label"
                         className={`${styles.customSelect} h-6`}
