@@ -13,15 +13,26 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import styles from "./index.module.scss";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+
 import { Input, Select } from "antd";
 
-export default function MediaItem(props: { media: any; showSelect?: boolean }) {
-  const { media: defaultMediaData, showSelect = false } = props;
+export type MediaStruct = {
+  id: string;
+  title: string;
+  size: number;
+  type: "image" | "video" | "audio";
+  sourcePath: string;
+  createTime: string;
+  updateTime: string;
+  tags: string[];
+};
+
+export default function MediaItem(props: {
+  media: MediaStruct;
+  showSelect?: boolean;
+  deleteCb?: () => any;
+}) {
+  const { media: defaultMediaData, showSelect = false, deleteCb } = props;
   const [selected, setSelected] = useState(false);
   const [media, setMedia] = useState(defaultMediaData);
   const [mediaItemTitleEdit, setMediaItemTitleEdit] = useState(false);
@@ -46,7 +57,7 @@ export default function MediaItem(props: { media: any; showSelect?: boolean }) {
         <>
           <div className="flex-1 relative overflow-hidden transition-all group-hover/mediaHover:scale-[1.02]">
             <img
-              src={media.thumbnail}
+              src={media.sourcePath}
               alt={media.title}
               className="w-full h-full object-cover transition-transform duration-500"
             />
@@ -66,9 +77,9 @@ export default function MediaItem(props: { media: any; showSelect?: boolean }) {
       );
     } else {
       return (
-        <div className="flex-1 relative  overflow-hidden transition-all group-hover/mediaHover:scale-[1.02]">
+        <div className="flex-1 relative overflow-hidden transition-all group-hover/mediaHover:scale-[1.02]">
           <img
-            src={media.thumbnail}
+            src={media.sourcePath}
             alt={media.title}
             className="w-full h-full object-cover"
           />
@@ -128,14 +139,20 @@ export default function MediaItem(props: { media: any; showSelect?: boolean }) {
           </h3>
           <div className="flex-1 flex justify-between text-sm text-gray-600 py-2 relative">
             <span className="capitalize">{media.type}</span>
-            <span>{dayjs(media.date).format("YYYY-MM-DD")}</span>
+            <span>{dayjs(media.updateTime).format("YYYY-MM-DD")}</span>
             <div className="opacity-0 absolute inset-0 bg-white border-t border-gray-100 transition-all translate-y-[100%] group-hover/mediaHover:translate-y-0 group-hover/mediaHover:opacity-100">
               <div className="flex justify-between items-end h-full">
                 <div className="flex-1 overflow-hidden flex gap-1">
-                  <div className="px-2 py-1 bg-gray-100 rounded-full text-xs capitalize flex gap-2 items-center h-6">
-                    {media.category}
-                    <X className="h-4 w-4 cursor-pointer" />
-                  </div>
+                  {media.tags.map((tag, index) => (
+                    <div
+                      key={index}
+                      className="px-2 py-1 bg-gray-100 rounded-full text-xs capitalize flex gap-2 items-center h-6"
+                    >
+                      {tag}
+                      <X className="h-4 w-4 cursor-pointer" />
+                    </div>
+                  ))}
+
                   <div className="px-2 py-1 bg-gray-100 rounded-full text-xs capitalize flex gap-2 items-center h-6">
                     {mediaTagEdit ? (
                       <Select
@@ -184,7 +201,13 @@ export default function MediaItem(props: { media: any; showSelect?: boolean }) {
                   <Button variant={"ghost"} className="h-6 w-6">
                     <SquareArrowOutUpRight className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center transition-all" />
                   </Button>
-                  <Button variant={"ghost"} className="h-6 w-6">
+                  <Button
+                    variant={"ghost"}
+                    className="h-6 w-6"
+                    onClick={() => {
+                      deleteCb?.();
+                    }}
+                  >
                     <Trash className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center transition-all" />
                   </Button>
                 </div>

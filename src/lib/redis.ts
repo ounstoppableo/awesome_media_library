@@ -1,5 +1,5 @@
-import { createClient } from 'redis';
-import { createPool } from 'generic-pool';
+import { createClient } from "redis";
+import { createPool } from "generic-pool";
 
 // 创建 Redis 连接池
 const redisPool = createPool(
@@ -13,12 +13,12 @@ const redisPool = createPool(
       return client;
     },
     destroy: async (client: any) => {
-      await client.quit();
+      await client.destroy();
     },
   },
   {
     max: 10,
     min: 2,
-  },
+  }
 );
 export default redisPool;

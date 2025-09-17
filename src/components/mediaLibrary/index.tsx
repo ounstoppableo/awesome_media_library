@@ -33,27 +33,24 @@ import {
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import useVitualScrollLogic from "./hooks/useVitualScrollLogic";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 import { ProgressRadial } from "../progress-1";
-import MediaItem from "./components/mediaItem";
+import MediaItem, { MediaStruct } from "./components/mediaItem";
 import useWebsocketLogic from "./hooks/useWebsocketLogic";
+import useUploadLogic, { singleUploadFilesLimit } from "./hooks/useUploadLogic";
 
 export default function MediaLibrary() {
   const listContainerRef = useRef<any>(null);
   const headerRef = useRef<any>(null);
   const filterCardRef = useRef<any>(null);
-  const fileUploadRef = useRef<any>(null);
+  const [worker, setWorker] = useState<Worker | null>(null);
+
+  useEffect(() => {
+    import("@/utils/fileUploadProceed/index").then((fileSplitAndUploadWorker) =>
+      setWorker(fileSplitAndUploadWorker.default)
+    );
+  }, []);
+
   const mediaItemHeight = 320;
   const rowBaseCount = () => {
     return innerWidth > 1024
@@ -107,11 +104,9 @@ export default function MediaLibrary() {
             id: 1 * index,
             title: "Mountain Landscape",
             type: ["image", "video", "audio"][Math.floor(Math.random() * 3)],
-            category: "nature",
+            tags: ["nature"],
             date: "2023-05-15",
-            url: mediaUrl[Math.floor(Math.random() * mediaUrl.length)],
-            thumbnail:
-              thumbnailUrl[Math.floor(Math.random() * thumbnailUrl.length)],
+            sourcePath: mediaUrl[Math.floor(Math.random() * mediaUrl.length)],
           },
         ],
       ])
@@ -149,13 +144,10 @@ export default function MediaLibrary() {
                     id: 1 * index + length,
                     title: "Mountain Landscape",
                     type: "image",
-                    category: "nature",
+                    tags: ["nature"],
                     date: "2023-05-15",
-                    url: mediaUrl[Math.floor(Math.random() * mediaUrl.length)],
-                    thumbnail:
-                      thumbnailUrl[
-                        Math.floor(Math.random() * thumbnailUrl.length)
-                      ],
+                    sourcePath:
+                      mediaUrl[Math.floor(Math.random() * mediaUrl.length)],
                   },
                 ],
               ])
@@ -171,14 +163,9 @@ export default function MediaLibrary() {
     return () => listContainerRef.current?.removeEventListener("scroll", _cb);
   }, [mediaData, dataLoading]);
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    if (e.dataTransfer.files) {
-      console.log(e.dataTransfer.files);
-    }
-  };
+  const { socketRef } = useWebsocketLogic();
 
-  useWebsocketLogic();
+  const { uploadDialogJsx } = useUploadLogic({ worker });
 
   return (
     <div className="w-full h-full relative translate-0">
@@ -260,112 +247,7 @@ export default function MediaLibrary() {
                   <RotateCcw />
                   重置
                 </Button>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="cursor-pointer">
-                      <Upload />
-                      上传
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="min-w-[80vw] max-w-[80vw] min-h-[80vh] max-h-[80vh] flex flex-col">
-                    <DialogHeader>
-                      <DialogTitle>媒体上传</DialogTitle>
-                      <DialogDescription>
-                        请将你的媒体文件拖拽到此处，或点击下方按钮选择文件进行上传。
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-hidden flex flex-col gap-2">
-                      <div className="text-xs h-fit w-full flex justify-end text-gray-600">
-                        0 / 100
-                      </div>
-                      <div className="flex-1 flex overflow-hidden flex-col relative">
-                        <input
-                          ref={fileUploadRef}
-                          name="file-upload"
-                          type="file"
-                          multiple
-                          className="sr-only"
-                          accept=".png,.jpg,.jpeg,.webp,.svg,.gif,.mp4,.mp3"
-                        />
-                        {/* <div
-                        onClick={() => {
-                          fileUploadRef.current?.click();
-                        }}
-                        onDrop={handleDrop}
-                        onDragOver={(e) => e.preventDefault()}
-                        className="relative w-full flex-1 border border-dashed border-gray-400 rounded-xl cursor-pointer flex flex-col items-center justify-center"
-                      >
-                      
-                        <div className="flex gap-4 w-full justify-center items-center">
-                          <Image className="w-1/12 h-1/12 text-gray-400" />
-                          <Clapperboard className="w-1/12 h-1/12 text-gray-400" />
-                          <FileAudio className="w-1/12 h-1/12 text-gray-400" />
-                        </div>
-                        <div className="flex text-sm text-gray-600 mt-4">
-                          <label className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
-                            <span>Upload a file</span>
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          PNG, JPG, WEBP, SVG, GIF, MP4, MP3 up to 500MB
-                        </p>
-                      </div> */}
-                        <div
-                          onDrop={handleDrop}
-                          onDragOver={(e) => e.preventDefault()}
-                          className="border border-dashed border-gray-400 rounded-xl flex-1 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 overflow-auto p-4"
-                        >
-                          {showData.map((media) => (
-                            <div
-                              key={media.id}
-                              className="relative rounded-xl h-80"
-                            >
-                              {/* <div className="rounded-[inherit] overflow-hidden absolute flex items-center justify-center inset-0 z-10 after:absolute after:z-10 after:inset-0 after:bg-gray-800 after:opacity-50">
-                                <ProgressRadial
-                                  value={40}
-                                  size={80}
-                                  startAngle={-90}
-                                  endAngle={269}
-                                  strokeWidth={5}
-                                  indicatorClassName="text-green-400"
-                                  className="text-green-400 z-20"
-                                >
-                                  <div className="text-center">
-                                    <div className="text-base font-bold">
-                                      {Math.round(40)}%
-                                    </div>
-                                    <div className="text-xs text-gray-200">
-                                      Upload
-                                    </div>
-                                  </div>
-                                </ProgressRadial>
-                              </div> */}
-
-                              <MediaItem media={media} />
-                            </div>
-                          ))}
-                          <div
-                            onClick={() => {
-                              fileUploadRef.current?.click();
-                            }}
-                            className="h-80 border border-dashed border-gray-400 rounded-xl flex items-center justify-center"
-                          >
-                            <Plus className="w-1/4 h-1/4 text-gray-400" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <DialogFooter className="h-fit">
-                      <DialogClose asChild>
-                        <Button type="button" variant="secondary">
-                          关闭
-                        </Button>
-                      </DialogClose>
-                      <Button>确认</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                {uploadDialogJsx}
               </div>
             </CardContent>
           </Card>

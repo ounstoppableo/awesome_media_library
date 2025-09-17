@@ -11,8 +11,6 @@ export default function useWebsocketLogic() {
       socketRef.current?.send("Hello Server!");
     };
 
-    socketRef.current.onmessage = (event) => {};
-
     socketRef.current.onclose = () => {
       console.log("❌ WebSocket closed");
     };
@@ -21,4 +19,5 @@ export default function useWebsocketLogic() {
       socketRef.current?.close();
     };
   }, []);
+  return { socketRef };
 }

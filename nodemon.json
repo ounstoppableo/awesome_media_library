@@ -1,5 +1,9 @@
 {
-    "watch": ["server.ts"],
-    "exec": "ts-node --project tsconfig.server.json server.ts",
-    "ext": "js ts"
-  }
+  "verbose": true,
+  "watch": [
+    "src/wsConstructor/**/*",
+    "server.ts"
+  ],
+  "exec": "ts-node -r tsconfig-paths/register -P tsconfig.server.json server.ts",
+  "ext": "js ts"
+}
