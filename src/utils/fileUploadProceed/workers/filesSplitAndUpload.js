@@ -7,6 +7,10 @@ for (let i = 0; i < workerCount; i++) {
   });
 }
 
+const requestToProcessFile = () => {
+  workers.forEach((worker) => worker.postMessage("fileProcessRequest"));
+};
+
 workers.forEach((worker) => {
   worker.addEventListener("message", (e) => {
     if (e.data?.type === "updateClientFileIdMapServerFileId") {
@@ -52,12 +56,18 @@ workers.forEach((worker) => {
     }
     if (e.data?.type === "uploadEnd") {
       postMessage({ ...e.data });
-      workers.forEach((worker) => worker.postMessage("fileProcessRequest"));
+      requestToProcessFile();
     }
+
     if (e.data?.type === "error") {
-      fileStatusMap[file.id] = "";
-      postMessage({ ...e.data });
-      workers.forEach((worker) => worker.postMessage("fileProcessRequest"));
+      fileStatusMap[e.data.clientFileId] = "";
+      if (e.data.local) {
+        processFileMap[e.data.clientFileId] = e.data.fileInfo;
+      }
+      if (!e.data.local) {
+        postMessage({ ...e.data });
+      }
+      requestToProcessFile();
     }
   });
 });
@@ -73,7 +83,7 @@ onmessage = (e) => {
       if (file.file instanceof File) {
         if (!fileStatusMap[file.id]) {
           processFileMap[file.id] = file;
-          workers.forEach((worker) => worker.postMessage("fileProcessRequest"));
+          requestToProcessFile();
         }
       }
     });

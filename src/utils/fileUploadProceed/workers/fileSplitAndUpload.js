@@ -65,9 +65,13 @@ ws.addEventListener("message", async (e) => {
   try {
     const _res = bufferToObject(new Uint8Array(await e.data.arrayBuffer()));
     if (_res.type === "upload") {
-      let totalChunks = 0;
       if (_res.data.type === "uploadStart") {
         const data = _res.data;
+        console.log(
+          _processFile.id,
+          data,
+          data.clientFileId === _processFile.id
+        );
         if (data.clientFileId === _processFile.id) {
           clientFileIdMapServerFileId[data.clientFileId] = data.fileId;
           postMessage({
@@ -140,7 +144,7 @@ onmessage = (e) => {
   }
   if (!_processFile && e.data === "fileProcessRequest")
     postMessage("fileProcessAgree");
-  if (e.data?.file instanceof File) {
+  if (!_processFile && e.data?.file instanceof File) {
     _processFile = e.data;
     wsSend(ws, {
       type: "upload",
@@ -158,6 +162,14 @@ onmessage = (e) => {
           ext: _processFile.file.name.split(".").pop(),
         },
       },
+    });
+  }
+  if (_processFile && e.data?.file instanceof File) {
+    postMessage({
+      type: "error",
+      local: true,
+      clientFileId: e.data.id,
+      fileInfo: e.data,
     });
   }
 };

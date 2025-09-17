@@ -4,7 +4,16 @@ import { v4 as uuidv4 } from "uuid";
 import dayjs from "dayjs";
 import { message } from "antd";
 import "@ant-design/v5-patch-for-react-19";
-import { Clapperboard, FileAudio, Image, Plus, Upload } from "lucide-react";
+import {
+  Clapperboard,
+  FileAudio,
+  Image,
+  Pause,
+  Play,
+  Plus,
+  StopCircle,
+  Upload,
+} from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -37,7 +46,7 @@ export const singleUploadFilesLimit = 100;
 export default function useUploadLogic(props: { worker: any }) {
   const { worker } = props;
   const [waitingUploadFiles, setWaitingUploadFiles] = useState<
-    (MediaStruct & { file: File; progress?: number })[]
+    (MediaStruct & { file: File; progress?: number; pause?: boolean })[]
   >([]);
   const fileUploadRef = useRef<any>(null);
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -107,6 +116,9 @@ export default function useUploadLogic(props: { worker: any }) {
             ).toFixed(1),
           },
         };
+      },
+      error: (params: any) => {
+        console.log(params);
       },
     };
     worker && workerListen(worker, cbParams);
@@ -189,13 +201,27 @@ export default function useUploadLogic(props: { worker: any }) {
                           endAngle={269}
                           strokeWidth={5}
                           indicatorClassName="text-green-400"
-                          className="text-green-400 z-20"
+                          className="text-green-400 z-20 group/operate relative"
                         >
-                          <div className="text-center">
+                          <div className="text-center group-hover/operate:hidden block">
                             <div className="text-base font-bold">
                               {Math.round(filesProgress[media.id] || 0)}%
                             </div>
                             <div className="text-xs text-gray-200">Upload</div>
+                          </div>
+                          <div
+                            className="absolute text-gray-200 top-1/2 left-1/2 -translate-1/2 cursor-pointer group-hover/operate:block hidden"
+                            onClick={() => {
+                              setWaitingUploadFiles((prev) => {
+                                return prev.map((item) => {
+                                  return item.id === media.id
+                                    ? { ...item, pause: !item.pause }
+                                    : item;
+                                });
+                              });
+                            }}
+                          >
+                            {!media.pause ? <Pause></Pause> : <Play />}
                           </div>
                         </ProgressRadial>
                       </div>

@@ -118,7 +118,7 @@ const uploadStart = async (
             fileId,
             clientFileId: _req.fileInfo.clientFileId,
             hadExist: true,
-          },
+          } as WsUploadResponseDataType<"uploadStart">,
         };
         return wsSend(ws, res);
       }
@@ -162,7 +162,7 @@ const uploadStart = async (
         type: "uploadStart",
         fileId,
         clientFileId: _req.fileInfo.clientFileId,
-      },
+      } as WsUploadResponseDataType<"uploadStart">,
     };
     wsSend(ws, res);
   }
@@ -246,9 +246,15 @@ const uploadEnd = async (
           sourcePath: "/media" + "/" + _req.fileId + "." + _req.ext,
         },
       };
-      isFileExist(filePath) &&
-        fs.rm(filePath, { recursive: true, force: true });
-      return wsSend(ws, res);
+      wsSend(ws, res);
+      try {
+        isFileExist(filePath) &&
+          (await fs.rm(filePath, { recursive: true, force: true }));
+      } catch (e: any) {
+        log(e.message, "error");
+      } finally {
+        return;
+      }
     }
 
     const fd = openSync(targetPath, "a");
@@ -282,8 +288,12 @@ const uploadEnd = async (
           } as WsUploadResponseDataType<"uploadEnd">,
         };
         wsSend(ws, res);
-        isFileExist(filePath) &&
-          fs.rm(filePath, { recursive: true, force: true });
+        try {
+          isFileExist(filePath) &&
+            (await fs.rm(filePath, { recursive: true, force: true }));
+        } catch (e: any) {
+          log(e.message, "error");
+        }
       } else {
         clientError(ws, "请先触发uploadStart事件", codeMap.errorOperate);
       }
