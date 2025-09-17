@@ -83,25 +83,37 @@ export default function useUploadLogic(props: { worker: any }) {
     setWaitingUploadFiles([...waitingUploadFiles, ...newFiles]);
   };
   const [filesProgress, setFilesProgress] = useState<any>({});
+  const _filesProgress = useRef<any>(
+    new Proxy(
+      { proxy: {} },
+      {
+        set(target, props, newValue, receiver) {
+          Reflect.set(target, props, newValue, receiver);
+          setFilesProgress(newValue);
+          return true;
+        },
+      }
+    )
+  );
   useEffect(() => {
     const cbParams = {
       uploading: (params: any) => {
-        setFilesProgress({
-          ...filesProgress,
+        _filesProgress.current.proxy = {
+          ..._filesProgress.current.proxy,
           ...{
             [params.clientFileId]: (
               (params.processChunks.length / params.totalChunk) *
               100
             ).toFixed(1),
           },
-        });
+        };
       },
     };
     worker && workerListen(worker, cbParams);
     return () => {
       clearWorkerListen(worker, cbParams);
     };
-  }, [worker, filesProgress]);
+  }, [worker]);
 
   useEffect(() => {
     worker?.postMessage(waitingUploadFiles);

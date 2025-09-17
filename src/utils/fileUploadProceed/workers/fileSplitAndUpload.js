@@ -53,6 +53,13 @@ let _stopFlag = { value: false };
 let _totalChunk = 0;
 let fileProcessInfo = null;
 
+function clearEffect() {
+  _processFile = null;
+  _stopFlag = { value: false };
+  _totalChunk = 0;
+  fileProcessInfo = null;
+}
+
 const ws = new WebSocket(`ws://localhost:10000`);
 ws.addEventListener("message", async (e) => {
   try {
@@ -109,17 +116,17 @@ ws.addEventListener("message", async (e) => {
         });
       }
       if (_res.data.type === "uploadEnd") {
+        clearEffect();
         postMessage({ type: "uploadEnd", ..._res.data });
       }
       if (_res.data.type === "error") {
-        stopFlag.value = true;
         postMessage({
           clientFileId: _processFile.id,
           fileId: _res.data.fileId,
           ..._res.data,
           type: "error",
         });
-        _processFile = null;
+        clearEffect();
       }
     }
   } catch (err) {

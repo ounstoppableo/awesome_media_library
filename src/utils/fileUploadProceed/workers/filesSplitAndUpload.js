@@ -1,5 +1,6 @@
 const workerCount = navigator.hardwareConcurrency * 2;
 const workers = [];
+
 for (let i = 0; i < workerCount; i++) {
   workers[i] = new Worker(new URL("./fileSplitAndUpload.js", import.meta.url), {
     type: "module",
@@ -51,10 +52,12 @@ workers.forEach((worker) => {
     }
     if (e.data?.type === "uploadEnd") {
       postMessage({ ...e.data });
+      workers.forEach((worker) => worker.postMessage("fileProcessRequest"));
     }
     if (e.data?.type === "error") {
       fileStatusMap[file.id] = "";
       postMessage({ ...e.data });
+      workers.forEach((worker) => worker.postMessage("fileProcessRequest"));
     }
   });
 });
