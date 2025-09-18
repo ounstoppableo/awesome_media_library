@@ -62,9 +62,8 @@ export default function MediaItem(props: {
       return (
         <div className="flex-1 relative overflow-hidden">
           <div className="h-full w-full transition-all group-hover/mediaHover:scale-[1.02]">
-            <img
+            <video
               src={media.sourcePath}
-              alt={media.title}
               className="w-full h-full object-cover transition-transform duration-500 "
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20 ">

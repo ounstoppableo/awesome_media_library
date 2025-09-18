@@ -81,20 +81,7 @@ export default function MediaLibrary() {
     "http://static.photos/people/640x360/11",
     "http://static.photos/abstract/640x360/12",
   ];
-  const thumbnailUrl = [
-    "http://static.photos/nature/320x240/1",
-    "http://static.photos/technology/320x240/2",
-    "http://static.photos/people/320x240/3",
-    "http://static.photos/abstract/320x240/4",
-    "http://static.photos/nature/320x240/5",
-    "http://static.photos/office/320x240/6",
-    "http://static.photos/people/320x240/7",
-    "http://static.photos/abstract/320x240/8",
-    "http://static.photos/nature/320x240/9",
-    "http://static.photos/technology/320x240/10",
-    "http://static.photos/people/320x240/11",
-    "http://static.photos/abstract/320x240/12",
-  ];
+
   const mediaGap = 24;
   const [mediaData, setMediaData] = useState(
     Array.from({ length: 20 })
