@@ -14,8 +14,7 @@ const CHUNK_SIZE = 1024 * 1024 * 5; // 5MB
 
 // 大文件上传实现
 const handleFileUploadProceed = (file, processChunkIndex = 0) => {
-  const stopFlag = { value: false };
-  if (!file.file) return { totalChunks: 0, stopFlag };
+  if (!file.file) return { totalChunks: 0 };
   const totalChunks = Math.ceil(file.file.size / CHUNK_SIZE);
   const ext = _processFile.file.name.split(".").pop();
   for (
@@ -23,10 +22,15 @@ const handleFileUploadProceed = (file, processChunkIndex = 0) => {
     i < file.file.size;
     i += CHUNK_SIZE
   ) {
+    if (_stopFlag.value) return;
     const chunk = file.file.slice(i, i + CHUNK_SIZE);
     const processChunkIndex = Math.floor(i / CHUNK_SIZE);
-    if (stopFlag.value) return;
-    enqueue("1").then((info) => {
+
+    if (file.processedChunks?.includes(processChunkIndex)) continue;
+    enqueue({ clientFileId: file.id }).then((info) => {
+      if (_stopFlag.value) return dequeue(info.id);
+      // 暂停后，如果有其他文件上传再次重启线程，此时可能发生上一个文件chunk进入队列，但是还没被取出的情况，但是此时已经是下一个文件的处理了，所以要判断入队时文件是否是处理时的文件
+      if (info.clientFileId !== _processFile.id) return;
       chunk.arrayBuffer().then((arrayBuffer) => {
         wsSend(ws, {
           type: "upload",
@@ -42,7 +46,7 @@ const handleFileUploadProceed = (file, processChunkIndex = 0) => {
       });
     });
   }
-  return { totalChunks, stopFlag };
+  return { totalChunks };
 };
 
 const wsSend = (socket, msg) => {
@@ -57,9 +61,9 @@ let _stopFlag = { value: false };
 let _totalChunk = 0;
 let fileProcessInfo = null;
 
-function clearEffect() {
+function clearEffect(stopFlag = false) {
   _processFile = null;
-  _stopFlag = { value: false };
+  _stopFlag = { value: stopFlag };
   _totalChunk = 0;
   fileProcessInfo = null;
   postMessage("lockRelease");
@@ -72,14 +76,13 @@ ws.addEventListener("message", async (e) => {
     if (_res.type === "upload") {
       if (_res.data.type === "uploadStart") {
         const data = _res.data;
-        if (data.clientFileId === _processFile.id) {
+        if (_processFile && data.clientFileId === _processFile.id) {
           clientFileIdMapServerFileId[data.clientFileId] = data.fileId;
           postMessage({
             type: "updateClientFileIdMapServerFileId",
             clientFileIdMapServerFileId,
           });
           const _processInfo = handleFileUploadProceed(_processFile);
-          _stopFlag = _processInfo.stopFlag;
           _totalChunk = _processInfo.totalChunks;
 
           postMessage({
@@ -90,17 +93,17 @@ ws.addEventListener("message", async (e) => {
           });
           fileProcessInfo = {
             totalChunk: _totalChunk,
-            processChunks: [],
+            processedChunks: _processFile.processedChunks || [],
           };
         }
       }
-      if (_res.data.type === "uploading") {
-        fileProcessInfo.processChunks.push(_res.data.processedChunkIndex);
-        fileProcessInfo.processChunks = Array.from(
-          new Set(fileProcessInfo.processChunks)
+      if (_res.data.type === "uploading" && _processFile && fileProcessInfo) {
+        fileProcessInfo.processedChunks.push(_res.data.processedChunkIndex);
+        fileProcessInfo.processedChunks = Array.from(
+          new Set(fileProcessInfo.processedChunks)
         );
         if (
-          fileProcessInfo.processChunks.length === fileProcessInfo.totalChunk
+          fileProcessInfo.processedChunks.length === fileProcessInfo.totalChunk
         ) {
           wsSend(ws, {
             type: "upload",
@@ -119,9 +122,13 @@ ws.addEventListener("message", async (e) => {
           type: "uploading",
         });
       }
-      if (_res.data.type === "uploadEnd") {
+      if (_res.data.type === "uploadEnd" && _processFile) {
+        postMessage({
+          ..._res.data,
+          clientFileId: _processFile.id,
+          type: "uploadEnd",
+        });
         clearEffect();
-        postMessage({ type: "uploadEnd", ..._res.data });
       }
       if (_res.data.type === "error") {
         postMessage({
@@ -145,6 +152,7 @@ onmessage = (e) => {
   if (!_processFile && e.data === "fileProcessRequest")
     postMessage("fileProcessAgree");
   if (!_processFile && e.data?.file instanceof File) {
+    clearEffect();
     _processFile = e.data;
     wsSend(ws, {
       type: "upload",
@@ -163,5 +171,10 @@ onmessage = (e) => {
         },
       },
     });
+  }
+  if (e.data.type === "stop" && e.data.clientFileId === _processFile?.id) {
+    postMessage("stopSuccess");
+    postMessage("lockRelease");
+    clearEffect(true);
   }
 };

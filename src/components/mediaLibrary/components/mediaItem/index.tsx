@@ -31,8 +31,14 @@ export default function MediaItem(props: {
   media: MediaStruct;
   showSelect?: boolean;
   deleteCb?: () => any;
+  imgUploadMask?: any;
 }) {
-  const { media: defaultMediaData, showSelect = false, deleteCb } = props;
+  const {
+    media: defaultMediaData,
+    showSelect = false,
+    deleteCb,
+    imgUploadMask,
+  } = props;
   const [selected, setSelected] = useState(false);
   const [media, setMedia] = useState(defaultMediaData);
   const [mediaItemTitleEdit, setMediaItemTitleEdit] = useState(false);
@@ -54,12 +60,12 @@ export default function MediaItem(props: {
   const mediaContent = () => {
     if (media.type === "video") {
       return (
-        <>
-          <div className="flex-1 relative overflow-hidden transition-all group-hover/mediaHover:scale-[1.02]">
+        <div className="flex-1 relative overflow-hidden">
+          <div className="h-full w-full transition-all group-hover/mediaHover:scale-[1.02]">
             <img
               src={media.sourcePath}
               alt={media.title}
-              className="w-full h-full object-cover transition-transform duration-500"
+              className="w-full h-full object-cover transition-transform duration-500 "
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20 ">
               <Button className="rounded-full p-3 cursor-pointer">
@@ -67,22 +73,26 @@ export default function MediaItem(props: {
               </Button>
             </div>
           </div>
-        </>
+        </div>
       );
     } else if (media.type === "audio") {
       return (
-        <div className="flex-1 relative  overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center ">
-          <Music className="w-16 h-16 text-indigo-500 animate-pulse"></Music>
+        <div className="flex-1 relative overflow-hidden">
+          <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center ">
+            <Music className="w-16 h-16 text-indigo-500 animate-pulse"></Music>
+          </div>
         </div>
       );
     } else {
       return (
-        <div className="flex-1 relative overflow-hidden transition-all group-hover/mediaHover:scale-[1.02]">
-          <img
-            src={media.sourcePath}
-            alt={media.title}
-            className="w-full h-full object-cover"
-          />
+        <div className="flex-1 relative overflow-hidden">
+          <div className="w-full h-full transition-all group-hover/mediaHover:scale-[1.02]">
+            <img
+              src={media.sourcePath}
+              alt={media.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
       );
     }
@@ -112,7 +122,10 @@ export default function MediaItem(props: {
       )}
 
       <div className="w-full h-80 flex flex-col bg-white rounded-xl shadow-lg overflow-hidden transition-all group-hover/mediaHover:shadow-indigo-200">
-        {mediaContent()}
+        <div className="relative flex-1 flex flex-col overflow-hidden">
+          {mediaContent()}
+          {imgUploadMask}
+        </div>
         <div className="p-4 flex flex-col">
           <h3
             className="font-semibold text-lg truncate h-8 flex items-center"

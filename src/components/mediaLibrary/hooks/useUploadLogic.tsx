@@ -45,9 +45,28 @@ export const singleUploadFilesLimit = 100;
 
 export default function useUploadLogic(props: { worker: any }) {
   const { worker } = props;
-  const [waitingUploadFiles, setWaitingUploadFiles] = useState<
-    (MediaStruct & { file: File; progress?: number; pause?: boolean })[]
+  const [waitingUploadFiles, _setWaitingUploadFiles] = useState<
+    (MediaStruct & {
+      file: File;
+      progress?: number;
+      pause?: boolean;
+      compelete?: boolean;
+      processedChunks?: any[];
+      totalChunk?: number;
+    })[]
   >([]);
+
+  const setWaitingUploadFiles = (value: any) => {
+    requestAnimationFrame(() => {
+      if (typeof value === "function") {
+        _waitingUploadFiles.current.proxy = value(
+          _waitingUploadFiles.current.proxy
+        );
+      } else {
+        _waitingUploadFiles.current.proxy = value;
+      }
+    });
+  };
   const fileUploadRef = useRef<any>(null);
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -55,6 +74,48 @@ export default function useUploadLogic(props: { worker: any }) {
       handleFilesChange(e.dataTransfer.files);
     }
   };
+
+  const indexedDbInst = useRef<any>(null);
+
+  useEffect(() => {
+    const request = indexedDB.open("uploadInfoStore", 10);
+    request.onerror = (event) => {
+      console.error("IndexedDB连接失败");
+    };
+    request.onsuccess = (event: any) => {
+      const db = event.target.result;
+      indexedDbInst.current = db;
+
+      const objectStore = db
+        .transaction("uploadInfo")
+        .objectStore("uploadInfo");
+      const _files: any = [];
+      objectStore.openCursor().onsuccess = (event: any) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          _files.push(cursor.value);
+          cursor.continue();
+        } else {
+          setWaitingUploadFiles(
+            _files.map((file: any) => {
+              return {
+                ...file,
+                sourcePath: file.compelete
+                  ? file.sourcePath
+                  : URL.createObjectURL(file.file),
+              };
+            })
+          );
+        }
+      };
+    };
+    request.onupgradeneeded = (event: any) => {
+      const db = event.target.result;
+      db.createObjectStore("uploadInfo", {
+        keyPath: "id",
+      });
+    };
+  }, []);
 
   const handleFilesChange = (files: any) => {
     if (!files || files.length === 0) return;
@@ -91,31 +152,90 @@ export default function useUploadLogic(props: { worker: any }) {
       }));
     setWaitingUploadFiles([...waitingUploadFiles, ...newFiles]);
   };
-  const [filesProgress, setFilesProgress] = useState<any>({});
-  const _filesProgress = useRef<any>(
+
+  const _waitingUploadFiles = useRef<any>(
     new Proxy(
-      { proxy: {} },
+      { proxy: [] },
       {
         set(target, props, newValue, receiver) {
           Reflect.set(target, props, newValue, receiver);
-          setFilesProgress(newValue);
+          _setWaitingUploadFiles([...newValue]);
           return true;
         },
       }
     )
   );
+
   useEffect(() => {
     const cbParams = {
+      uploadStart: (params: any) => {
+        const index = _waitingUploadFiles.current.proxy.findIndex(
+          (item: any) => {
+            return item.id === params.clientFileId;
+          }
+        );
+        if (index !== -1) {
+          _waitingUploadFiles.current.proxy = [
+            ..._waitingUploadFiles.current.proxy.slice(0, index),
+            {
+              ..._waitingUploadFiles.current.proxy[index],
+              totalChunk: params.totalChunk,
+            },
+            ..._waitingUploadFiles.current.proxy.slice(index + 1),
+          ];
+        }
+      },
       uploading: (params: any) => {
-        _filesProgress.current.proxy = {
-          ..._filesProgress.current.proxy,
-          ...{
-            [params.clientFileId]: (
-              (params.processChunks.length / params.totalChunk) *
-              100
-            ).toFixed(1),
-          },
-        };
+        const index = _waitingUploadFiles.current.proxy.findIndex(
+          (item: any) => {
+            return item.id === params.clientFileId;
+          }
+        );
+        if (params.processedChunks && index !== -1) {
+          _waitingUploadFiles.current.proxy = [
+            ..._waitingUploadFiles.current.proxy.slice(0, index),
+            {
+              ..._waitingUploadFiles.current.proxy[index],
+              processedChunks: params.processedChunks,
+            },
+            ..._waitingUploadFiles.current.proxy.slice(index + 1),
+          ];
+        }
+      },
+      stopSuccess: (params: any) => {
+        const index = _waitingUploadFiles.current.proxy.findIndex(
+          (item: any) => {
+            return item.id === params.clientFileId;
+          }
+        );
+        if (params.processedChunks && index !== -1) {
+          _waitingUploadFiles.current.proxy = [
+            ..._waitingUploadFiles.current.proxy.slice(0, index),
+            {
+              ..._waitingUploadFiles.current.proxy[index],
+              processedChunks: params.processedChunks,
+            },
+            ..._waitingUploadFiles.current.proxy.slice(index + 1),
+          ];
+        }
+      },
+      uploadEnd: (params: any) => {
+        const index = _waitingUploadFiles.current.proxy.findIndex(
+          (item: any) => {
+            return item.id === params.clientFileId;
+          }
+        );
+        if (index !== -1) {
+          _waitingUploadFiles.current.proxy = [
+            ..._waitingUploadFiles.current.proxy.slice(0, index),
+            {
+              ..._waitingUploadFiles.current.proxy[index],
+              sourcePath: params.sourcePath,
+              compelete: true,
+            },
+            ..._waitingUploadFiles.current.proxy.slice(index + 1),
+          ];
+        }
       },
       error: (params: any) => {
         console.log(params);
@@ -127,8 +247,25 @@ export default function useUploadLogic(props: { worker: any }) {
     };
   }, [worker]);
 
+  const indexedDBUploadAntiShakeLock = useRef<any>(null);
   useEffect(() => {
     worker?.postMessage(waitingUploadFiles);
+    try {
+      if (indexedDBUploadAntiShakeLock.current)
+        clearTimeout(indexedDBUploadAntiShakeLock.current);
+      indexedDBUploadAntiShakeLock.current = setTimeout(() => {
+        const objectStore = indexedDbInst.current
+          ?.transaction(["uploadInfo"], "readwrite")
+          .objectStore("uploadInfo");
+        waitingUploadFiles.forEach((file) => {
+          objectStore.put(file).onerror = (e: any) => {
+            console.error(e);
+          };
+        });
+      }, 1000);
+    } catch (e) {
+      console.error(e);
+    }
   }, [waitingUploadFiles]);
 
   const uploadDialogJsx = (
@@ -192,41 +329,6 @@ export default function useUploadLogic(props: { worker: any }) {
               >
                 {waitingUploadFiles.map((media, index) => (
                   <div key={media.id} className="relative rounded-xl h-80">
-                    {
-                      <div className="rounded-[inherit] overflow-hidden absolute flex items-center justify-center inset-0 z-10 after:absolute after:z-10 after:inset-0 after:bg-gray-800 after:opacity-50">
-                        <ProgressRadial
-                          value={filesProgress[media.id] || 0}
-                          size={80}
-                          startAngle={-90}
-                          endAngle={269}
-                          strokeWidth={5}
-                          indicatorClassName="text-green-400"
-                          className="text-green-400 z-20 group/operate relative"
-                        >
-                          <div className="text-center group-hover/operate:hidden block">
-                            <div className="text-base font-bold">
-                              {Math.round(filesProgress[media.id] || 0)}%
-                            </div>
-                            <div className="text-xs text-gray-200">Upload</div>
-                          </div>
-                          <div
-                            className="absolute text-gray-200 top-1/2 left-1/2 -translate-1/2 cursor-pointer group-hover/operate:block hidden"
-                            onClick={() => {
-                              setWaitingUploadFiles((prev) => {
-                                return prev.map((item) => {
-                                  return item.id === media.id
-                                    ? { ...item, pause: !item.pause }
-                                    : item;
-                                });
-                              });
-                            }}
-                          >
-                            {!media.pause ? <Pause></Pause> : <Play />}
-                          </div>
-                        </ProgressRadial>
-                      </div>
-                    }
-
                     <MediaItem
                       media={media}
                       deleteCb={() => {
@@ -235,6 +337,84 @@ export default function useUploadLogic(props: { worker: any }) {
                           ...waitingUploadFiles.slice(index + 1),
                         ]);
                       }}
+                      imgUploadMask={
+                        media.compelete ? (
+                          <></>
+                        ) : (
+                          <div className="rounded-[inherit] rounded-b-none overflow-hidden absolute flex items-center justify-center inset-0 z-10 after:absolute after:z-10 after:inset-0 after:bg-gray-800 after:opacity-50">
+                            <ProgressRadial
+                              value={Math.round(
+                                ((media.processedChunks?.length || 0) /
+                                  (media.totalChunk || 99999)) *
+                                  100
+                              )}
+                              size={80}
+                              startAngle={-90}
+                              endAngle={269}
+                              strokeWidth={5}
+                              indicatorClassName="text-green-400"
+                              className="text-green-400 z-20 group/operate relative"
+                            >
+                              {media.pause ? (
+                                <>
+                                  <div
+                                    className="absolute text-gray-200 top-1/2 left-1/2 -translate-1/2 cursor-pointer"
+                                    onClick={() => {
+                                      worker.postMessage({
+                                        type: "stop",
+                                        clientFileId: media.id,
+                                      });
+                                      setWaitingUploadFiles((prev: any) => {
+                                        return prev.map((item: any) => {
+                                          return item.id === media.id
+                                            ? { ...item, pause: !item.pause }
+                                            : item;
+                                        });
+                                      });
+                                    }}
+                                  >
+                                    {!media.pause ? <Pause></Pause> : <Play />}
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="text-center group-hover/operate:hidden block">
+                                    <div className="text-base font-bold">
+                                      {Math.round(
+                                        ((media.processedChunks?.length || 0) /
+                                          (media.totalChunk || 99999)) *
+                                          100
+                                      )}
+                                      %
+                                    </div>
+                                    <div className="text-xs text-gray-200">
+                                      Upload
+                                    </div>
+                                  </div>
+                                  <div
+                                    className="absolute text-gray-200 top-1/2 left-1/2 -translate-1/2 cursor-pointer group-hover/operate:block hidden"
+                                    onClick={() => {
+                                      worker.postMessage({
+                                        type: "stop",
+                                        clientFileId: media.id,
+                                      });
+                                      setWaitingUploadFiles((prev: any) => {
+                                        return prev.map((item: any) => {
+                                          return item.id === media.id
+                                            ? { ...item, pause: !item.pause }
+                                            : item;
+                                        });
+                                      });
+                                    }}
+                                  >
+                                    {!media.pause ? <Pause></Pause> : <Play />}
+                                  </div>
+                                </>
+                              )}
+                            </ProgressRadial>
+                          </div>
+                        )
+                      }
                     />
                   </div>
                 ))}

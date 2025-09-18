@@ -7,8 +7,8 @@ for (let i = 0; i < workerCount; i++) {
   });
 }
 
-const requestToProcessFile = () => {
-  workers.forEach((worker) => worker.postMessage("fileProcessRequest"));
+const broadcast = (data) => {
+  workers.forEach((worker) => worker.postMessage(data));
 };
 
 const workersProcessAgreeLock = {};
@@ -42,30 +42,26 @@ workers.forEach((worker, index) => {
       if (!fileProcessInfo[e.data.fileId]) {
         fileProcessInfo[e.data.fileId] = {
           totalChunk: e.data.totalChunk,
-          processChunks: [],
+          processedChunks: [],
         };
         postMessage({ ...e.data });
       }
     }
     if (e.data?.type === "uploading") {
-      fileProcessInfo[e.data.fileId].processChunks.push(
-        e.data.processedChunkIndex
-      );
-      const processChunks = new Set(
-        fileProcessInfo[e.data.fileId].processChunks
-      );
-      fileProcessInfo[e.data.fileId].processChunks = Array.from(processChunks);
+      fileProcessInfo[e.data.fileId].processedChunks = e.data.processedChunks;
       postMessage({ ...e.data });
     }
     if (e.data?.type === "uploadEnd") {
       postMessage({ ...e.data });
-      requestToProcessFile();
+      broadcast("fileProcessRequest");
     }
-
+    if (e.data === "stopSuccess") {
+      broadcast("fileProcessRequest");
+    }
     if (e.data?.type === "error") {
       fileStatusMap[e.data.clientFileId] = "";
       postMessage({ ...e.data });
-      requestToProcessFile();
+      broadcast("fileProcessRequest");
     }
     if (e.data === "lockRelease") {
       workersProcessAgreeLock[index] = false;
@@ -80,13 +76,24 @@ const fileProcessInfo = {};
 
 onmessage = (e) => {
   if (e.data instanceof Array) {
-    e.data.forEach((file) => {
-      if (file.file instanceof File) {
-        if (!fileStatusMap[file.id]) {
-          processFileMap[file.id] = file;
-          requestToProcessFile();
+    e.data
+      .filter((file) => !file.pause && !file.compelete)
+      .forEach((file) => {
+        if (file.file instanceof File) {
+          if (!fileStatusMap[file.id]) {
+            processFileMap[file.id] = file;
+            broadcast("fileProcessRequest");
+          }
         }
-      }
+      });
+  }
+  if (e.data.type === "stop") {
+    fileStatusMap[e.data.clientFileId] = "";
+    broadcast(e.data);
+    postMessage({
+      ...e.data,
+      type: "stopSuccess",
+      ...fileProcessInfo[clientFileIdMapServerFileId[e.data.clientFileId]],
     });
   }
 };
