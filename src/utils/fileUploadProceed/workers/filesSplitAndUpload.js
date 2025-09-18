@@ -19,11 +19,13 @@ workers.forEach((worker, index) => {
         ...clientFileIdMapServerFileId,
         ...e.data.clientFileIdMapServerFileId,
       };
-      workers.forEach((worker) => {
-        worker.postMessage({
-          type: "updateClientFileIdMapServerFileId",
-          clientFileIdMapServerFileId,
-        });
+      postMessage({
+        type: "updateClientFileIdMapServerFileId",
+        clientFileIdMapServerFileId,
+      });
+      broadcast({
+        type: "updateClientFileIdMapServerFileId",
+        clientFileIdMapServerFileId,
       });
     }
     if (e.data === "fileProcessAgree") {
@@ -75,6 +77,13 @@ const fileStatusMap = {};
 const fileProcessInfo = {};
 
 onmessage = (e) => {
+  if (e.data.type === "init") {
+    clientFileIdMapServerFileId = e.data.clientFileIdMapServerFileId || {};
+    broadcast({
+      type: "updateClientFileIdMapServerFileId",
+      clientFileIdMapServerFileId,
+    });
+  }
   if (e.data instanceof Array) {
     e.data
       .filter((file) => !file.pause && !file.compelete)

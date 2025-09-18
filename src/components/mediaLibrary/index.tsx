@@ -46,8 +46,16 @@ export default function MediaLibrary() {
   const [worker, setWorker] = useState<Worker | null>(null);
 
   useEffect(() => {
-    import("@/utils/fileUploadProceed/index").then((fileSplitAndUploadWorker) =>
-      setWorker(fileSplitAndUploadWorker.default)
+    import("@/utils/fileUploadProceed/index").then(
+      (fileSplitAndUploadWorker) => {
+        setWorker(fileSplitAndUploadWorker.default);
+        fileSplitAndUploadWorker.default.postMessage({
+          type: "init",
+          clientFileIdMapServerFileId: JSON.parse(
+            localStorage.getItem("clientFileIdMapServerFileId") || "{}"
+          ),
+        });
+      }
     );
   }, []);
 
