@@ -94,7 +94,6 @@ const uploadStart = async (
       req as WsUploadRequestDataType<"uploadStart">;
     let fileId;
     let fileInfo;
-
     // if (_req.fileInfo.size > MAX_FILE_SIZE)
     //   return clientError(
     //     ws,

@@ -11,7 +11,8 @@ const requestToProcessFile = () => {
   workers.forEach((worker) => worker.postMessage("fileProcessRequest"));
 };
 
-workers.forEach((worker) => {
+const workersProcessAgreeLock = {};
+workers.forEach((worker, index) => {
   worker.addEventListener("message", (e) => {
     if (e.data?.type === "updateClientFileIdMapServerFileId") {
       clientFileIdMapServerFileId = {
@@ -26,12 +27,14 @@ workers.forEach((worker) => {
       });
     }
     if (e.data === "fileProcessAgree") {
+      if (workersProcessAgreeLock[index]) return;
       const fileId = Object.keys(processFileMap)[0];
       if (!fileId) return;
       const _file = processFileMap[fileId];
-      delete processFileMap[fileId];
-      fileStatusMap[fileId] = "processed";
       if (_file) {
+        workersProcessAgreeLock[index] = true;
+        delete processFileMap[fileId];
+        fileStatusMap[fileId] = "processed";
         worker.postMessage(_file);
       }
     }
@@ -61,13 +64,11 @@ workers.forEach((worker) => {
 
     if (e.data?.type === "error") {
       fileStatusMap[e.data.clientFileId] = "";
-      if (e.data.local) {
-        processFileMap[e.data.clientFileId] = e.data.fileInfo;
-      }
-      if (!e.data.local) {
-        postMessage({ ...e.data });
-      }
+      postMessage({ ...e.data });
       requestToProcessFile();
+    }
+    if (e.data === "lockRelease") {
+      workersProcessAgreeLock[index] = false;
     }
   });
 });

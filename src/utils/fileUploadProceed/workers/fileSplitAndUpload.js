@@ -1,4 +1,5 @@
 import { encode, decode } from "@msgpack/msgpack";
+import { enqueue, dequeue } from "../currentLimitQueue";
 
 function objectToBuffer(obj) {
   return encode(obj);
@@ -25,16 +26,19 @@ const handleFileUploadProceed = (file, processChunkIndex = 0) => {
     const chunk = file.file.slice(i, i + CHUNK_SIZE);
     const processChunkIndex = Math.floor(i / CHUNK_SIZE);
     if (stopFlag.value) return;
-    chunk.arrayBuffer().then((arrayBuffer) => {
-      wsSend(ws, {
-        type: "upload",
-        data: {
-          type: "uploading",
-          fileId: clientFileIdMapServerFileId[file.id],
-          chunk: new Uint8Array(arrayBuffer),
-          processChunkIndex: processChunkIndex,
-          ext: ext,
-        },
+    enqueue("1").then((info) => {
+      chunk.arrayBuffer().then((arrayBuffer) => {
+        wsSend(ws, {
+          type: "upload",
+          data: {
+            type: "uploading",
+            fileId: clientFileIdMapServerFileId[file.id],
+            chunk: new Uint8Array(arrayBuffer),
+            processChunkIndex: processChunkIndex,
+            ext: ext,
+          },
+        });
+        dequeue(info.id);
       });
     });
   }
@@ -58,6 +62,7 @@ function clearEffect() {
   _stopFlag = { value: false };
   _totalChunk = 0;
   fileProcessInfo = null;
+  postMessage("lockRelease");
 }
 
 const ws = new WebSocket(`ws://localhost:10000`);
@@ -67,11 +72,6 @@ ws.addEventListener("message", async (e) => {
     if (_res.type === "upload") {
       if (_res.data.type === "uploadStart") {
         const data = _res.data;
-        console.log(
-          _processFile.id,
-          data,
-          data.clientFileId === _processFile.id
-        );
         if (data.clientFileId === _processFile.id) {
           clientFileIdMapServerFileId[data.clientFileId] = data.fileId;
           postMessage({
@@ -162,14 +162,6 @@ onmessage = (e) => {
           ext: _processFile.file.name.split(".").pop(),
         },
       },
-    });
-  }
-  if (_processFile && e.data?.file instanceof File) {
-    postMessage({
-      type: "error",
-      local: true,
-      clientFileId: e.data.id,
-      fileInfo: e.data,
     });
   }
 };
