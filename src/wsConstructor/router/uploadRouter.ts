@@ -113,11 +113,11 @@ const uploadStart = async (
         const res: WsResponseMsgType<"upload"> = {
           type: "upload",
           data: {
-            type: "uploadStart",
+            type: "uploadEnd",
             fileId,
             clientFileId: _req.fileInfo.clientFileId,
-            hadExist: true,
-          } as WsUploadResponseDataType<"uploadStart">,
+            sourcePath: "/media" + "/" + fileId + "." + _req.fileInfo.ext,
+          } as WsUploadResponseDataType<"uploadEnd">,
         };
         return wsSend(ws, res);
       }
