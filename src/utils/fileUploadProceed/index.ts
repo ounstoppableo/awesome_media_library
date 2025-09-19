@@ -4,4 +4,19 @@ const _worker = new Worker(
     type: "module",
   }
 );
+_worker.postMessage({
+  type: "init",
+  clientFileIdMapServerFileId: JSON.parse(
+    localStorage.getItem("clientFileIdMapServerFileId") || "{}"
+  ),
+});
+_worker.addEventListener("message", (e) => {
+  if (e.data.type === "updateClientFileIdMapServerFileId") {
+    localStorage.setItem(
+      "clientFileIdMapServerFileId",
+      JSON.stringify(e.data.clientFileIdMapServerFileId)
+    );
+  }
+});
+
 export default _worker;

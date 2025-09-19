@@ -12,6 +12,8 @@ function bufferToObject(buf) {
 let clientFileIdMapServerFileId = {};
 const CHUNK_SIZE = 1024 * 1024 * 5; // 5MB
 
+const fileIdMapQueueItemId = {};
+
 // 大文件上传实现
 const handleFileUploadProceed = (file, processChunkIndex = 0) => {
   if (!file.file) return { totalChunks: 0 };
@@ -42,7 +44,9 @@ const handleFileUploadProceed = (file, processChunkIndex = 0) => {
             ext: ext,
           },
         });
-        dequeue(info.id);
+        fileIdMapQueueItemId[
+          clientFileIdMapServerFileId[file.id] + processChunkIndex
+        ] = info.id;
       });
     });
   }
@@ -121,6 +125,12 @@ ws.addEventListener("message", async (e) => {
           ...fileProcessInfo,
           type: "uploading",
         });
+        dequeue(
+          fileIdMapQueueItemId[_res.data.fileId + _res.data.processedChunkIndex]
+        );
+        delete fileIdMapQueueItemId[
+          _res.data.fileId + _res.data.processedChunkIndex
+        ];
       }
       if (_res.data.type === "uploadEnd" && _processFile) {
         postMessage({

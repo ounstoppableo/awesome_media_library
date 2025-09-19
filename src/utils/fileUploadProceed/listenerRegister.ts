@@ -54,12 +54,6 @@ export function workerListen(
     if (e.data.type === "error") {
       workerInfo.errorCbs.forEach((cb: any) => cb && cb(e.data));
     }
-    if (e.data.type === "updateClientFileIdMapServerFileId") {
-      localStorage.setItem(
-        "clientFileIdMapServerFileId",
-        JSON.stringify(e.data.clientFileIdMapServerFileId)
-      );
-    }
   });
 }
 

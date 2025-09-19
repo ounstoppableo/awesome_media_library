@@ -49,12 +49,6 @@ export default function MediaLibrary() {
     import("@/utils/fileUploadProceed/index").then(
       (fileSplitAndUploadWorker) => {
         setWorker(fileSplitAndUploadWorker.default);
-        fileSplitAndUploadWorker.default.postMessage({
-          type: "init",
-          clientFileIdMapServerFileId: JSON.parse(
-            localStorage.getItem("clientFileIdMapServerFileId") || "{}"
-          ),
-        });
       }
     );
   }, []);
