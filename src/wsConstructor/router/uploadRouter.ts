@@ -14,6 +14,7 @@ import {
   openSync,
   readFileSync,
   readdirSync,
+  statSync,
   writeFileSync,
 } from "fs";
 
@@ -42,7 +43,7 @@ export type WsUploadRequestDataType<T extends uploadType> = {
       ext: string;
     }
   : T extends "uploadEnd"
-  ? { fileId: string; ext: string }
+  ? { fileId: string; ext: string; size?: number }
   : never);
 export type WsUploadResponseDataType<T extends uploadType> = {
   type: T;
@@ -56,6 +57,7 @@ export type WsUploadResponseDataType<T extends uploadType> = {
   : T extends "uploadEnd"
   ? {
       sourcePath: string;
+      size: number;
     }
   : T extends "uploading"
   ? {
@@ -110,16 +112,24 @@ const uploadStart = async (
         fileId &&
         isFileExist(resolve(fileStorePath, fileId + "." + _req.fileInfo.ext))
       ) {
-        const res: WsResponseMsgType<"upload"> = {
-          type: "upload",
-          data: {
-            type: "uploadEnd",
-            fileId,
-            clientFileId: _req.fileInfo.clientFileId,
-            sourcePath: "/media" + "/" + fileId + "." + _req.fileInfo.ext,
-          } as WsUploadResponseDataType<"uploadEnd">,
-        };
-        return wsSend(ws, res);
+        try {
+          const res: WsResponseMsgType<"upload"> = {
+            type: "upload",
+            data: {
+              type: "uploadEnd",
+              fileId,
+              clientFileId: _req.fileInfo.clientFileId,
+              sourcePath: "/media" + "/" + fileId + "." + _req.fileInfo.ext,
+              size: statSync(
+                resolve(fileStorePath, fileId + "." + _req.fileInfo.ext)
+              ).size,
+            } as WsUploadResponseDataType<"uploadEnd">,
+          };
+          return wsSend(ws, res);
+        } catch (err: any) {
+          log(err.message, "error");
+          clientError(ws, "服务器错误");
+        }
       }
       if (fileId && isFileExist(resolve(tempPath, fileId))) {
         try {
@@ -178,7 +188,7 @@ const uploading = async (
     const _req: WsUploadRequestDataType<"uploading"> =
       req as WsUploadRequestDataType<"uploading">;
     try {
-      const filePath = resolve(
+      const fileTempPath = resolve(
         tempPath,
         _req.fileId,
         _req.processChunkIndex + ""
@@ -189,7 +199,7 @@ const uploading = async (
       //     `文件大小限制为${MAX_FILE_SIZE / 1024 / 1024}MB以内`,
       //     codeMap.fileExceedLimit
       //   );
-      if (_req.fileId && isFileExist(filePath)) {
+      if (_req.fileId && isFileExist(fileTempPath)) {
         const res: WsResponseMsgType<"upload"> = {
           type: "upload",
           data: {
@@ -202,10 +212,10 @@ const uploading = async (
       }
 
       if (isFileExist(resolve(tempPath, _req.fileId))) {
-        if (fileLock[filePath]) return;
-        fileLock[filePath] = true;
-        await fs.writeFile(filePath, _req.chunk, { flag: "w" });
-        delete fileLock[filePath];
+        if (fileLock[fileTempPath]) return;
+        fileLock[fileTempPath] = true;
+        await fs.writeFile(fileTempPath, _req.chunk, { flag: "w" });
+        delete fileLock[fileTempPath];
         const res: WsResponseMsgType<"upload"> = {
           type: "upload",
           data: {
@@ -234,23 +244,26 @@ const uploadEnd = async (
     const _req: WsUploadRequestDataType<"uploadEnd"> =
       req as WsUploadRequestDataType<"uploadEnd">;
 
-    const filePath = resolve(tempPath, _req.fileId);
+    const fileTempPath = resolve(tempPath, _req.fileId);
     const targetPath = resolve(fileStorePath, _req.fileId + "." + _req.ext);
     if (_req.fileId && isFileExist(targetPath)) {
-      const res: WsResponseMsgType<"upload"> = {
-        type: "upload",
-        data: {
-          fileId: _req.fileId,
-          type: "uploadEnd",
-          sourcePath: "/media" + "/" + _req.fileId + "." + _req.ext,
-        },
-      };
-      wsSend(ws, res);
       try {
-        isFileExist(filePath) &&
-          (await fs.rm(filePath, { recursive: true, force: true }));
+        const res: WsResponseMsgType<"upload"> = {
+          type: "upload",
+          data: {
+            fileId: _req.fileId,
+            type: "uploadEnd",
+            sourcePath: "/media" + "/" + _req.fileId + "." + _req.ext,
+            size: statSync(targetPath).size,
+          },
+        };
+        wsSend(ws, res);
+
+        isFileExist(fileTempPath) &&
+          (await fs.rm(fileTempPath, { recursive: true, force: true }));
       } catch (e: any) {
         log(e.message, "error");
+        clientError(ws, "服务器错误");
       } finally {
         return;
       }
@@ -258,12 +271,11 @@ const uploadEnd = async (
 
     const fd = openSync(targetPath, "a");
     try {
-      if (isFileExist(filePath)) {
+      if (isFileExist(fileTempPath)) {
         let i = 0;
         foo: while (true) {
           try {
-            console.log(i);
-            const chunk = readFileSync(resolve(filePath, i + ""));
+            const chunk = readFileSync(resolve(fileTempPath, i + ""));
             try {
               writeFileSync(fd, chunk);
             } catch (e: any) {
@@ -278,20 +290,23 @@ const uploadEnd = async (
           }
         }
         closeSync(fd);
-        const res: WsResponseMsgType<"upload"> = {
-          type: "upload",
-          data: {
-            fileId: _req.fileId,
-            type: "uploadEnd",
-            sourcePath: "/media" + "/" + _req.fileId + "." + _req.ext,
-          } as WsUploadResponseDataType<"uploadEnd">,
-        };
-        wsSend(ws, res);
+
         try {
-          isFileExist(filePath) &&
-            (await fs.rm(filePath, { recursive: true, force: true }));
+          const res: WsResponseMsgType<"upload"> = {
+            type: "upload",
+            data: {
+              fileId: _req.fileId,
+              type: "uploadEnd",
+              sourcePath: "/media" + "/" + _req.fileId + "." + _req.ext,
+              size: statSync(targetPath).size,
+            } as WsUploadResponseDataType<"uploadEnd">,
+          };
+          wsSend(ws, res);
+          isFileExist(fileTempPath) &&
+            (await fs.rm(fileTempPath, { recursive: true, force: true }));
         } catch (e: any) {
           log(e.message, "error");
+          clientError(ws, "服务器错误");
         }
       } else {
         clientError(ws, "请先触发uploadStart事件", codeMap.errorOperate);
