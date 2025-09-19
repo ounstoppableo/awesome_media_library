@@ -78,26 +78,40 @@ export default function useUploadLogic(props: { worker: any }) {
   const indexedDbInst = useRef<any>(null);
 
   useEffect(() => {
-    const request = indexedDB.open("uploadInfoStore", 10);
+    const request = indexedDB.open("uploadInfoStore", 2);
+    const _persistUploadFiles = JSON.parse(
+      localStorage.getItem("waitingUploadFiles") || "[]"
+    );
     request.onerror = (event) => {
       console.error("IndexedDB连接失败");
     };
     request.onsuccess = (event: any) => {
       const db = event.target.result;
       indexedDbInst.current = db;
-
       const objectStore = db
-        .transaction("uploadInfo")
-        .objectStore("uploadInfo");
-      const _files: any = [];
-      objectStore.openCursor().onsuccess = (event: any) => {
-        const cursor = event.target.result;
-        if (cursor) {
-          _files.push(cursor.value);
-          cursor.continue();
-        } else {
-          setWaitingUploadFiles(
-            _files.map((file: any) => {
+        .transaction("uploadHandle")
+        .objectStore("uploadHandle");
+
+      const _promises = _persistUploadFiles.map((file: any) => {
+        let _resolve: any;
+        const _promise = new Promise((resovle) => {
+          _resolve = resovle;
+        });
+        const request = objectStore.get(file.id);
+        request.onsuccess = () => {
+          file.file = request.result.file;
+          _resolve(1);
+        };
+        request.onerror = () => {
+          _resolve(1);
+        };
+        return _promise;
+      });
+      Promise.all(_promises).then(() => {
+        setWaitingUploadFiles(
+          _persistUploadFiles
+            .filter((file: any) => file.file)
+            .map((file: any) => {
               return {
                 ...file,
                 sourcePath: file.compelete
@@ -105,13 +119,12 @@ export default function useUploadLogic(props: { worker: any }) {
                   : URL.createObjectURL(file.file),
               };
             })
-          );
-        }
-      };
+        );
+      });
     };
     request.onupgradeneeded = (event: any) => {
       const db = event.target.result;
-      db.createObjectStore("uploadInfo", {
+      db.createObjectStore("uploadHandle", {
         keyPath: "id",
       });
     };
@@ -150,6 +163,12 @@ export default function useUploadLogic(props: { worker: any }) {
         createTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         tags: ["1"],
       }));
+    const objectStore = indexedDbInst.current
+      .transaction(["uploadHandle"], "readwrite")
+      .objectStore("uploadHandle");
+    newFiles.map((file) => {
+      objectStore.add({ id: file.id, file: file.file }).onsuccess = () => {};
+    });
     setWaitingUploadFiles([...waitingUploadFiles, ...newFiles]);
   };
 
@@ -247,25 +266,14 @@ export default function useUploadLogic(props: { worker: any }) {
     };
   }, [worker]);
 
-  const indexedDBUploadAntiShakeLock = useRef<any>(null);
   useEffect(() => {
     worker?.postMessage(waitingUploadFiles);
-    try {
-      if (indexedDBUploadAntiShakeLock.current)
-        clearTimeout(indexedDBUploadAntiShakeLock.current);
-      indexedDBUploadAntiShakeLock.current = setTimeout(() => {
-        const objectStore = indexedDbInst.current
-          ?.transaction(["uploadInfo"], "readwrite")
-          .objectStore("uploadInfo");
-        waitingUploadFiles.forEach((file) => {
-          objectStore.put(file).onerror = (e: any) => {
-            console.error(e);
-          };
-        });
-      }, 1000);
-    } catch (e) {
-      console.error(e);
-    }
+    localStorage.setItem(
+      "waitingUploadFiles",
+      JSON.stringify(
+        waitingUploadFiles.map((file) => ({ ...file, file: null }))
+      )
+    );
   }, [waitingUploadFiles]);
 
   const uploadDialogJsx = (
