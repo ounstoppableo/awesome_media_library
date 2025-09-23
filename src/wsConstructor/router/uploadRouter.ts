@@ -3,13 +3,7 @@ import { writeFile } from "fs/promises";
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { objectToBuffer } from "@/utils/objAndBufferTransform";
-import {
-  WsResponseMsgType,
-  clientError,
-  codeMap,
-  tokenMapUsername,
-  wsSend,
-} from "..";
+import { WsResponseMsgType, clientError, tokenMapUsername, wsSend } from "..";
 import log from "@/logs/setting";
 import { resolve } from "path";
 import { deleteFile, getFileSize, isFileExist } from "@/utils/fileOperate";
@@ -25,6 +19,8 @@ import {
   writeFileSync,
 } from "fs";
 import { get } from "http";
+import { codeMap } from "@/utils/backendStatus";
+import { paramsCheck } from "@/utils/paramsCheck";
 
 export type uploadType = "uploadStart" | "uploadEnd" | "uploading";
 export type WsUploadRequestDataType<T extends uploadType> = {
@@ -121,6 +117,30 @@ const uploadStart = async (
   redisInst: any
 ) => {
   if (req.type === "uploadStart") {
+    const paramsStatus = paramsCheck(req, {
+      type: { type: "string", required: true },
+      token: { type: "string", required: true },
+      fileInfo: {
+        type: "object",
+        required: true,
+        children: {
+          clientFileId: { type: "string", required: true },
+          title: { type: "string", required: true },
+          tags: { type: "object", required: true },
+          size: { type: "number", required: true },
+          type: { type: "string", required: true },
+          createTime: { type: "string", required: true },
+          updateTime: { type: "string", required: true },
+          ext: { type: "string", required: true },
+        },
+      },
+    });
+
+    if (!paramsStatus.flag) {
+      log(paramsStatus.message);
+      return clientError(ws, "入参不完整", codeMap.paramsIncompelete);
+    }
+
     const _req: WsUploadRequestDataType<"uploadStart"> =
       req as WsUploadRequestDataType<"uploadStart">;
     let fileId;
@@ -236,6 +256,20 @@ const uploading = async (
   redisInst: any
 ) => {
   if (req.type === "uploading") {
+    const paramsStatus = paramsCheck(req, {
+      type: { type: "string", required: true },
+      token: { type: "string", required: true },
+      fileId: { type: "string", required: true },
+      chunk: { type: "object", required: true },
+      processChunkIndex: { type: "number", required: true },
+      ext: { type: "string", required: true },
+    });
+
+    if (!paramsStatus.flag) {
+      log(paramsStatus.message);
+      return clientError(ws, "入参不完整", codeMap.paramsIncompelete);
+    }
+
     const _req: WsUploadRequestDataType<"uploading"> =
       req as WsUploadRequestDataType<"uploading">;
     try {
@@ -291,6 +325,18 @@ const uploadEnd = async (
   redisInst: any
 ) => {
   if (req.type === "uploadEnd") {
+    const paramsStatus = paramsCheck(req, {
+      type: { type: "string", required: true },
+      token: { type: "string", required: true },
+      fileId: { type: "string", required: true },
+      ext: { type: "string", required: true },
+    });
+
+    if (!paramsStatus.flag) {
+      log(paramsStatus.message);
+      return clientError(ws, "入参不完整", codeMap.paramsIncompelete);
+    }
+
     const _req: WsUploadRequestDataType<"uploadEnd"> =
       req as WsUploadRequestDataType<"uploadEnd">;
 

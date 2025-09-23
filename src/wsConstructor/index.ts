@@ -11,6 +11,7 @@ import uploadRouter, {
 import log from "../logs/setting";
 import { bufferToObject, objectToBuffer } from "../utils/objAndBufferTransform";
 import useAuth from "@/hooks/useAuth";
+import { codeMap } from "@/utils/backendStatus";
 
 export type wsMessageTypes = "operate" | "upload" | "error";
 
@@ -108,12 +109,6 @@ export function wsSend<T extends wsMessageTypes>(
   res: WsResponseMsgType<T>
 ) {
   ws.send(objectToBuffer(res));
-}
-
-export enum codeMap {
-  errorOperate = 1001,
-  fileExceedLimit = 1010,
-  limitsOfAuthority = 1002,
 }
 
 export function clientError(ws: WebSocket, msg: string, code: number = 1000) {
