@@ -83,6 +83,10 @@ onmessage = (e) => {
       type: "updateClientFileIdMapServerFileId",
       clientFileIdMapServerFileId,
     });
+    broadcast({
+      type: "init",
+      token: e.data.token,
+    });
   }
   if (e.data instanceof Array) {
     e.data

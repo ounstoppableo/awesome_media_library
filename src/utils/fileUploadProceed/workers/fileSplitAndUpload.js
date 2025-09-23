@@ -57,12 +57,13 @@ const wsSend = (socket, msg) => {
   if (socket.readyState !== WebSocket.OPEN) {
     return;
   }
-  socket.send(objectToBuffer(msg));
+  socket.send(objectToBuffer({ ...msg, token: authorization }));
 };
 
 let _processFile = null;
 let _stopFlag = { value: false };
 let _totalChunk = 0;
+let authorization = "";
 let fileProcessInfo = null;
 
 function clearEffect(stopFlag = false) {
@@ -150,15 +151,15 @@ ws.addEventListener("message", async (e) => {
 
         clearEffect();
       }
-      if (_res.data.type === "error") {
-        postMessage({
-          clientFileId: _processFile.id,
-          fileId: _res.data.fileId,
-          ..._res.data,
-          type: "error",
-        });
-        clearEffect();
-      }
+    }
+    if (_res.type === "error") {
+      postMessage({
+        clientFileId: _processFile.id,
+        fileId: _res.data.fileId,
+        ..._res.data,
+        type: "error",
+      });
+      clearEffect();
     }
   } catch (err) {
     console.log(err);
@@ -166,6 +167,9 @@ ws.addEventListener("message", async (e) => {
 });
 
 onmessage = (e) => {
+  if (e.data.type === "init") {
+    authorization = e.data.token;
+  }
   if (e.data.type === "updateClientFileIdMapServerFileId") {
     clientFileIdMapServerFileId = e.data.clientFileIdMapServerFileId;
   }

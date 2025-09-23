@@ -3,7 +3,13 @@ import { writeFile } from "fs/promises";
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { objectToBuffer } from "@/utils/objAndBufferTransform";
-import { WsResponseMsgType, clientError, codeMap, wsSend } from "..";
+import {
+  WsResponseMsgType,
+  clientError,
+  codeMap,
+  tokenMapUsername,
+  wsSend,
+} from "..";
 import log from "@/logs/setting";
 import { resolve } from "path";
 import { deleteFile, getFileSize, isFileExist } from "@/utils/fileOperate";
@@ -11,17 +17,20 @@ import fs from "fs/promises";
 import {
   closeSync,
   createWriteStream,
+  mkdirSync,
   openSync,
   readFileSync,
   readdirSync,
   statSync,
   writeFileSync,
 } from "fs";
+import { get } from "http";
 
 export type uploadType = "uploadStart" | "uploadEnd" | "uploading";
 export type WsUploadRequestDataType<T extends uploadType> = {
   type: T;
   fileId?: string;
+  token: string;
 } & (T extends "uploadStart"
   ? {
       fileInfo: {
@@ -86,6 +95,26 @@ export default async function uploadRouter(
   redisPool.release(redisInst);
 }
 
+const getTempPath = (fileId: string, username: string) => {
+  return resolve(tempPath, username, fileId);
+};
+const getStoragePath = (
+  fileId: string,
+  ext: string,
+  username: string,
+  absolute = true
+) => {
+  if (absolute) {
+    return resolve(
+      fileStorePath,
+      username,
+      fileId && ext ? fileId + "." + ext : ""
+    );
+  } else {
+    return "/media" + "/" + username + "/" + fileId + "." + ext;
+  }
+};
+
 const uploadStart = async (
   req: WsUploadRequestDataType<any>,
   ws: WebSocket,
@@ -110,7 +139,13 @@ const uploadStart = async (
       fileInfo && (fileId = _req.fileId);
       if (
         fileId &&
-        isFileExist(resolve(fileStorePath, fileId + "." + _req.fileInfo.ext))
+        isFileExist(
+          getStoragePath(
+            fileId,
+            _req.fileInfo.ext,
+            tokenMapUsername[_req.token]
+          )
+        )
       ) {
         try {
           const res: WsResponseMsgType<"upload"> = {
@@ -119,9 +154,18 @@ const uploadStart = async (
               type: "uploadEnd",
               fileId,
               clientFileId: _req.fileInfo.clientFileId,
-              sourcePath: "/media" + "/" + fileId + "." + _req.fileInfo.ext,
+              sourcePath: getStoragePath(
+                fileId,
+                _req.fileInfo.ext,
+                tokenMapUsername[_req.token],
+                false
+              ),
               size: statSync(
-                resolve(fileStorePath, fileId + "." + _req.fileInfo.ext)
+                getStoragePath(
+                  fileId,
+                  _req.fileInfo.ext,
+                  tokenMapUsername[_req.token]
+                )
               ).size,
             } as WsUploadResponseDataType<"uploadEnd">,
           };
@@ -131,9 +175,14 @@ const uploadStart = async (
           clientError(ws, "服务器错误");
         }
       }
-      if (fileId && isFileExist(resolve(tempPath, fileId))) {
+      if (
+        fileId &&
+        isFileExist(getTempPath(fileId, tokenMapUsername[_req.token]))
+      ) {
         try {
-          const files = readdirSync(resolve(tempPath, fileId));
+          const files = readdirSync(
+            getTempPath(fileId, tokenMapUsername[_req.token])
+          );
           const processedChunkIndexs = files
             .map((f) => parseInt(f, 10))
             .filter((n) => !isNaN(n));
@@ -163,7 +212,9 @@ const uploadStart = async (
       );
     }
 
-    await fs.mkdir(resolve(tempPath, fileId), { recursive: true });
+    await fs.mkdir(getTempPath(fileId, tokenMapUsername[_req.token]), {
+      recursive: true,
+    });
 
     const res: WsResponseMsgType<"upload"> = {
       type: "upload",
@@ -189,8 +240,7 @@ const uploading = async (
       req as WsUploadRequestDataType<"uploading">;
     try {
       const fileTempPath = resolve(
-        tempPath,
-        _req.fileId,
+        getTempPath(_req.fileId, tokenMapUsername[_req.token]),
         _req.processChunkIndex + ""
       );
       // if (_req.chunk.byteLength * _req.processChunkIndex > MAX_FILE_SIZE)
@@ -211,7 +261,7 @@ const uploading = async (
         return wsSend(ws, res);
       }
 
-      if (isFileExist(resolve(tempPath, _req.fileId))) {
+      if (isFileExist(getTempPath(_req.fileId, tokenMapUsername[_req.token]))) {
         if (fileLock[fileTempPath]) return;
         fileLock[fileTempPath] = true;
         await fs.writeFile(fileTempPath, _req.chunk, { flag: "w" });
@@ -244,8 +294,13 @@ const uploadEnd = async (
     const _req: WsUploadRequestDataType<"uploadEnd"> =
       req as WsUploadRequestDataType<"uploadEnd">;
 
-    const fileTempPath = resolve(tempPath, _req.fileId);
-    const targetPath = resolve(fileStorePath, _req.fileId + "." + _req.ext);
+    const fileTempPath = getTempPath(_req.fileId, tokenMapUsername[_req.token]);
+    const targetDir = getStoragePath("", "", tokenMapUsername[_req.token]);
+    const targetPath = getStoragePath(
+      _req.fileId,
+      _req.ext,
+      tokenMapUsername[_req.token]
+    );
     if (_req.fileId && isFileExist(targetPath)) {
       try {
         const res: WsResponseMsgType<"upload"> = {
@@ -253,7 +308,12 @@ const uploadEnd = async (
           data: {
             fileId: _req.fileId,
             type: "uploadEnd",
-            sourcePath: "/media" + "/" + _req.fileId + "." + _req.ext,
+            sourcePath: getStoragePath(
+              _req.fileId,
+              _req.ext,
+              tokenMapUsername[_req.token],
+              false
+            ),
             size: statSync(targetPath).size,
           },
         };
@@ -268,9 +328,12 @@ const uploadEnd = async (
         return;
       }
     }
-
-    const fd = openSync(targetPath, "a");
     try {
+      if (!isFileExist(targetDir)) {
+        mkdirSync(targetDir);
+      }
+      const fd = openSync(targetPath, "a");
+
       if (isFileExist(fileTempPath)) {
         let i = 0;
         foo: while (true) {
@@ -297,7 +360,12 @@ const uploadEnd = async (
             data: {
               fileId: _req.fileId,
               type: "uploadEnd",
-              sourcePath: "/media" + "/" + _req.fileId + "." + _req.ext,
+              sourcePath: getStoragePath(
+                _req.fileId,
+                _req.ext,
+                tokenMapUsername[_req.token],
+                false
+              ),
               size: statSync(targetPath).size,
             } as WsUploadResponseDataType<"uploadEnd">,
           };

@@ -32,6 +32,7 @@ import {
 } from "@/utils/fileUploadProceed/listenerRegister";
 import { ProgressRadial } from "@/components/progress-1";
 import { Button as AntdButton } from "antd";
+import { codeMap } from "@/utils/backendStatus";
 
 export const allowTypes = [
   "image/png",
@@ -102,7 +103,7 @@ export default function useUploadLogic(props: { worker: any }) {
         });
         const request = objectStore.get(file.id);
         request.onsuccess = () => {
-          file.file = request.result.file;
+          file.file = request.result?.file;
           _resolve(1);
         };
         request.onerror = () => {
@@ -274,6 +275,9 @@ export default function useUploadLogic(props: { worker: any }) {
             },
             ..._waitingUploadFiles.current.proxy.slice(index + 1),
           ];
+        }
+        if (params.code === codeMap.limitsOfAuthority) {
+          message.warning(params.msg);
         }
       },
     };

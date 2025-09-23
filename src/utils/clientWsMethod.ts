@@ -7,7 +7,9 @@ export const wsSend = (socket: WebSocket, msg: WsRequestMsgType<any>) => {
     message.error({ content: "WebSocket 未连接，操作失败" });
     return;
   }
-  socket.send(objectToBuffer(msg));
+  socket.send(
+    objectToBuffer({ ...msg, token: localStorage.getItem("authorization") })
+  );
 };
 
 let _listener: any = null;

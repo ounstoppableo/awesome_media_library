@@ -10,6 +10,7 @@ import uploadRouter, {
 } from "./router/uploadRouter";
 import log from "../logs/setting";
 import { bufferToObject, objectToBuffer } from "../utils/objAndBufferTransform";
+import useAuth from "@/hooks/useAuth";
 
 export type wsMessageTypes = "operate" | "upload" | "error";
 
@@ -20,6 +21,7 @@ export type WsRequestMsgType<T extends wsMessageTypes> = {
     : T extends "upload"
     ? WsUploadRequestDataType<any>
     : never;
+  token: string;
 };
 
 export type WsResponseMsgType<T> = {
@@ -36,6 +38,9 @@ export type WsResponseMsgType<T> = {
     : never;
 };
 
+const tokenMapExpireTime: any = {};
+export const tokenMapUsername: any = {};
+
 export default async function wsConstructor(ws: WebSocket) {
   ws.on("message", async (message: Buffer, isBinary) => {
     if (isBinary) {
@@ -43,18 +48,32 @@ export default async function wsConstructor(ws: WebSocket) {
         const _message = bufferToObject(
           message
         ) as WsRequestMsgType<wsMessageTypes>;
-
+        if (await useAuth(_message.token)) {
+          const info = JSON.parse(
+            Buffer.from(_message.token.split(".")[1], "base64").toString(
+              "utf-8"
+            )
+          );
+          tokenMapExpireTime[_message.token] = info.exp;
+          tokenMapUsername[_message.token] = info.data;
+        } else {
+          delete tokenMapExpireTime[_message.token];
+          delete tokenMapUsername[_message.token];
+          clientError(ws, "权限不足", codeMap.limitsOfAuthority);
+          ws.close();
+          return;
+        }
         try {
           if (_message.type === "operate") {
-            await operateRouter(
-              ws,
-              (_message as WsRequestMsgType<"operate">).data
-            );
+            await operateRouter(ws, {
+              ...(_message as WsRequestMsgType<"operate">).data,
+              token: _message.token,
+            });
           } else if (_message.type === "upload") {
-            await uploadRouter(
-              ws,
-              (_message as WsRequestMsgType<"upload">).data
-            );
+            await uploadRouter(ws, {
+              ...(_message as WsRequestMsgType<"upload">).data,
+              token: _message.token,
+            });
           }
         } catch (e: any) {
           log(e.message, "error");
@@ -76,6 +95,7 @@ export default async function wsConstructor(ws: WebSocket) {
       // 给客户端返回错误
       if (ws.readyState === ws.OPEN) {
         clientError(ws, "负载过大");
+        ws.close();
       }
     } else {
       log(err.message, "error");
@@ -93,6 +113,7 @@ export function wsSend<T extends wsMessageTypes>(
 export enum codeMap {
   errorOperate = 1001,
   fileExceedLimit = 1010,
+  limitsOfAuthority = 1002,
 }
 
 export function clientError(ws: WebSocket, msg: string, code: number = 1000) {
