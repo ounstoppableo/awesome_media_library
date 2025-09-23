@@ -1,9 +1,20 @@
 "use client";
+import { message } from "antd";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import "@ant-design/v5-patch-for-react-19";
 
 export default function Home() {
   const router = useRouter();
+  useEffect(() => {
+    message.config({
+      top: 100,
+      duration: 2,
+      maxCount: 1,
+      rtl: true,
+    });
+  });
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">

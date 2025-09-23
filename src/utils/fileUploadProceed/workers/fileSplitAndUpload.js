@@ -145,6 +145,7 @@ ws.addEventListener("message", async (e) => {
             clientFileId: _processFile.id,
             fileId: _res.data.fileId,
             ..._res.data,
+            msg: "文件内容缺失",
             type: "error",
           });
         }

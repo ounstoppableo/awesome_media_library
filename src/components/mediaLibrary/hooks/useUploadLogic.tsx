@@ -278,6 +278,8 @@ export default function useUploadLogic(props: { worker: any }) {
         }
         if (params.code === codeMap.limitsOfAuthority) {
           message.warning(params.msg);
+        } else {
+          message.error(params.msg);
         }
       },
     };

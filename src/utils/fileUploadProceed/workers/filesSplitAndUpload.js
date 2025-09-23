@@ -90,7 +90,7 @@ onmessage = (e) => {
   }
   if (e.data instanceof Array) {
     e.data
-      .filter((file) => !file.pause && !file.compelete)
+      .filter((file) => !file.pause && !file.compelete && !file.error)
       .forEach((file) => {
         if (file.file instanceof File) {
           if (!fileStatusMap[file.id]) {

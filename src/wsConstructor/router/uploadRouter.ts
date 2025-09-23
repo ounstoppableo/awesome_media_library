@@ -145,12 +145,12 @@ const uploadStart = async (
       req as WsUploadRequestDataType<"uploadStart">;
     let fileId;
     let fileInfo;
-    // if (_req.fileInfo.size > MAX_FILE_SIZE)
-    //   return clientError(
-    //     ws,
-    //     `文件大小限制为${MAX_FILE_SIZE / 1024 / 1024}MB以内`,
-    //     codeMap.fileExceedLimit
-    //   );
+    if (_req.fileInfo.size > MAX_FILE_SIZE)
+      return clientError(
+        ws,
+        `文件大小限制为${MAX_FILE_SIZE / 1024 / 1024}MB以内`,
+        codeMap.fileExceedLimit
+      );
 
     if (_req.fileId) {
       fileInfo = JSON.parse(
@@ -277,12 +277,12 @@ const uploading = async (
         getTempPath(_req.fileId, tokenMapUsername[_req.token]),
         _req.processChunkIndex + ""
       );
-      // if (_req.chunk.byteLength * _req.processChunkIndex > MAX_FILE_SIZE)
-      //   return clientError(
-      //     ws,
-      //     `文件大小限制为${MAX_FILE_SIZE / 1024 / 1024}MB以内`,
-      //     codeMap.fileExceedLimit
-      //   );
+      if (_req.chunk.byteLength * _req.processChunkIndex > MAX_FILE_SIZE)
+        return clientError(
+          ws,
+          `文件大小限制为${MAX_FILE_SIZE / 1024 / 1024}MB以内`,
+          codeMap.fileExceedLimit
+        );
       if (_req.fileId && isFileExist(fileTempPath)) {
         const res: WsResponseMsgType<"upload"> = {
           type: "upload",
