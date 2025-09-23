@@ -154,7 +154,7 @@ export default function MediaLibrary() {
 
   const { socketRef } = useWebsocketLogic();
 
-  const { uploadDialogJsx } = useUploadLogic({ worker });
+  const { uploadDialogJsx } = useUploadLogic({ worker, socketRef });
 
   return (
     <div className="w-full h-full relative translate-0">

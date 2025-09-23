@@ -153,7 +153,7 @@ ws.addEventListener("message", async (e) => {
         clearEffect();
       }
     }
-    if (_res.type === "error") {
+    if (_res.type === "error" && _processFile) {
       postMessage({
         clientFileId: _processFile.id,
         fileId: _res.data.fileId,
@@ -198,8 +198,13 @@ onmessage = (e) => {
     });
   }
   if (e.data.type === "stop" && e.data.clientFileId === _processFile?.id) {
+    clearEffect(true);
     postMessage("stopSuccess");
     postMessage("lockRelease");
-    clearEffect(true);
+  }
+  if (e.data.type === "delete" && e.data.clientFileId === _processFile?.id) {
+    clearEffect();
+    postMessage("deleteSuccess");
+    postMessage("lockRelease");
   }
 };

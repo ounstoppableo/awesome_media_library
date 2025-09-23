@@ -22,7 +22,7 @@ import { get } from "http";
 import { codeMap } from "@/utils/backendStatus";
 import { paramsCheck } from "@/utils/paramsCheck";
 
-export type uploadType = "uploadStart" | "uploadEnd" | "uploading";
+export type uploadType = "uploadStart" | "uploadEnd" | "uploading" | "delete";
 export type WsUploadRequestDataType<T extends uploadType> = {
   type: T;
   fileId?: string;
@@ -49,6 +49,8 @@ export type WsUploadRequestDataType<T extends uploadType> = {
     }
   : T extends "uploadEnd"
   ? { fileId: string; ext: string; size?: number }
+  : T extends "delete"
+  ? { fileId: string; ext: string }
   : never);
 export type WsUploadResponseDataType<T extends uploadType> = {
   type: T;
@@ -88,11 +90,12 @@ export default async function uploadRouter(
   await uploadStart(req, ws, redisInst);
   await uploading(req, ws, redisInst);
   await uploadEnd(req, ws, redisInst);
+  await deleteFileCb(req, ws, redisInst);
   redisPool.release(redisInst);
 }
 
 const getTempPath = (fileId: string, username: string) => {
-  return resolve(tempPath, username, fileId);
+  return resolve(tempPath, username || "", fileId || "");
 };
 const getStoragePath = (
   fileId: string,
@@ -100,6 +103,9 @@ const getStoragePath = (
   username: string,
   absolute = true
 ) => {
+  !fileId && (fileId = "");
+  !ext && (ext = "");
+  !username && (username = "");
   if (absolute) {
     return resolve(
       fileStorePath,
@@ -192,7 +198,7 @@ const uploadStart = async (
           return wsSend(ws, res);
         } catch (err: any) {
           log(err.message, "error");
-          clientError(ws, "服务器错误");
+          return clientError(ws, "服务器错误");
         }
       }
       if (
@@ -428,6 +434,51 @@ const uploadEnd = async (
     } catch (e: any) {
       log(e.message, "error");
       clientError(ws, "服务器错误");
+    }
+  }
+};
+
+const deleteFileCb = async (
+  req: WsUploadRequestDataType<any>,
+  ws: WebSocket,
+  redisInst: any
+) => {
+  if (req.type === "delete" && req.fileId) {
+    const paramsStatus = paramsCheck(req, {
+      type: { type: "string", required: true },
+      token: { type: "string", required: true },
+      fileId: { type: "string", required: true },
+      ext: { type: "string", required: true },
+    });
+    if (!paramsStatus.flag) {
+      log(paramsStatus.message);
+      return clientError(ws, "入参不完整", codeMap.paramsIncompelete);
+    }
+
+    const _req: WsUploadRequestDataType<"delete"> =
+      req as WsUploadRequestDataType<"delete">;
+    const tempPath = getTempPath(_req.fileId, tokenMapUsername[_req.token]);
+    const storagePath = getStoragePath(
+      _req.fileId,
+      _req.ext,
+      tokenMapUsername[_req.token]
+    );
+    redisInst.HDEL(redisNameSpace.fileInfo(), _req.fileId);
+    try {
+      isFileExist(tempPath) &&
+        fs.rm(tempPath, { recursive: true, force: true });
+      isFileExist(storagePath) &&
+        fs.rm(storagePath, { recursive: true, force: true });
+      wsSend(ws, {
+        type: "upload",
+        data: {
+          type: "delete",
+          fileId: _req.fileId,
+          msg: "删除成功",
+        },
+      });
+    } catch (err: any) {
+      log(err.message);
     }
   }
 };

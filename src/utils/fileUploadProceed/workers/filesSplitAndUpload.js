@@ -49,7 +49,7 @@ workers.forEach((worker, index) => {
         postMessage({ ...e.data });
       }
     }
-    if (e.data?.type === "uploading") {
+    if (e.data?.type === "uploading" && fileProcessInfo[e.data.fileId]) {
       fileProcessInfo[e.data.fileId].processedChunks = e.data.processedChunks;
       postMessage({ ...e.data });
     }
@@ -58,6 +58,9 @@ workers.forEach((worker, index) => {
       broadcast("fileProcessRequest");
     }
     if (e.data === "stopSuccess") {
+      broadcast("fileProcessRequest");
+    }
+    if (e.data === "deleteSuccess") {
       broadcast("fileProcessRequest");
     }
     if (e.data?.type === "error") {
@@ -108,5 +111,8 @@ onmessage = (e) => {
       type: "stopSuccess",
       ...fileProcessInfo[clientFileIdMapServerFileId[e.data.clientFileId]],
     });
+  }
+  if (e.data.type === "delete") {
+    broadcast(e.data);
   }
 };

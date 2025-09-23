@@ -33,6 +33,7 @@ import {
 import { ProgressRadial } from "@/components/progress-1";
 import { Button as AntdButton } from "antd";
 import { codeMap } from "@/utils/backendStatus";
+import { wsSend } from "@/utils/clientWsMethod";
 
 export const allowTypes = [
   "image/png",
@@ -46,8 +47,8 @@ export const allowTypes = [
 
 export const singleUploadFilesLimit = 100;
 
-export default function useUploadLogic(props: { worker: any }) {
-  const { worker } = props;
+export default function useUploadLogic(props: { worker: any; socketRef: any }) {
+  const { worker, socketRef } = props;
   const [waitingUploadFiles, _setWaitingUploadFiles] = useState<
     (MediaStruct & {
       file: File;
@@ -57,6 +58,7 @@ export default function useUploadLogic(props: { worker: any }) {
       error?: boolean;
       processedChunks?: any[];
       totalChunk?: number;
+      serverFileId?: number;
     })[]
   >([]);
 
@@ -80,6 +82,14 @@ export default function useUploadLogic(props: { worker: any }) {
   };
 
   const indexedDbInst = useRef<any>(null);
+
+  const clientFileIdMapServerFileId = useRef<any>(null);
+
+  useEffect(() => {
+    clientFileIdMapServerFileId.current = JSON.parse(
+      localStorage.getItem("clientFileIdMapServerFileId") || "{}"
+    );
+  }, []);
 
   useEffect(() => {
     const request = indexedDB.open("uploadInfoStore", 2);
@@ -207,6 +217,9 @@ export default function useUploadLogic(props: { worker: any }) {
             ..._waitingUploadFiles.current.proxy.slice(index + 1),
           ];
         }
+        clientFileIdMapServerFileId.current = JSON.parse(
+          localStorage.getItem("clientFileIdMapServerFileId") || "{}"
+        );
       },
       uploading: (params: any) => {
         const index = _waitingUploadFiles.current.proxy.findIndex(
@@ -255,6 +268,7 @@ export default function useUploadLogic(props: { worker: any }) {
               ..._waitingUploadFiles.current.proxy[index],
               sourcePath: params.sourcePath,
               compelete: true,
+              serverFileId: params.fileId,
             },
             ..._waitingUploadFiles.current.proxy.slice(index + 1),
           ];
@@ -291,12 +305,14 @@ export default function useUploadLogic(props: { worker: any }) {
 
   useEffect(() => {
     worker?.postMessage(waitingUploadFiles);
-    localStorage.setItem(
-      "waitingUploadFiles",
-      JSON.stringify(
-        waitingUploadFiles.map((file) => ({ ...file, file: null }))
-      )
-    );
+    requestAnimationFrame(() => {
+      localStorage.setItem(
+        "waitingUploadFiles",
+        JSON.stringify(
+          waitingUploadFiles.map((file) => ({ ...file, file: null }))
+        )
+      );
+    });
   }, [waitingUploadFiles]);
 
   const uploadDialogJsx = (
@@ -367,6 +383,26 @@ export default function useUploadLogic(props: { worker: any }) {
                           ...waitingUploadFiles.slice(0, index),
                           ...waitingUploadFiles.slice(index + 1),
                         ]);
+                        const objectStore = indexedDbInst.current
+                          .transaction("uploadHandle", "readwrite")
+                          .objectStore("uploadHandle");
+                        objectStore.delete(media.id);
+                        worker.postMessage({
+                          type: "delete",
+                          clientFileId: media.id,
+                        });
+
+                        socketRef.current &&
+                          wsSend(socketRef.current, {
+                            type: "upload",
+                            data: {
+                              type: "delete",
+                              fileId: media.compelete
+                                ? media.serverFileId
+                                : clientFileIdMapServerFileId.current[media.id],
+                              ext: media.file.name.split(".").pop(),
+                            },
+                          } as any);
                       }}
                       imgUploadMask={
                         media.error ? (
