@@ -133,11 +133,21 @@ ws.addEventListener("message", async (e) => {
         ];
       }
       if (_res.data.type === "uploadEnd" && _processFile) {
-        postMessage({
-          ..._res.data,
-          clientFileId: _processFile.id,
-          type: "uploadEnd",
-        });
+        if (_res.data.size === _processFile.size) {
+          postMessage({
+            ..._res.data,
+            clientFileId: _processFile.id,
+            type: "uploadEnd",
+          });
+        } else {
+          postMessage({
+            clientFileId: _processFile.id,
+            fileId: _res.data.fileId,
+            ..._res.data,
+            type: "error",
+          });
+        }
+
         clearEffect();
       }
       if (_res.data.type === "error") {

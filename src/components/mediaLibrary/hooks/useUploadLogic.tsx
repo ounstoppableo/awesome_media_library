@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import { message } from "antd";
 import "@ant-design/v5-patch-for-react-19";
 import {
+  CircleX,
   Clapperboard,
   FileAudio,
   Image,
@@ -30,6 +31,7 @@ import {
   workerListen,
 } from "@/utils/fileUploadProceed/listenerRegister";
 import { ProgressRadial } from "@/components/progress-1";
+import { Button as AntdButton } from "antd";
 
 export const allowTypes = [
   "image/png",
@@ -51,6 +53,7 @@ export default function useUploadLogic(props: { worker: any }) {
       progress?: number;
       pause?: boolean;
       compelete?: boolean;
+      error?: boolean;
       processedChunks?: any[];
       totalChunk?: number;
     })[]
@@ -257,7 +260,21 @@ export default function useUploadLogic(props: { worker: any }) {
         }
       },
       error: (params: any) => {
-        console.log(params);
+        const index = _waitingUploadFiles.current.proxy.findIndex(
+          (item: any) => {
+            return item.id === params.clientFileId;
+          }
+        );
+        if (index !== -1) {
+          _waitingUploadFiles.current.proxy = [
+            ..._waitingUploadFiles.current.proxy.slice(0, index),
+            {
+              ..._waitingUploadFiles.current.proxy[index],
+              error: true,
+            },
+            ..._waitingUploadFiles.current.proxy.slice(index + 1),
+          ];
+        }
       },
     };
     worker && workerListen(worker, cbParams);
@@ -346,7 +363,14 @@ export default function useUploadLogic(props: { worker: any }) {
                         ]);
                       }}
                       imgUploadMask={
-                        media.compelete ? (
+                        media.error ? (
+                          <div className="rounded-[inherit] rounded-b-none overflow-hidden absolute inset-0 flex justify-center items-center flex-col gap-2  after:absolute after:z-0 after:inset-0 after:bg-gray-800 after:opacity-50">
+                            <CircleX className="z-10 h-8 w-8 text-red-400" />
+                            <div className="z-10 text-red-400">
+                              文件上传失败
+                            </div>
+                          </div>
+                        ) : media.compelete ? (
                           <></>
                         ) : (
                           <div className="rounded-[inherit] rounded-b-none overflow-hidden absolute flex items-center justify-center inset-0 z-10 after:absolute after:z-10 after:inset-0 after:bg-gray-800 after:opacity-50">
