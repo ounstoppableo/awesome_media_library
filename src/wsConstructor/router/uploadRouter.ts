@@ -95,6 +95,9 @@ export default async function uploadRouter(
 }
 
 const getTempPath = (fileId: string, username: string) => {
+  if (!username) {
+    return null;
+  }
   return resolve(tempPath, username || "", fileId || "");
 };
 const getStoragePath = (
@@ -105,7 +108,9 @@ const getStoragePath = (
 ) => {
   !fileId && (fileId = "");
   !ext && (ext = "");
-  !username && (username = "");
+  if (!username) {
+    return null;
+  }
   if (absolute) {
     return resolve(
       fileStorePath,
@@ -163,69 +168,61 @@ const uploadStart = async (
         (await redisInst.HGET(redisNameSpace.fileInfo(), _req.fileId)) || "null"
       );
       fileInfo && (fileId = _req.fileId);
-      if (
-        fileId &&
-        isFileExist(
-          getStoragePath(
-            fileId,
-            _req.fileInfo.ext,
-            tokenMapUsername[_req.token]
-          )
-        )
-      ) {
-        try {
-          const res: WsResponseMsgType<"upload"> = {
-            type: "upload",
-            data: {
-              type: "uploadEnd",
-              fileId,
-              clientFileId: _req.fileInfo.clientFileId,
-              sourcePath: getStoragePath(
-                fileId,
-                _req.fileInfo.ext,
-                tokenMapUsername[_req.token],
-                false
-              ),
-              size: statSync(
-                getStoragePath(
-                  fileId,
-                  _req.fileInfo.ext,
-                  tokenMapUsername[_req.token]
-                )
-              ).size,
-            } as WsUploadResponseDataType<"uploadEnd">,
-          };
-          return wsSend(ws, res);
-        } catch (err: any) {
-          log(err.message, "error");
-          return clientError(ws, "服务器错误");
-        }
-      }
-      if (
-        fileId &&
-        isFileExist(getTempPath(fileId, tokenMapUsername[_req.token]))
-      ) {
-        try {
-          const files = readdirSync(
-            getTempPath(fileId, tokenMapUsername[_req.token])
-          );
-          const processedChunkIndexs = files
-            .map((f) => parseInt(f, 10))
-            .filter((n) => !isNaN(n));
-          if (processedChunkIndexs.length !== 0) {
+
+      if (fileId) {
+        const tempPath = getTempPath(fileId, tokenMapUsername[_req.token]);
+        const storagePath = getStoragePath(
+          fileId,
+          _req.fileInfo.ext,
+          tokenMapUsername[_req.token]
+        );
+        const storagePathRelative = getStoragePath(
+          fileId,
+          _req.fileInfo.ext,
+          tokenMapUsername[_req.token],
+          false
+        );
+        if (!tempPath || !storagePath || !storagePathRelative)
+          return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
+        if (isFileExist(storagePath)) {
+          try {
             const res: WsResponseMsgType<"upload"> = {
               type: "upload",
               data: {
-                type: "uploadStart",
+                type: "uploadEnd",
                 fileId,
                 clientFileId: _req.fileInfo.clientFileId,
-                processedChunkIndexs: processedChunkIndexs,
-              },
+                sourcePath: storagePathRelative,
+                size: statSync(storagePath).size,
+              } as WsUploadResponseDataType<"uploadEnd">,
             };
             return wsSend(ws, res);
+          } catch (err: any) {
+            log(err.message, "error");
+            return clientError(ws, "服务器错误");
           }
-        } catch (e: any) {
-          log(e.message, "error");
+        }
+        if (isFileExist(tempPath)) {
+          try {
+            const files = readdirSync(tempPath);
+            const processedChunkIndexs = files
+              .map((f) => parseInt(f, 10))
+              .filter((n) => !isNaN(n));
+            if (processedChunkIndexs.length !== 0) {
+              const res: WsResponseMsgType<"upload"> = {
+                type: "upload",
+                data: {
+                  type: "uploadStart",
+                  fileId,
+                  clientFileId: _req.fileInfo.clientFileId,
+                  processedChunkIndexs: processedChunkIndexs,
+                },
+              };
+              return wsSend(ws, res);
+            }
+          } catch (e: any) {
+            log(e.message, "error");
+          }
         }
       }
     }
@@ -237,10 +234,13 @@ const uploadStart = async (
         JSON.stringify(_req.fileInfo)
       );
     }
-
-    await fs.mkdir(getTempPath(fileId, tokenMapUsername[_req.token]), {
-      recursive: true,
-    });
+    const tempPath = getTempPath(fileId, tokenMapUsername[_req.token]);
+    if (!tempPath)
+      return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
+    tempPath &&
+      (await fs.mkdir(tempPath, {
+        recursive: true,
+      }));
 
     const res: WsResponseMsgType<"upload"> = {
       type: "upload",
@@ -278,11 +278,12 @@ const uploading = async (
 
     const _req: WsUploadRequestDataType<"uploading"> =
       req as WsUploadRequestDataType<"uploading">;
+
+    const tempPath = getTempPath(_req.fileId, tokenMapUsername[_req.token]);
+    if (!tempPath)
+      return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
     try {
-      const fileTempPath = resolve(
-        getTempPath(_req.fileId, tokenMapUsername[_req.token]),
-        _req.processChunkIndex + ""
-      );
+      const fileTempPath = resolve(tempPath, _req.processChunkIndex + "");
       if (_req.chunk.byteLength * _req.processChunkIndex > MAX_FILE_SIZE)
         return clientError(
           ws,
@@ -301,7 +302,7 @@ const uploading = async (
         return wsSend(ws, res);
       }
 
-      if (isFileExist(getTempPath(_req.fileId, tokenMapUsername[_req.token]))) {
+      if (isFileExist(tempPath)) {
         if (fileLock[fileTempPath]) return;
         fileLock[fileTempPath] = true;
         await fs.writeFile(fileTempPath, _req.chunk, { flag: "w" });
@@ -353,6 +354,14 @@ const uploadEnd = async (
       _req.ext,
       tokenMapUsername[_req.token]
     );
+    const targetPathRelative = getStoragePath(
+      _req.fileId,
+      _req.ext,
+      tokenMapUsername[_req.token],
+      false
+    );
+    if (!fileTempPath || !targetDir || !targetPath || !targetPathRelative)
+      return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
     if (_req.fileId && isFileExist(targetPath)) {
       try {
         const res: WsResponseMsgType<"upload"> = {
@@ -360,12 +369,7 @@ const uploadEnd = async (
           data: {
             fileId: _req.fileId,
             type: "uploadEnd",
-            sourcePath: getStoragePath(
-              _req.fileId,
-              _req.ext,
-              tokenMapUsername[_req.token],
-              false
-            ),
+            sourcePath: targetPathRelative,
             size: statSync(targetPath).size,
           },
         };
@@ -412,12 +416,7 @@ const uploadEnd = async (
             data: {
               fileId: _req.fileId,
               type: "uploadEnd",
-              sourcePath: getStoragePath(
-                _req.fileId,
-                _req.ext,
-                tokenMapUsername[_req.token],
-                false
-              ),
+              sourcePath: targetPathRelative,
               size: statSync(targetPath).size,
             } as WsUploadResponseDataType<"uploadEnd">,
           };
@@ -463,6 +462,8 @@ const deleteFileCb = async (
       _req.ext,
       tokenMapUsername[_req.token]
     );
+    if (!tempPath || !storagePath)
+      return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
     redisInst.HDEL(redisNameSpace.fileInfo(), _req.fileId);
     try {
       isFileExist(tempPath) &&
