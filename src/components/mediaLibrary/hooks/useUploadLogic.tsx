@@ -47,8 +47,13 @@ export const allowTypes = [
 
 export const singleUploadFilesLimit = 100;
 
-export default function useUploadLogic(props: { worker: any; socketRef: any }) {
-  const { worker, socketRef } = props;
+export default function useUploadLogic(props: {
+  worker: any;
+  socketRef: any;
+  tags?: any;
+  setTags?: any;
+}) {
+  const { worker, socketRef, tags, setTags } = props;
   const [waitingUploadFiles, _setWaitingUploadFiles] = useState<
     (MediaStruct & {
       file: File;
@@ -378,6 +383,7 @@ export default function useUploadLogic(props: { worker: any; socketRef: any }) {
                   <div key={media.id} className="relative rounded-xl h-80">
                     <MediaItem
                       media={media}
+                      tags={tags}
                       deleteCb={() => {
                         setWaitingUploadFiles([
                           ...waitingUploadFiles.slice(0, index),

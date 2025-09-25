@@ -38,13 +38,24 @@ import { ProgressRadial } from "../progress-1";
 import MediaItem, { MediaStruct } from "./components/mediaItem";
 import useWebsocketLogic from "./hooks/useWebsocketLogic";
 import useUploadLogic, { singleUploadFilesLimit } from "./hooks/useUploadLogic";
+import request from "@/utils/fetch";
+import { CommonResponse } from "@/types/response";
+import { codeMap } from "@/utils/backendStatus";
 
 export default function MediaLibrary() {
   const listContainerRef = useRef<any>(null);
   const headerRef = useRef<any>(null);
   const filterCardRef = useRef<any>(null);
   const [worker, setWorker] = useState<Worker | null>(null);
+  const [tags, setTags] = useState<any>(null);
 
+  useEffect(() => {
+    request("/api/tags").then((res: CommonResponse) => {
+      if (res.code === codeMap.success) {
+        res.data && setTags(res.data.map((item: any) => item.name));
+      }
+    });
+  }, []);
   useEffect(() => {
     import("@/utils/fileUploadProceed/index").then(
       (fileSplitAndUploadWorker) => {
@@ -154,7 +165,7 @@ export default function MediaLibrary() {
 
   const { socketRef } = useWebsocketLogic();
 
-  const { uploadDialogJsx } = useUploadLogic({ worker, socketRef });
+  const { uploadDialogJsx } = useUploadLogic({ worker, socketRef, tags });
 
   return (
     <div className="w-full h-full relative translate-0">
@@ -251,7 +262,11 @@ export default function MediaLibrary() {
                 }}
               >
                 {showData.map((media) => (
-                  <MediaItem media={media} key={media.id}></MediaItem>
+                  <MediaItem
+                    tags={tags}
+                    media={media}
+                    key={media.id}
+                  ></MediaItem>
                 ))}
               </div>
               {dataLoading && (
