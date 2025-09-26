@@ -41,6 +41,7 @@ import useUploadLogic, { singleUploadFilesLimit } from "./hooks/useUploadLogic";
 import request from "@/utils/fetch";
 import { CommonResponse } from "@/types/response";
 import { codeMap } from "@/utils/backendStatus";
+import MultipleSelector from "../ui/multiselect";
 
 export default function MediaLibrary() {
   const listContainerRef = useRef<any>(null);
@@ -80,38 +81,8 @@ export default function MediaLibrary() {
     );
   };
 
-  const mediaUrl = [
-    "http://static.photos/nature/640x360/1",
-    "http://static.photos/technology/640x360/2",
-    "http://static.photos/people/640x360/3",
-    "http://static.photos/abstract/640x360/4",
-    "http://static.photos/nature/640x360/5",
-    "http://static.photos/office/640x360/6",
-    "http://static.photos/people/640x360/7",
-    "http://static.photos/abstract/640x360/8",
-    "http://static.photos/nature/640x360/9",
-    "http://static.photos/technology/640x360/10",
-    "http://static.photos/people/640x360/11",
-    "http://static.photos/abstract/640x360/12",
-  ];
-
   const mediaGap = 24;
-  const [mediaData, setMediaData] = useState(
-    Array.from({ length: 20 })
-      .map((_, index) => [
-        ...[
-          {
-            id: 1 * index,
-            title: "Mountain Landscape",
-            type: ["image", "video", "audio"][Math.floor(Math.random() * 3)],
-            tags: ["nature"],
-            date: "2023-05-15",
-            sourcePath: mediaUrl[Math.floor(Math.random() * mediaUrl.length)],
-          },
-        ],
-      ])
-      .flat()
-  );
+  const [mediaData, setMediaData] = useState<MediaStruct[]>([]);
 
   const { ghostDomHeight, showData } = useVitualScrollLogic({
     itemHeight: mediaItemHeight,
@@ -123,45 +94,179 @@ export default function MediaLibrary() {
     setData: setMediaData,
   });
 
+  const defaultSearchParams = {
+    type: "all",
+    status: [{ value: "exhibition", label: "展示" }],
+    timeType: "all",
+  } as any;
+  const [searchParams, setSearchParams] = useState<{
+    id?: any;
+    type: "audio" | "video" | "image" | "all";
+    timeType: "all" | "today" | "week" | "month" | "year";
+    tags?: { value: string; label: string }[];
+    status?: { value: string; label: string }[];
+  }>(defaultSearchParams);
+
+  const [isOver, setIsOver] = useState(false);
+
+  const getDateTime = (type: string) => {
+    const todayZero = new Date();
+    todayZero.setHours(0, 0, 0, 0);
+    switch (type) {
+      case "today":
+        return {
+          startTime: dayjs(todayZero).valueOf(),
+          endTime: dayjs(todayZero).add(1, "day").valueOf(),
+        };
+
+      case "week":
+        return {
+          startTime: dayjs(todayZero).subtract(1, "week").valueOf(),
+          endTime: dayjs(todayZero).add(1, "day").valueOf(),
+        };
+
+      case "month":
+        return {
+          startTime: dayjs(todayZero).subtract(1, "month").valueOf(),
+          endTime: dayjs(todayZero).add(1, "day").valueOf(),
+        };
+
+      case "year":
+        return {
+          startTime: dayjs(todayZero).subtract(1, "year").valueOf(),
+          endTime: dayjs(todayZero).add(1, "day").valueOf(),
+        };
+      default:
+        return {
+          startTime: "",
+          endTime: "",
+        };
+    }
+  };
+
+  const getMeidaData = (initial: boolean = true) => {
+    return request("/api/media", {
+      method: "post",
+      body: {
+        ...searchParams,
+        type: searchParams.type === "all" ? "" : searchParams.type,
+        ...getDateTime(searchParams.timeType),
+        tags: (searchParams.tags || []).map((item) => item.value),
+        status: (searchParams.status || []).map((item) => item.value),
+      },
+    }).then((res: CommonResponse) => {
+      if (res.code === codeMap.success) {
+        if (initial) {
+          setMediaData([...res.data].sort((a, b) => b.id - a.id));
+        } else {
+          const map: any = {};
+          [...res.data, ...mediaData].forEach((item) => {
+            map[item.id] = item;
+          });
+          setMediaData(
+            Array.from(
+              new Set([...res.data, ...mediaData].map((item) => item.id))
+            )
+              .sort((a, b) => b - a)
+              .map((item) => map[item])
+          );
+        }
+        if (res.data.length === 0) {
+          setIsOver(true);
+        }
+      }
+      setDataLoding(false);
+    });
+  };
+  useEffect(() => {
+    setIsOver(false);
+    if (!searchParams.id) {
+      getMeidaData(true);
+    } else {
+      getMeidaData(false);
+    }
+  }, [searchParams]);
+
   const [dataLoading, setDataLoding] = useState(false);
   useEffect(() => {
     const _cb = () => {
       if (dataLoading) return;
-      setDataLoding(true);
+      if (isOver) return;
       if (
         listContainerRef.current.scrollTop +
           listContainerRef.current.offsetHeight >=
         listContainerRef.current.scrollHeight - mediaItemHeight / 2
       ) {
-        const length = mediaData.length;
-        setTimeout(() => {
-          setMediaData([
-            ...mediaData,
-            ...Array.from({ length: 20 })
-              .map((_, index) => [
-                ...[
-                  {
-                    id: 1 * index + length,
-                    title: "Mountain Landscape",
-                    type: "image",
-                    tags: ["nature"],
-                    date: "2023-05-15",
-                    sourcePath:
-                      mediaUrl[Math.floor(Math.random() * mediaUrl.length)],
-                  },
-                ],
-              ])
-              .flat(),
-          ]);
-          setDataLoding(false);
-        }, 3000);
-      } else {
-        setDataLoding(false);
+        setDataLoding(true);
+        setSearchParams({
+          ...searchParams,
+          id: mediaData[mediaData.length - 1].id,
+        });
       }
     };
     listContainerRef.current.addEventListener("scroll", _cb);
     return () => listContainerRef.current?.removeEventListener("scroll", _cb);
   }, [mediaData, dataLoading]);
+
+  const [multiTagSelectorJsx, setMultiTagSelectorJsx] = useState(
+    <MultipleSelector
+      defaultOptions={(tags || []).map((item: string) => ({
+        value: item,
+        label: item,
+      }))}
+      emptyIndicator={<p className="text-center text-sm">No results found</p>}
+    />
+  );
+
+  const [multiStatusSelectorJsx, setMultiStatusSelectorJsx] = useState(
+    <MultipleSelector
+      value={searchParams.status}
+      defaultOptions={[
+        { value: "exhibition", label: "展示" },
+        { value: "storage", label: "存储" },
+      ]}
+      onChange={(value) => {
+        setSearchParams({
+          ...searchParams,
+          status: value,
+          id: "",
+        });
+      }}
+      emptyIndicator={<p className="text-center text-sm">No results found</p>}
+    />
+  );
+
+  useEffect(() => {
+    setMultiTagSelectorJsx(
+      <Select>
+        <SelectTrigger className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+          <SelectValue placeholder="挑选标签" />
+        </SelectTrigger>
+        <SelectContent></SelectContent>
+      </Select>
+    );
+    requestAnimationFrame(() => {
+      setMultiTagSelectorJsx(
+        <MultipleSelector
+          value={searchParams.tags}
+          defaultOptions={(tags || []).map((item: string) => ({
+            value: item,
+            label: item,
+          }))}
+          onChange={(value) => {
+            setSearchParams({
+              ...searchParams,
+              tags: value,
+              id: "",
+            });
+          }}
+          emptyIndicator={
+            <p className="text-center text-sm">No results found</p>
+          }
+        />
+      );
+    });
+  }, [tags]);
 
   const { socketRef } = useWebsocketLogic();
 
@@ -202,14 +307,24 @@ export default function MediaLibrary() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     媒体类型
                   </label>
-                  <Select>
+                  <Select
+                    value={searchParams.type}
+                    onValueChange={(value: any) => {
+                      setSearchParams({
+                        ...searchParams,
+                        id: "",
+                        type: value,
+                      });
+                    }}
+                  >
                     <SelectTrigger className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
                       <SelectValue placeholder="媒体类型" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="system">System</SelectItem>
+                      <SelectItem value="all">全部</SelectItem>
+                      <SelectItem value="video">视频</SelectItem>
+                      <SelectItem value="image">图片</SelectItem>
+                      <SelectItem value="audio">音频</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -217,33 +332,43 @@ export default function MediaLibrary() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     标签
                   </label>
-                  <Select>
-                    <SelectTrigger className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                      <SelectValue placeholder="媒体类型" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="system">System</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {multiTagSelectorJsx}
+                </div>
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    状态
+                  </label>
+                  {multiStatusSelectorJsx}
                 </div>
                 <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     时间范围
                   </label>
-                  <Select>
+                  <Select
+                    value={searchParams.timeType}
+                    onValueChange={(value: any) => {
+                      setSearchParams({ ...searchParams, timeType: value });
+                    }}
+                  >
                     <SelectTrigger className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                      <SelectValue placeholder="媒体类型" />
+                      <SelectValue placeholder="时间范围" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="system">System</SelectItem>
+                      <SelectItem value="all">全部</SelectItem>
+                      <SelectItem value="today">今天</SelectItem>
+                      <SelectItem value="week">过去一周</SelectItem>
+                      <SelectItem value="month">过去一月</SelectItem>
+                      <SelectItem value="year">过去一年</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <Button variant="outline" className="cursor-pointer">
+                <Button
+                  variant="outline"
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setSearchParams(defaultSearchParams);
+                  }}
+                >
                   <RotateCcw />
                   重置
                 </Button>
@@ -251,7 +376,7 @@ export default function MediaLibrary() {
               </div>
             </CardContent>
           </Card>
-          {mediaData.length > 0 && (
+          {mediaData.length > 0 && showData.length > 0 && (
             <>
               <div
                 id="mediaContainer"
@@ -292,6 +417,12 @@ export default function MediaLibrary() {
               <p className="text-gray-600">
                 Try adjusting your search or filters
               </p>
+            </div>
+          )}
+
+          {mediaData.length !== 0 && isOver && (
+            <div className="w-full flex justify-center items-center text-gray-400 text-sm">
+              🥳 到底了~
             </div>
           )}
         </main>

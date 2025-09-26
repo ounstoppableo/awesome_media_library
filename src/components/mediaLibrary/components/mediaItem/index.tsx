@@ -83,7 +83,7 @@ export default function MediaItem(props: {
     if (updateLock.current) clearTimeout(updateLock.current);
     updateLock.current = setTimeout(() => {
       infoChangeCb && infoChangeCb(media);
-    }, 1000);
+    }, 300);
   }, [media]);
   const mediaContent = () => {
     if (media.type === "video") {

@@ -1,5 +1,3 @@
-import log from "@/logs/setting";
-
 export default async function useAuth(Authorization: string) {
   process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
   try {
@@ -16,7 +14,6 @@ export default async function useAuth(Authorization: string) {
       return false;
     }
   } catch (err: any) {
-    log(err.message);
     return false;
   }
 }
