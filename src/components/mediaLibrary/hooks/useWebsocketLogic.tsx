@@ -1,3 +1,7 @@
+import { codeMap } from "@/utils/backendStatus";
+import { wsListen } from "@/utils/clientWsMethod";
+import { WsResponseMsgType } from "@/wsConstructor";
+import { message } from "antd";
 import { useEffect, useRef } from "react";
 
 export default function useWebsocketLogic() {
@@ -8,14 +12,25 @@ export default function useWebsocketLogic() {
 
     socketRef.current.onopen = () => {
       console.log("✅ WebSocket connected");
-      socketRef.current?.send("Hello Server!");
     };
-
+    const clear = wsListen(
+      socketRef.current,
+      () => {},
+      (res: WsResponseMsgType<any>) => {
+        if (res.type === "error") {
+          (res as WsResponseMsgType<"error">).data.code ===
+          codeMap.limitsOfAuthority
+            ? message.warning((res as WsResponseMsgType<"error">).data.msg)
+            : message.error((res as WsResponseMsgType<"error">).data.msg);
+        }
+      }
+    );
     socketRef.current.onclose = () => {
       console.log("❌ WebSocket closed");
     };
 
     return () => {
+      clear();
       socketRef.current?.close();
     };
   }, []);

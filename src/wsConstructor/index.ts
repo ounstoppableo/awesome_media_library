@@ -18,7 +18,7 @@ export type wsMessageTypes = "operate" | "upload" | "error";
 export type WsRequestMsgType<T extends wsMessageTypes> = {
   type: T;
   data: T extends "operate"
-    ? WsOperateRequestDataType
+    ? WsOperateRequestDataType<any>
     : T extends "upload"
     ? WsUploadRequestDataType<any>
     : never;

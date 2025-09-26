@@ -187,7 +187,7 @@ export default function useUploadLogic(props: {
         size: file.size,
         updateTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         createTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-        tags: ["default"],
+        tags: ["默认"],
         status: ["exhibition"],
       }));
     const objectStore = indexedDbInst.current
@@ -287,13 +287,6 @@ export default function useUploadLogic(props: {
             ..._waitingUploadFiles.current.proxy.slice(index + 1),
           ];
         }
-        if (
-          _waitingUploadFiles.current.proxy.filter(
-            (item: any) => item.compelete
-          ).length === _waitingUploadFiles.current.proxy.length
-        ) {
-          setConfirmDisabled(false);
-        }
       },
       error: (params: any) => {
         const index = _waitingUploadFiles.current.proxy.findIndex(
@@ -334,6 +327,12 @@ export default function useUploadLogic(props: {
         )
       );
     });
+    if (
+      waitingUploadFiles.filter((item) => item.compelete).length ===
+      waitingUploadFiles.length
+    ) {
+      setConfirmDisabled(false);
+    }
   }, [waitingUploadFiles]);
 
   const uploadDialogJsx = (

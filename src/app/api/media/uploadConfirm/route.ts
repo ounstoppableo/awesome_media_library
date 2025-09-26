@@ -1,9 +1,10 @@
 import useAuth from "@/hooks/useAuth";
-import pool from "@/lib/db";
+import { getPool } from "@/lib/db";
 import redisPool from "@/lib/redis";
 import log from "@/logs/setting";
 import { CommonResponse } from "@/types/response";
 import { codeMap, codeMapMsg } from "@/utils/backendStatus";
+import errorStringify from "@/utils/errorStringify";
 import { NextRequest } from "next/server";
 
 const redisNameSpace = {
@@ -58,17 +59,30 @@ export async function POST(
         }
       }
       const promises = _fileInfos.map((file) => {
-        return pool.query(
+        console.log(
           "INSERT INTO media (title, size, tags,type,sourcePath,createTime,updateTime,status) VALUES (?, ?, ?,?,?,?,?,?)",
           [
             file.title,
             file.size,
-            JSON.stringify(file.tags),
+            JSON.stringify(file.tags.slice(0, 3)),
             file.type,
             file.sourcePath,
             file.createTime,
             file.updateTime,
-            JSON.stringify(file.status),
+            JSON.stringify(file.status) || JSON.stringify(["exhibition"]),
+          ]
+        );
+        return getPool().query(
+          "INSERT INTO media (title, size, tags,type,sourcePath,createTime,updateTime,status) VALUES (?, ?, ?,?,?,?,?,?)",
+          [
+            file.title,
+            file.size,
+            JSON.stringify(file.tags.slice(0, 3)),
+            file.type,
+            file.sourcePath,
+            file.createTime,
+            file.updateTime,
+            JSON.stringify(file.status) || JSON.stringify(["exhibition"]),
           ]
         );
       });
@@ -79,7 +93,9 @@ export async function POST(
         code: codeMap.success,
         msg: "添加成功",
       } as CommonResponse);
-    } catch (err) {
+    } catch (err: any) {
+      console.log(err);
+      // log(errorStringify(err), "error");
       return Response.json({
         code: codeMap.serverError,
         msg: codeMapMsg[codeMap.serverError],
@@ -87,7 +103,8 @@ export async function POST(
     } finally {
       redisPool.release(redisInst);
     }
-  } catch (err) {
+  } catch (err: any) {
+    log(errorStringify(err), "error");
     return Response.json({
       code: codeMap.serverError,
       msg: codeMapMsg[codeMap.serverError],

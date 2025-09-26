@@ -1,7 +1,8 @@
-import pool from "@/lib/db";
+import { getPool } from "@/lib/db";
 import log from "@/logs/setting";
 import { CommonResponse } from "@/types/response";
 import { codeMap, codeMapMsg } from "@/utils/backendStatus";
+import errorStringify from "@/utils/errorStringify";
 import { paramsCheck } from "@/utils/paramsCheck";
 import dayjs from "dayjs";
 import { NextRequest } from "next/server";
@@ -32,6 +33,9 @@ export async function POST(_req: NextRequest) {
       },
       status: {
         type: "object",
+      },
+      title: {
+        type: "string",
       },
       pageSize: {
         type: "number",
@@ -82,11 +86,16 @@ export async function POST(_req: NextRequest) {
       params.push(body.status.join("|"));
     }
 
+    if (body.title) {
+      sql += ` AND title REGEXP ?`;
+      params.push(body.title);
+    }
+
     // 排序 + 分页
     sql += ` ORDER BY id DESC LIMIT ?`;
     params.push(body.pageSize);
 
-    const data: any[] = ((await pool.query(sql, params))[0] as any) || [];
+    const data: any[] = ((await getPool().query(sql, params))[0] as any) || [];
     const result = data.map((item: any) => ({
       ...item,
       tags: JSON.parse(item.tags),
@@ -99,8 +108,7 @@ export async function POST(_req: NextRequest) {
       data: result,
     });
   } catch (err: any) {
-    console.log(err.message);
-    log(err.message);
+    log(errorStringify(err), "error");
     return Response.json({
       code: codeMap.serverError,
       msg: "服务器错误",

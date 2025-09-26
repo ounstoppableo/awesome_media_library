@@ -1,4 +1,4 @@
-const workerCount = navigator.hardwareConcurrency * 2;
+const workerCount = navigator.hardwareConcurrency;
 const workers = [];
 
 for (let i = 0; i < workerCount; i++) {

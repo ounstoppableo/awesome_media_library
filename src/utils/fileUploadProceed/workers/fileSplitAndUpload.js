@@ -193,6 +193,7 @@ onmessage = (e) => {
           createTime: _processFile.createTime,
           updateTime: _processFile.updateTime,
           ext: _processFile.file.name.split(".").pop(),
+          status: _processFile.status,
         },
       },
     });

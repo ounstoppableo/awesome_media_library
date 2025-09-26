@@ -1,15 +1,18 @@
-import mysql from 'mysql2/promise';
+import mysql from "mysql2/promise";
 
-// 连接池配置
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10, // 限制最大连接数
-  queueLimit: 0,
-});
+let pool: any;
 
-// 导出连接池
-export default pool;
+export function getPool() {
+  if (!pool) {
+    pool = mysql.createPool({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+    });
+  }
+  return pool;
+}

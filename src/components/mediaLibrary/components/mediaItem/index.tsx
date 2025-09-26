@@ -23,6 +23,7 @@ import { Tooltip } from "antd";
 import request from "@/utils/fetch";
 import { CommonResponse } from "@/types/response";
 import { codeMap } from "@/utils/backendStatus";
+import { isEqual } from "lodash";
 
 export type MediaStruct = {
   id: string;
@@ -79,11 +80,14 @@ export default function MediaItem(props: {
   }, [mediaTagEdit]);
 
   const updateLock = useRef<any>(null);
+  const mediaPrevious = useRef<any>(defaultMediaData);
   useEffect(() => {
+    if (isEqual(mediaPrevious.current, media)) return;
     if (updateLock.current) clearTimeout(updateLock.current);
     updateLock.current = setTimeout(() => {
       infoChangeCb && infoChangeCb(media);
     }, 300);
+    mediaPrevious.current = media;
   }, [media]);
   const mediaContent = () => {
     if (media.type === "video") {
@@ -91,14 +95,11 @@ export default function MediaItem(props: {
         <div className="flex-1 relative overflow-hidden">
           <div className="h-full w-full transition-all group-hover/mediaHover:scale-[1.02]">
             <video
+              preload="metadata"
+              controls
               src={media.sourcePath}
               className="w-full h-full object-cover transition-transform duration-500 "
             />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 ">
-              <Button className="rounded-full p-3 cursor-pointer">
-                <Play className="text-white w-6 h-6"></Play>
-              </Button>
-            </div>
           </div>
         </div>
       );
@@ -186,6 +187,12 @@ export default function MediaItem(props: {
               variant="outline"
               size="sm"
               defaultValue={media.status}
+              onValueChange={(value) => {
+                setMedia({
+                  ...media,
+                  status: value,
+                });
+              }}
             >
               <Tooltip title="展示">
                 <ToggleGroupItem value="exhibition">

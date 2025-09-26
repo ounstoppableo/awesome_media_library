@@ -21,6 +21,7 @@ import {
 import { get } from "http";
 import { codeMap, codeMapMsg } from "@/utils/backendStatus";
 import { paramsCheck } from "@/utils/paramsCheck";
+import errorStringify from "@/utils/errorStringify";
 
 export type uploadType =
   | "uploadStart"
@@ -167,6 +168,7 @@ const uploadStart = async (
           createTime: { type: "string", required: true },
           updateTime: { type: "string", required: true },
           ext: { type: "string", required: true },
+          status: { type: "object", required: true },
         },
       },
     });
@@ -225,7 +227,7 @@ const uploadStart = async (
             };
             return wsSend(ws, res);
           } catch (err: any) {
-            log(err.message, "error");
+            log(errorStringify(err), "error");
             return clientError(ws, "服务器错误");
           }
         }
@@ -247,8 +249,8 @@ const uploadStart = async (
               };
               return wsSend(ws, res);
             }
-          } catch (e: any) {
-            log(e.message, "error");
+          } catch (err: any) {
+            log(errorStringify(err), "error");
           }
         }
       }
@@ -346,8 +348,8 @@ const uploading = async (
       } else {
         clientError(ws, "请先触发uploadStart事件", codeMap.errorOperate);
       }
-    } catch (e: any) {
-      log(e.message, "error");
+    } catch (err: any) {
+      log(errorStringify(err), "error");
       clientError(ws, "服务器错误");
     }
   }
@@ -405,8 +407,8 @@ const uploadEnd = async (
 
         isFileExist(fileTempPath) &&
           (await fs.rm(fileTempPath, { recursive: true, force: true }));
-      } catch (e: any) {
-        log(e.message, "error");
+      } catch (err: any) {
+        log(errorStringify(err), "error");
         clientError(ws, "服务器错误");
       } finally {
         return;
@@ -425,14 +427,14 @@ const uploadEnd = async (
             const chunk = readFileSync(resolve(fileTempPath, i + ""));
             try {
               writeFileSync(fd, chunk);
-            } catch (e: any) {
+            } catch (err: any) {
               closeSync(fd);
-              log(e.message, "error");
+              log(errorStringify(err), "error");
               return clientError(ws, "服务器错误");
             }
             i++;
-          } catch (e: any) {
-            log(e.message, "error");
+          } catch (err: any) {
+            log(errorStringify(err), "error");
             break foo;
           }
         }
@@ -460,17 +462,17 @@ const uploadEnd = async (
               })
             );
           } catch (err: any) {
-            log(err.message);
+            log(errorStringify(err), "error");
           }
-        } catch (e: any) {
-          log(e.message, "error");
+        } catch (err: any) {
+          log(errorStringify(err), "error");
           clientError(ws, "服务器错误");
         }
       } else {
         clientError(ws, "请先触发uploadStart事件", codeMap.errorOperate);
       }
-    } catch (e: any) {
-      log(e.message, "error");
+    } catch (err: any) {
+      log(errorStringify(err), "error");
       clientError(ws, "服务器错误");
     }
   }
@@ -520,7 +522,7 @@ const deleteFileCb = async (
         },
       });
     } catch (err: any) {
-      log(err.message);
+      log(errorStringify(err), "error");
     }
   }
 };
@@ -545,6 +547,7 @@ const editCb = async (
           createTime: { type: "string", required: true },
           updateTime: { type: "string", required: true },
           ext: { type: "string", required: true },
+          status: { type: "object", required: true },
         },
       },
       fileId: { type: "string", required: true },
@@ -556,6 +559,7 @@ const editCb = async (
     }
     const _req: WsUploadRequestDataType<"edit"> =
       req as WsUploadRequestDataType<"edit">;
+
     const fileInfo = JSON.parse(
       (await redisInst.HGET(
         redisNameSpace.fileInfo(tokenMapUsername[_req.token]),

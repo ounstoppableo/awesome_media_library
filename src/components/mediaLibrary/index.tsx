@@ -42,6 +42,8 @@ import request from "@/utils/fetch";
 import { CommonResponse } from "@/types/response";
 import { codeMap } from "@/utils/backendStatus";
 import MultipleSelector from "../ui/multiselect";
+import { wsSend } from "@/utils/clientWsMethod";
+import { WsOperateRequestDataType } from "@/wsConstructor/router/operateRouter";
 
 export default function MediaLibrary() {
   const listContainerRef = useRef<any>(null);
@@ -98,6 +100,7 @@ export default function MediaLibrary() {
     type: "all",
     status: [{ value: "exhibition", label: "展示" }],
     timeType: "all",
+    title: "",
   } as any;
   const [searchParams, setSearchParams] = useState<{
     id?: any;
@@ -105,6 +108,7 @@ export default function MediaLibrary() {
     timeType: "all" | "today" | "week" | "month" | "year";
     tags?: { value: string; label: string }[];
     status?: { value: string; label: string }[];
+    title?: string;
   }>(defaultSearchParams);
 
   const [isOver, setIsOver] = useState(false);
@@ -178,14 +182,26 @@ export default function MediaLibrary() {
       setDataLoding(false);
     });
   };
+
+  const mediaDataUpdateAntiShakeLock = useRef<any>(null);
   useEffect(() => {
+    if (mediaDataUpdateAntiShakeLock.current)
+      clearTimeout(mediaDataUpdateAntiShakeLock.current);
     setIsOver(false);
     if (!searchParams.id) {
-      getMeidaData(true);
+      mediaDataUpdateAntiShakeLock.current = setTimeout(() => {
+        getMeidaData(true);
+      }, 500);
     } else {
-      getMeidaData(false);
+      mediaDataUpdateAntiShakeLock.current = setTimeout(() => {
+        getMeidaData(false);
+      }, 500);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    getMeidaData();
+  }, []);
 
   const [dataLoading, setDataLoding] = useState(false);
   useEffect(() => {
@@ -221,10 +237,12 @@ export default function MediaLibrary() {
   const [multiStatusSelectorJsx, setMultiStatusSelectorJsx] = useState(
     <MultipleSelector
       value={searchParams.status}
+      hidePlaceholderWhenSelected={true}
       defaultOptions={[
         { value: "exhibition", label: "展示" },
         { value: "storage", label: "存储" },
       ]}
+      placeholder="选择状态"
       onChange={(value) => {
         setSearchParams({
           ...searchParams,
@@ -232,6 +250,7 @@ export default function MediaLibrary() {
           id: "",
         });
       }}
+      className=""
       emptyIndicator={<p className="text-center text-sm">No results found</p>}
     />
   );
@@ -253,6 +272,8 @@ export default function MediaLibrary() {
             value: item,
             label: item,
           }))}
+          hidePlaceholderWhenSelected={true}
+          placeholder="选择标签"
           onChange={(value) => {
             setSearchParams({
               ...searchParams,
@@ -292,6 +313,14 @@ export default function MediaLibrary() {
                   id="searchInput"
                   placeholder="请输入媒体名称"
                   className="search-input w-full px-4 py-3 rounded-full text-gray-800 bg-white bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  value={searchParams.title}
+                  onChange={(e) => {
+                    setSearchParams({
+                      ...searchParams,
+                      title: e.target.value,
+                      id: "",
+                    });
+                  }}
                 />
                 <Search className="absolute right-6 top-[50%] translate-y-[-50%] text-gray-500"></Search>
               </div>
@@ -391,6 +420,21 @@ export default function MediaLibrary() {
                     tags={tags}
                     media={media}
                     key={media.id}
+                    infoChangeCb={(value) => {
+                      socketRef.current &&
+                        wsSend(socketRef.current, {
+                          type: "operate",
+                          data: {
+                            type: "mediaInfoEdit",
+                            mediaId: value.id,
+                            fileInfo: {
+                              title: value.title,
+                              tags: value.tags,
+                              status: value.status,
+                            },
+                          } as WsOperateRequestDataType<"mediaInfoEdit">,
+                        });
+                    }}
                   ></MediaItem>
                 ))}
               </div>

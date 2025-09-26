@@ -1,8 +1,9 @@
 import useAuth from "@/hooks/useAuth";
-import pool from "@/lib/db";
+import { getPool } from "@/lib/db";
 import log from "@/logs/setting";
 import { CommonResponse } from "@/types/response";
 import { codeMap, codeMapMsg } from "@/utils/backendStatus";
+import errorStringify from "@/utils/errorStringify";
 import { paramsCheck } from "@/utils/paramsCheck";
 import { NextRequest } from "next/server";
 
@@ -32,13 +33,16 @@ export async function POST(_req: NextRequest, ctx: RouteContext<"/api/tags">) {
   }
 
   try {
-    await pool.query(`INSERT IGNORE INTO tag (name) VALUES (?)`, body.tagName);
+    await getPool().query(
+      `INSERT IGNORE INTO tag (name) VALUES (?)`,
+      body.tagName
+    );
     return Response.json({
       code: codeMap.success,
       msg: "添加tag成功",
     } as CommonResponse);
   } catch (err: any) {
-    log(err.message);
+    log(errorStringify(err), "error");
     return Response.json({
       code: codeMap.serverError,
       msg: "服务器错误",
@@ -48,14 +52,14 @@ export async function POST(_req: NextRequest, ctx: RouteContext<"/api/tags">) {
 
 export async function GET(_req: NextRequest, ctx: RouteContext<"/api/tags">) {
   try {
-    const tags = (await pool.query(`select * from tag`))[0];
+    const tags = (await getPool().query(`select * from tag`))[0];
     return Response.json({
       code: codeMap.success,
       msg: "获取成功",
       data: tags,
     });
   } catch (err: any) {
-    log(err.message);
+    log(errorStringify(err), "error");
     return Response.json({
       code: codeMap.serverError,
       msg: "服务器错误",
@@ -91,13 +95,13 @@ export async function DELETE(
         msg: codeMapMsg[code],
       } as CommonResponse);
     }
-    await pool.query(`DELETE FROM tag WHERE name= ?;`, [body.tagName]);
+    await getPool().query(`DELETE FROM tag WHERE name= ?;`, [body.tagName]);
     return Response.json({
       code: codeMap.success,
       msg: "删除成功",
     });
   } catch (err: any) {
-    log(err.message);
+    log(errorStringify(err), "error");
     return Response.json({
       code: codeMap.serverError,
       msg: "服务器错误",
