@@ -2,13 +2,16 @@ import { message } from "antd";
 import { bufferToObject, objectToBuffer } from "./objAndBufferTransform";
 import { WsRequestMsgType, WsResponseMsgType } from "@/wsConstructor";
 
-export const wsSend = (socket: WebSocket, msg: WsRequestMsgType<any>) => {
+export const wsSend = (
+  socket: WebSocket,
+  msg: Omit<WsRequestMsgType<any>, "token">
+) => {
   if (socket.readyState !== WebSocket.OPEN) {
     message.error({ content: "WebSocket 未连接，操作失败" });
     return;
   }
   socket.send(
-    objectToBuffer({ ...msg, token: localStorage.getItem("authorization") })
+    objectToBuffer({ ...msg, token: localStorage.getItem("Authorization") })
   );
 };
 
@@ -18,8 +21,8 @@ let _errCbs: any[] = [];
 
 export const wsListen = (
   socket: WebSocket,
-  cb: (data: any) => any,
-  errCb: () => any
+  cb: (data: WsResponseMsgType<any>) => any,
+  errCb: (params: WsResponseMsgType<any>) => any
 ) => {
   const clearListner = () => {
     socket.removeEventListener("message", _listener);
@@ -40,10 +43,9 @@ export const wsListen = (
       if (_data.type === "error") {
         message.error({
           content:
-            (_data as WsResponseMsgType<"error">).data.msg ||
-            "服务端错误，上传失败",
+            (_data as WsResponseMsgType<"error">).data.msg || "服务端错误",
         });
-        _errCbs.forEach((errCb) => errCb());
+        _errCbs.forEach((errCb) => errCb(_data));
       }
       _cbs.forEach((cb) => cb(_data));
     } catch (err) {

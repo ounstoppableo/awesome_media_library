@@ -35,6 +35,7 @@ export type WsResponseMsgType<T> = {
     ? {
         msg: string;
         code: number;
+        [key: string]: any;
       }
     : never;
 };
@@ -111,10 +112,15 @@ export function wsSend<T extends wsMessageTypes>(
   ws.send(objectToBuffer(res));
 }
 
-export function clientError(ws: WebSocket, msg: string, code: number = 1000) {
+export function clientError(
+  ws: WebSocket,
+  msg: string,
+  code: number = codeMap.serverError,
+  args?: any
+) {
   const res: WsResponseMsgType<"error"> = {
     type: "error",
-    data: { msg, code },
+    data: { msg, code, ...args },
   };
   wsSend(ws, res);
 }

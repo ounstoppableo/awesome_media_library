@@ -19,10 +19,16 @@ import {
   writeFileSync,
 } from "fs";
 import { get } from "http";
-import { codeMap } from "@/utils/backendStatus";
+import { codeMap, codeMapMsg } from "@/utils/backendStatus";
 import { paramsCheck } from "@/utils/paramsCheck";
 
-export type uploadType = "uploadStart" | "uploadEnd" | "uploading" | "delete";
+export type uploadType =
+  | "uploadStart"
+  | "uploadEnd"
+  | "uploading"
+  | "delete"
+  | "edit";
+
 export type WsUploadRequestDataType<T extends uploadType> = {
   type: T;
   fileId?: string;
@@ -51,6 +57,20 @@ export type WsUploadRequestDataType<T extends uploadType> = {
   ? { fileId: string; ext: string; size?: number }
   : T extends "delete"
   ? { fileId: string; ext: string }
+  : T extends "edit"
+  ? {
+      fildId: string;
+      fileInfo: {
+        clientFileId: string;
+        title: string;
+        tags: string[];
+        size: number;
+        type: string;
+        createTime: string;
+        updateTime: string;
+        ext: string;
+      };
+    }
   : never);
 export type WsUploadResponseDataType<T extends uploadType> = {
   type: T;
@@ -70,10 +90,13 @@ export type WsUploadResponseDataType<T extends uploadType> = {
   ? {
       processedChunkIndex: number;
     }
+  : T extends "edit"
+  ? {}
   : never);
 
 const redisNameSpace = {
-  fileInfo: () => "fileInfo",
+  fileInfo: (username: string) => "fileInfo" + "_" + username,
+  fileInvariantInfo: (username: string) => "fileInvariantInfo" + "_" + username,
 };
 
 const tempPath = resolve(__dirname, "../../../temp");
@@ -91,6 +114,7 @@ export default async function uploadRouter(
   await uploading(req, ws, redisInst);
   await uploadEnd(req, ws, redisInst);
   await deleteFileCb(req, ws, redisInst);
+  await editCb(req, ws, redisInst);
   redisPool.release(redisInst);
 }
 
@@ -135,7 +159,7 @@ const uploadStart = async (
         type: "object",
         required: true,
         children: {
-          clientFileId: { type: "string", required: true },
+          clientFileId: { type: "string" },
           title: { type: "string", required: true },
           tags: { type: "object", required: true },
           size: { type: "number", required: true },
@@ -148,8 +172,8 @@ const uploadStart = async (
     });
 
     if (!paramsStatus.flag) {
-      log(paramsStatus.message);
-      return clientError(ws, "入参不完整", codeMap.paramsIncompelete);
+      const code = paramsStatus.codes.pop() || codeMap.serverError;
+      return clientError(ws, codeMapMsg[code], code);
     }
 
     const _req: WsUploadRequestDataType<"uploadStart"> =
@@ -165,7 +189,10 @@ const uploadStart = async (
 
     if (_req.fileId) {
       fileInfo = JSON.parse(
-        (await redisInst.HGET(redisNameSpace.fileInfo(), _req.fileId)) || "null"
+        (await redisInst.HGET(
+          redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
+          _req.fileId
+        )) || "null"
       );
       fileInfo && (fileId = _req.fileId);
 
@@ -229,7 +256,7 @@ const uploadStart = async (
     if (!fileId) {
       fileId = uuidv4();
       await redisInst.HSET(
-        redisNameSpace.fileInfo(),
+        redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
         fileId,
         JSON.stringify(_req.fileInfo)
       );
@@ -272,8 +299,8 @@ const uploading = async (
     });
 
     if (!paramsStatus.flag) {
-      log(paramsStatus.message);
-      return clientError(ws, "入参不完整", codeMap.paramsIncompelete);
+      const code = paramsStatus.codes.pop() || codeMap.serverError;
+      return clientError(ws, codeMapMsg[code], code);
     }
 
     const _req: WsUploadRequestDataType<"uploading"> =
@@ -340,8 +367,8 @@ const uploadEnd = async (
     });
 
     if (!paramsStatus.flag) {
-      log(paramsStatus.message);
-      return clientError(ws, "入参不完整", codeMap.paramsIncompelete);
+      const code = paramsStatus.codes.pop() || codeMap.serverError;
+      return clientError(ws, codeMapMsg[code], code);
     }
 
     const _req: WsUploadRequestDataType<"uploadEnd"> =
@@ -373,6 +400,7 @@ const uploadEnd = async (
             size: statSync(targetPath).size,
           },
         };
+
         wsSend(ws, res);
 
         isFileExist(fileTempPath) &&
@@ -423,6 +451,17 @@ const uploadEnd = async (
           wsSend(ws, res);
           isFileExist(fileTempPath) &&
             (await fs.rm(fileTempPath, { recursive: true, force: true }));
+          try {
+            await redisInst.HSET(
+              redisNameSpace.fileInvariantInfo(tokenMapUsername[_req.token]),
+              _req.fileId,
+              JSON.stringify({
+                sourcePath: targetPathRelative,
+              })
+            );
+          } catch (err: any) {
+            log(err.message);
+          }
         } catch (e: any) {
           log(e.message, "error");
           clientError(ws, "服务器错误");
@@ -450,10 +489,9 @@ const deleteFileCb = async (
       ext: { type: "string", required: true },
     });
     if (!paramsStatus.flag) {
-      log(paramsStatus.message);
-      return clientError(ws, "入参不完整", codeMap.paramsIncompelete);
+      const code = paramsStatus.codes.pop() || codeMap.serverError;
+      return clientError(ws, codeMapMsg[code], code);
     }
-
     const _req: WsUploadRequestDataType<"delete"> =
       req as WsUploadRequestDataType<"delete">;
     const tempPath = getTempPath(_req.fileId, tokenMapUsername[_req.token]);
@@ -464,7 +502,10 @@ const deleteFileCb = async (
     );
     if (!tempPath || !storagePath)
       return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
-    redisInst.HDEL(redisNameSpace.fileInfo(), _req.fileId);
+    redisInst.HDEL(
+      redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
+      _req.fileId
+    );
     try {
       isFileExist(tempPath) &&
         fs.rm(tempPath, { recursive: true, force: true });
@@ -480,6 +521,56 @@ const deleteFileCb = async (
       });
     } catch (err: any) {
       log(err.message);
+    }
+  }
+};
+
+const editCb = async (
+  req: WsUploadRequestDataType<any>,
+  ws: WebSocket,
+  redisInst: any
+) => {
+  if (req.type === "edit") {
+    const paramsStatus = paramsCheck(req, {
+      type: { type: "string", required: true, length: 10 },
+      token: { type: "string", required: true },
+      fileInfo: {
+        type: "object",
+        required: true,
+        children: {
+          title: { type: "string", required: true },
+          tags: { type: "object", required: true },
+          size: { type: "number", required: true },
+          type: { type: "string", required: true },
+          createTime: { type: "string", required: true },
+          updateTime: { type: "string", required: true },
+          ext: { type: "string", required: true },
+        },
+      },
+      fileId: { type: "string", required: true },
+    });
+
+    if (!paramsStatus.flag) {
+      const code = paramsStatus.codes.pop() || codeMap.serverError;
+      return clientError(ws, codeMapMsg[code], code);
+    }
+    const _req: WsUploadRequestDataType<"edit"> =
+      req as WsUploadRequestDataType<"edit">;
+    const fileInfo = JSON.parse(
+      (await redisInst.HGET(
+        redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
+        _req.fileId
+      )) || "null"
+    );
+
+    if (fileInfo) {
+      delete fileInfo.sourcePath;
+      delete fileInfo.fileLoaded;
+      redisInst.HSET(
+        redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
+        _req.fileId,
+        JSON.stringify({ ...fileInfo, ..._req.fileInfo })
+      );
     }
   }
 };

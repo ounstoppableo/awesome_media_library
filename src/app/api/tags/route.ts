@@ -1,3 +1,4 @@
+import useAuth from "@/hooks/useAuth";
 import pool from "@/lib/db";
 import log from "@/logs/setting";
 import { CommonResponse } from "@/types/response";
@@ -6,12 +7,19 @@ import { paramsCheck } from "@/utils/paramsCheck";
 import { NextRequest } from "next/server";
 
 export async function POST(_req: NextRequest, ctx: RouteContext<"/api/tags">) {
+  const token = _req.headers.get("Authorization");
+  if (!token || !(await useAuth(token)))
+    return Response.json({
+      code: codeMap.limitsOfAuthority,
+      msg: codeMapMsg[codeMap.limitsOfAuthority],
+    } as CommonResponse);
   const body = await _req.json();
   const paramsStatus = paramsCheck(body, {
     tagName: {
       type: "string",
       length: 10,
       rule: /^[\p{L}\p{Script=Han}\d]+$/u,
+      require: true,
     },
   });
 
@@ -60,12 +68,20 @@ export async function DELETE(
   ctx: RouteContext<"/api/tags">
 ) {
   try {
+    const token = _req.headers.get("Authorization");
+    if (!token || !(await useAuth(token)))
+      return Response.json({
+        code: codeMap.limitsOfAuthority,
+        msg: codeMapMsg[codeMap.limitsOfAuthority],
+      } as CommonResponse);
+
     const body = await _req.json();
     const paramsStatus = paramsCheck(body, {
       tagName: {
         type: "string",
         length: 10,
         rule: /^[\p{L}\p{Script=Han}\d]+$/u,
+        require: true,
       },
     });
     if (!paramsStatus.flag) {

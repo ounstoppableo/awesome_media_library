@@ -34,6 +34,9 @@ import { ProgressRadial } from "@/components/progress-1";
 import { Button as AntdButton } from "antd";
 import { codeMap } from "@/utils/backendStatus";
 import { wsSend } from "@/utils/clientWsMethod";
+import { WsUploadRequestDataType } from "@/wsConstructor/router/uploadRouter";
+import request from "@/utils/fetch";
+import { CommonResponse } from "@/types/response";
 
 export const allowTypes = [
   "image/png",
@@ -45,7 +48,7 @@ export const allowTypes = [
   "audio/mpeg", // MP3
 ];
 
-export const singleUploadFilesLimit = 100;
+export const singleUploadFilesLimit = 20;
 
 export default function useUploadLogic(props: {
   worker: any;
@@ -66,6 +69,10 @@ export default function useUploadLogic(props: {
       serverFileId?: number;
     })[]
   >([]);
+
+  const [confirmDisabled, setConfirmDisabled] = useState(true);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const setWaitingUploadFiles = (value: any) => {
     requestAnimationFrame(() => {
@@ -180,7 +187,8 @@ export default function useUploadLogic(props: {
         size: file.size,
         updateTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         createTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-        tags: ["1"],
+        tags: ["default"],
+        status: ["exhibition"],
       }));
     const objectStore = indexedDbInst.current
       .transaction(["uploadHandle"], "readwrite")
@@ -189,6 +197,7 @@ export default function useUploadLogic(props: {
       objectStore.add({ id: file.id, file: file.file }).onsuccess = () => {};
     });
     setWaitingUploadFiles([...waitingUploadFiles, ...newFiles]);
+    setConfirmDisabled(true);
   };
 
   const _waitingUploadFiles = useRef<any>(
@@ -278,6 +287,13 @@ export default function useUploadLogic(props: {
             ..._waitingUploadFiles.current.proxy.slice(index + 1),
           ];
         }
+        if (
+          _waitingUploadFiles.current.proxy.filter(
+            (item: any) => item.compelete
+          ).length === _waitingUploadFiles.current.proxy.length
+        ) {
+          setConfirmDisabled(false);
+        }
       },
       error: (params: any) => {
         const index = _waitingUploadFiles.current.proxy.findIndex(
@@ -321,9 +337,9 @@ export default function useUploadLogic(props: {
   }, [waitingUploadFiles]);
 
   const uploadDialogJsx = (
-    <Dialog>
+    <Dialog open={dialogOpen}>
       <DialogTrigger asChild>
-        <Button className="cursor-pointer">
+        <Button onClick={() => setDialogOpen(true)} className="cursor-pointer">
           <Upload />
           上传
         </Button>
@@ -384,11 +400,31 @@ export default function useUploadLogic(props: {
                     <MediaItem
                       media={media}
                       tags={tags}
+                      infoChangeCb={(value) => {
+                        const fileId =
+                          value.serverFileId ||
+                          clientFileIdMapServerFileId.current[value.id];
+                        fileId &&
+                          socketRef.current &&
+                          wsSend(socketRef.current, {
+                            type: "upload",
+                            data: {
+                              type: "edit",
+                              fileId: fileId,
+                              fileInfo: {
+                                ...value,
+                                file: null,
+                                ext: media.file.name.split(".").pop(),
+                              },
+                            } as WsUploadRequestDataType<"edit">,
+                          });
+                      }}
                       deleteCb={() => {
-                        setWaitingUploadFiles([
+                        const _temp = [
                           ...waitingUploadFiles.slice(0, index),
                           ...waitingUploadFiles.slice(index + 1),
-                        ]);
+                        ];
+                        setWaitingUploadFiles(_temp);
                         const objectStore = indexedDbInst.current
                           .transaction("uploadHandle", "readwrite")
                           .objectStore("uploadHandle");
@@ -409,6 +445,13 @@ export default function useUploadLogic(props: {
                               ext: media.file.name.split(".").pop(),
                             },
                           } as any);
+
+                        if (
+                          _temp.filter((item: any) => item.compelete).length ===
+                          _temp.length
+                        ) {
+                          setConfirmDisabled(false);
+                        }
                       }}
                       imgUploadMask={
                         media.error ? (
@@ -512,11 +555,34 @@ export default function useUploadLogic(props: {
         </div>
         <DialogFooter className="h-fit">
           <DialogClose asChild>
-            <Button type="button" variant="secondary">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setDialogOpen(false);
+              }}
+            >
               关闭
             </Button>
           </DialogClose>
-          <Button>确认</Button>
+          <Button
+            disabled={confirmDisabled}
+            onClick={() => {
+              request("/api/media/uploadConfirm", { method: "post" }).then(
+                (res: CommonResponse) => {
+                  if (res.code === 2000) {
+                    message.success(res.msg);
+                    localStorage.removeItem("waitingUploadFiles");
+                    localStorage.removeItem("clientFileIdMapServerFileId");
+                    setDialogOpen(false);
+                    setWaitingUploadFiles([]);
+                  }
+                }
+              );
+            }}
+          >
+            确认
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

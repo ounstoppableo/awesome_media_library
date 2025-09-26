@@ -1,4 +1,5 @@
 import { codeMap } from "./backendStatus";
+import { checkIsNone } from "./convention";
 
 export function paramsCheck(
   target: any,
@@ -31,7 +32,7 @@ export function paramsCheck(
       }
     }
 
-    if (standard[key].required && !target[key]) {
+    if (standard[key].required && checkIsNone(target[key])) {
       _status.flag = false;
       _status.message = "key:" + key + "缺失" + "\n";
       _status.codes.push(codeMap.paramsIncompelete);

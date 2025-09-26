@@ -33,6 +33,7 @@ export type MediaStruct = {
   createTime: string;
   updateTime: string;
   tags: string[];
+  status: string[];
 };
 
 export default function MediaItem(props: {
@@ -42,12 +43,14 @@ export default function MediaItem(props: {
   imgUploadMask?: any;
   mediaItemHeight?: number;
   tags?: string[];
+  infoChangeCb?: (params: any) => any;
 }) {
   const {
     media: defaultMediaData,
     showSelect = false,
     deleteCb,
     imgUploadMask,
+    infoChangeCb,
     mediaItemHeight = 320,
   } = props;
 
@@ -74,6 +77,14 @@ export default function MediaItem(props: {
       mediaTagRef.current?.focus();
     }
   }, [mediaTagEdit]);
+
+  const updateLock = useRef<any>(null);
+  useEffect(() => {
+    if (updateLock.current) clearTimeout(updateLock.current);
+    updateLock.current = setTimeout(() => {
+      infoChangeCb && infoChangeCb(media);
+    }, 1000);
+  }, [media]);
   const mediaContent = () => {
     if (media.type === "video") {
       return (
@@ -174,7 +185,7 @@ export default function MediaItem(props: {
               type="multiple"
               variant="outline"
               size="sm"
-              defaultValue={["exhibition", "storage"]}
+              defaultValue={media.status}
             >
               <Tooltip title="展示">
                 <ToggleGroupItem value="exhibition">

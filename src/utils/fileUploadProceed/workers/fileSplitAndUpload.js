@@ -57,13 +57,13 @@ const wsSend = (socket, msg) => {
   if (socket.readyState !== WebSocket.OPEN) {
     return;
   }
-  socket.send(objectToBuffer({ ...msg, token: authorization }));
+  socket.send(objectToBuffer({ ...msg, token: Authorization }));
 };
 
 let _processFile = null;
 let _stopFlag = { value: false };
 let _totalChunk = 0;
-let authorization = "";
+let Authorization = "";
 let fileProcessInfo = null;
 
 function clearEffect(stopFlag = false) {
@@ -169,7 +169,7 @@ ws.addEventListener("message", async (e) => {
 
 onmessage = (e) => {
   if (e.data.type === "init") {
-    authorization = e.data.token;
+    Authorization = e.data.token;
   }
   if (e.data.type === "updateClientFileIdMapServerFileId") {
     clientFileIdMapServerFileId = e.data.clientFileIdMapServerFileId;
