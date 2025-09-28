@@ -44,6 +44,8 @@ import { codeMap } from "@/utils/backendStatus";
 import MultipleSelector from "../ui/multiselect";
 import { wsSend } from "@/utils/clientWsMethod";
 import { WsOperateRequestDataType } from "@/wsConstructor/router/operateRouter";
+import { message } from "antd";
+import useAuthLogic from "./hooks/useAuthLogic";
 
 export default function MediaLibrary() {
   const listContainerRef = useRef<any>(null);
@@ -110,6 +112,8 @@ export default function MediaLibrary() {
     status?: { value: string; label: string }[];
     title?: string;
   }>(defaultSearchParams);
+
+  const { isAuth } = useAuthLogic();
 
   const [isOver, setIsOver] = useState(false);
 
@@ -291,7 +295,12 @@ export default function MediaLibrary() {
 
   const { socketRef } = useWebsocketLogic();
 
-  const { uploadDialogJsx } = useUploadLogic({ worker, socketRef, tags });
+  const { uploadDialogJsx } = useUploadLogic({
+    worker,
+    socketRef,
+    tags,
+    isAuth,
+  });
 
   return (
     <div className="w-full h-full relative translate-0">
@@ -401,7 +410,7 @@ export default function MediaLibrary() {
                   <RotateCcw />
                   重置
                 </Button>
-                {uploadDialogJsx}
+                {isAuth && uploadDialogJsx}
               </div>
             </CardContent>
           </Card>
@@ -420,6 +429,27 @@ export default function MediaLibrary() {
                     tags={tags}
                     media={media}
                     key={media.id}
+                    deleteConfirm={true}
+                    isAuth={isAuth}
+                    deleteCb={() => {
+                      request("/api/media", {
+                        method: "delete",
+                        body: {
+                          ids: [media.id],
+                        },
+                      }).then((res: CommonResponse) => {
+                        if (res.code === codeMap.success) {
+                          message.success(res.msg);
+                          const index = mediaData.findIndex(
+                            (item) => media.id === item.id
+                          );
+                          setMediaData([
+                            ...mediaData.slice(0, index),
+                            ...mediaData.slice(index + 1),
+                          ]);
+                        }
+                      });
+                    }}
                     infoChangeCb={(value) => {
                       socketRef.current &&
                         wsSend(socketRef.current, {

@@ -37,6 +37,7 @@ import { wsSend } from "@/utils/clientWsMethod";
 import { WsUploadRequestDataType } from "@/wsConstructor/router/uploadRouter";
 import request from "@/utils/fetch";
 import { CommonResponse } from "@/types/response";
+import useLoadingLogic from "@/hooks/useLoadingLogic";
 
 export const allowTypes = [
   "image/png",
@@ -55,8 +56,9 @@ export default function useUploadLogic(props: {
   socketRef: any;
   tags?: any;
   setTags?: any;
+  isAuth: boolean;
 }) {
-  const { worker, socketRef, tags, setTags } = props;
+  const { worker, socketRef, tags, setTags, isAuth } = props;
   const [waitingUploadFiles, _setWaitingUploadFiles] = useState<
     (MediaStruct & {
       file: File;
@@ -94,6 +96,8 @@ export default function useUploadLogic(props: {
   };
 
   const indexedDbInst = useRef<any>(null);
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   const clientFileIdMapServerFileId = useRef<any>(null);
 
@@ -335,8 +339,15 @@ export default function useUploadLogic(props: {
     }
   }, [waitingUploadFiles]);
 
+  const { loadingJsx } = useLoadingLogic({ loading });
+
   const uploadDialogJsx = (
-    <Dialog open={dialogOpen}>
+    <Dialog
+      open={dialogOpen}
+      onOpenChange={(value) => {
+        setDialogOpen(value);
+      }}
+    >
       <DialogTrigger asChild>
         <Button onClick={() => setDialogOpen(true)} className="cursor-pointer">
           <Upload />
@@ -344,6 +355,7 @@ export default function useUploadLogic(props: {
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-[80vw] max-w-[80vw] min-h-[80vh] max-h-[80vh] flex flex-col">
+        {loadingJsx}
         <DialogHeader>
           <DialogTitle>媒体上传</DialogTitle>
           <DialogDescription>
@@ -399,6 +411,7 @@ export default function useUploadLogic(props: {
                     <MediaItem
                       media={media}
                       tags={tags}
+                      isAuth={isAuth}
                       infoChangeCb={(value) => {
                         const fileId =
                           value.serverFileId ||
@@ -567,6 +580,7 @@ export default function useUploadLogic(props: {
           <Button
             disabled={confirmDisabled}
             onClick={() => {
+              setLoading(true);
               request("/api/media/uploadConfirm", { method: "post" }).then(
                 (res: CommonResponse) => {
                   if (res.code === 2000) {
@@ -576,6 +590,7 @@ export default function useUploadLogic(props: {
                     setDialogOpen(false);
                     setWaitingUploadFiles([]);
                   }
+                  setLoading(false);
                 }
               );
             }}

@@ -1,8 +1,10 @@
+import useAuth from "@/hooks/useAuth";
 import { getPool } from "@/lib/db";
 import log from "@/logs/setting";
 import { CommonResponse } from "@/types/response";
 import { codeMap, codeMapMsg } from "@/utils/backendStatus";
 import errorStringify from "@/utils/errorStringify";
+import { deleteFile, getStoragePath } from "@/utils/fileOperate";
 import { paramsCheck } from "@/utils/paramsCheck";
 import dayjs from "dayjs";
 import { NextRequest } from "next/server";
@@ -69,7 +71,7 @@ export async function POST(_req: NextRequest) {
     }
 
     // 类型筛选
-    const types = body.type ? ["video", "audio", "image"] : [];
+    const types = body.type ? [body.type] : [];
     if (types.length) {
       const placeholders = types.map(() => "?").join(",");
       sql += ` AND type IN (${placeholders})`;
@@ -109,6 +111,79 @@ export async function POST(_req: NextRequest) {
     });
   } catch (err: any) {
     log(errorStringify(err), "error");
+    return Response.json({
+      code: codeMap.serverError,
+      msg: "服务器错误",
+    } as CommonResponse);
+  }
+}
+
+export async function DELETE(_req: NextRequest) {
+  try {
+    const body = await _req.json();
+    const token = _req.headers.get("Authorization");
+    if (!token || !(await useAuth(token)))
+      return Response.json({
+        code: codeMap.limitsOfAuthority,
+        msg: codeMapMsg[codeMap.limitsOfAuthority],
+      } as CommonResponse);
+    const username = JSON.parse(
+      Buffer.from(token.split(".")[1], "base64").toString("utf-8") || "{}"
+    ).data;
+    if (!username)
+      return Response.json({
+        code: codeMap.limitsOfAuthority,
+        msg: codeMapMsg[codeMap.limitsOfAuthority],
+      } as CommonResponse);
+
+    const paramsStatus = paramsCheck(body, {
+      ids: {
+        type: "object",
+        require: true,
+      },
+    });
+
+    if (!paramsStatus.flag) {
+      const code = paramsStatus.codes.pop() || codeMap.serverError;
+      return Response.json({
+        code: code || codeMap.serverError,
+        msg: codeMapMsg[code],
+      } as CommonResponse);
+    }
+
+    if (body.ids.length > 0) {
+      let select_sql = "select sourcePath from media where id in (";
+      let delete_sql = "delete from media where id in (";
+      for (let i = 0; i < body.ids.length; i++) {
+        select_sql += "?,";
+        delete_sql += "?,";
+      }
+      select_sql = select_sql.slice(0, select_sql.length - 1);
+      delete_sql = delete_sql.slice(0, delete_sql.length - 1);
+      select_sql += ");";
+      delete_sql += ");";
+      const sourcePaths = (await getPool().query(select_sql, body.ids))[0];
+      await getPool().query(delete_sql, body.ids);
+      if (sourcePaths) {
+        for (let i = 0; i < sourcePaths.length; i++) {
+          const sourcePath = sourcePaths[i].sourcePath;
+          const fileId = (sourcePath.split(".")[0] as string).replace(
+            "/media/",
+            ""
+          );
+          const ext = sourcePath.split(".")[1] as string;
+          const fileStr = getStoragePath(fileId, ext, username);
+          await deleteFile(fileStr || "");
+        }
+      }
+    }
+
+    return Response.json({
+      code: codeMap.success,
+      msg: "操作成功",
+    } as CommonResponse);
+  } catch (err: any) {
+    log(errorStringify(err));
     return Response.json({
       code: codeMap.serverError,
       msg: "服务器错误",

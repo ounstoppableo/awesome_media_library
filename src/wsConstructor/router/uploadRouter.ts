@@ -6,7 +6,15 @@ import { objectToBuffer } from "@/utils/objAndBufferTransform";
 import { WsResponseMsgType, clientError, tokenMapUsername, wsSend } from "..";
 import log from "@/logs/setting";
 import { resolve } from "path";
-import { deleteFile, getFileSize, isFileExist } from "@/utils/fileOperate";
+import {
+  deleteFile,
+  fileStorePath,
+  getFileSize,
+  getStoragePath,
+  getTempPath,
+  isFileExist,
+  tempPath,
+} from "@/utils/fileOperate";
 import fs from "fs/promises";
 import {
   closeSync,
@@ -100,10 +108,6 @@ const redisNameSpace = {
   fileInvariantInfo: (username: string) => "fileInvariantInfo" + "_" + username,
 };
 
-const tempPath = resolve(__dirname, "../../../temp");
-
-const fileStorePath = resolve(__dirname, "../../../public/media");
-
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 export default async function uploadRouter(
@@ -118,34 +122,6 @@ export default async function uploadRouter(
   await editCb(req, ws, redisInst);
   redisPool.release(redisInst);
 }
-
-const getTempPath = (fileId: string, username: string) => {
-  if (!username) {
-    return null;
-  }
-  return resolve(tempPath, username || "", fileId || "");
-};
-const getStoragePath = (
-  fileId: string,
-  ext: string,
-  username: string,
-  absolute = true
-) => {
-  !fileId && (fileId = "");
-  !ext && (ext = "");
-  if (!username) {
-    return null;
-  }
-  if (absolute) {
-    return resolve(
-      fileStorePath,
-      username,
-      fileId && ext ? fileId + "." + ext : ""
-    );
-  } else {
-    return "/media" + "/" + username + "/" + fileId + "." + ext;
-  }
-};
 
 const uploadStart = async (
   req: WsUploadRequestDataType<any>,
