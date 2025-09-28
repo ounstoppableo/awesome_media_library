@@ -35,10 +35,11 @@ export type MediaStruct = {
   updateTime: string;
   tags: string[];
   status: string[];
+  thumbnail?: string;
 };
 
 export default function MediaItem(props: {
-  media: MediaStruct;
+  media: MediaStruct & { play: boolean };
   showSelect?: boolean;
   deleteCb?: () => any;
   imgUploadMask?: any;
@@ -98,12 +99,47 @@ export default function MediaItem(props: {
       return (
         <div className="flex-1 relative overflow-hidden">
           <div className="h-full w-full transition-all group-hover/mediaHover:scale-[1.02]">
-            <video
-              preload="metadata"
-              controls
-              src={media.sourcePath}
-              className="w-full h-full object-cover transition-transform duration-500 "
-            />
+            {media.thumbnail ? (
+              media.play ? (
+                <>
+                  <video
+                    preload="metadata"
+                    controls
+                    autoPlay
+                    onPause={() => {
+                      setMedia({ ...media, play: false });
+                    }}
+                    src={media.sourcePath}
+                    className="w-full h-full object-cover transition-transform duration-500 "
+                  />
+                </>
+              ) : (
+                <>
+                  <img
+                    src={media.thumbnail}
+                    alt=""
+                    className="w-full h-full object-cover transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                      className="bg-black/50 bg-opacity-50 rounded-full p-3 cursor-pointer"
+                      onClick={() => {
+                        setMedia({ ...media, play: true });
+                      }}
+                    >
+                      <Play className="stroke-white"></Play>
+                    </div>
+                  </div>
+                </>
+              )
+            ) : (
+              <video
+                preload="metadata"
+                controls
+                src={media.sourcePath}
+                className="w-full h-full object-cover transition-transform duration-500 "
+              />
+            )}
           </div>
         </div>
       );
@@ -344,7 +380,9 @@ export default function MediaItem(props: {
                 </div>
                 <div className="flex gap-1">
                   <Button variant={"ghost"} className="h-6 w-6">
-                    <SquareArrowOutUpRight className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center transition-all" />
+                    <a href={media.sourcePath} target="_blank">
+                      <SquareArrowOutUpRight className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center transition-all" />
+                    </a>
                   </Button>
                   {isAuth &&
                     (deleteConfirm ? (

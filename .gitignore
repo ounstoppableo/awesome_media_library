@@ -43,5 +43,6 @@ next-env.d.ts
 *.log
 
 /public/media/*
+/public/thumbnail/*
 
 /temp/*

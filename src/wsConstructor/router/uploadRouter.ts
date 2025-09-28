@@ -2,7 +2,6 @@ import redisPool from "@/lib/redis";
 import { writeFile } from "fs/promises";
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
-import { objectToBuffer } from "@/utils/objAndBufferTransform";
 import { WsResponseMsgType, clientError, tokenMapUsername, wsSend } from "..";
 import log from "@/logs/setting";
 import { resolve } from "path";
@@ -10,8 +9,10 @@ import {
   deleteFile,
   fileStorePath,
   getFileSize,
+  getFileType,
   getStoragePath,
   getTempPath,
+  getThumbnailPath,
   isFileExist,
   tempPath,
 } from "@/utils/fileOperate";
@@ -30,6 +31,7 @@ import { get } from "http";
 import { codeMap, codeMapMsg } from "@/utils/backendStatus";
 import { paramsCheck } from "@/utils/paramsCheck";
 import errorStringify from "@/utils/errorStringify";
+import thumbnailGenerate from "@/utils/thumbnailGenerate";
 
 export type uploadType =
   | "uploadStart"
@@ -94,6 +96,7 @@ export type WsUploadResponseDataType<T extends uploadType> = {
   ? {
       sourcePath: string;
       size: number;
+      thumbnail: string;
     }
   : T extends "uploading"
   ? {
@@ -191,6 +194,17 @@ const uploadStart = async (
           return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
         if (isFileExist(storagePath)) {
           try {
+            let thumbnail: any = "";
+            if (getFileType(storagePath) === "image") {
+              thumbnail = storagePathRelative;
+            }
+            if (getFileType(storagePath) === "video") {
+              thumbnail = await thumbnailGenerate(
+                storagePath,
+                _req.fileId,
+                tokenMapUsername[_req.token]
+              );
+            }
             const res: WsResponseMsgType<"upload"> = {
               type: "upload",
               data: {
@@ -199,6 +213,7 @@ const uploadStart = async (
                 clientFileId: _req.fileInfo.clientFileId,
                 sourcePath: storagePathRelative,
                 size: statSync(storagePath).size,
+                thumbnail: thumbnail,
               } as WsUploadResponseDataType<"uploadEnd">,
             };
             return wsSend(ws, res);
@@ -369,6 +384,17 @@ const uploadEnd = async (
       return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
     if (_req.fileId && isFileExist(targetPath)) {
       try {
+        let thumbnail: any = "";
+        if (getFileType(targetPath) === "image") {
+          thumbnail = targetPathRelative;
+        }
+        if (getFileType(targetPath) === "video") {
+          thumbnail = await thumbnailGenerate(
+            targetPath,
+            _req.fileId,
+            tokenMapUsername[_req.token]
+          );
+        }
         const res: WsResponseMsgType<"upload"> = {
           type: "upload",
           data: {
@@ -376,7 +402,8 @@ const uploadEnd = async (
             type: "uploadEnd",
             sourcePath: targetPathRelative,
             size: statSync(targetPath).size,
-          },
+            thumbnail: thumbnail,
+          } as WsUploadResponseDataType<"uploadEnd">,
         };
 
         wsSend(ws, res);
@@ -417,6 +444,17 @@ const uploadEnd = async (
         closeSync(fd);
 
         try {
+          let thumbnail: any = "";
+          if (getFileType(targetPath) === "image") {
+            thumbnail = targetPathRelative;
+          }
+          if (getFileType(targetPath) === "video") {
+            thumbnail = await thumbnailGenerate(
+              targetPath,
+              _req.fileId,
+              tokenMapUsername[_req.token]
+            );
+          }
           const res: WsResponseMsgType<"upload"> = {
             type: "upload",
             data: {
@@ -424,6 +462,7 @@ const uploadEnd = async (
               type: "uploadEnd",
               sourcePath: targetPathRelative,
               size: statSync(targetPath).size,
+              thumbnail: thumbnail,
             } as WsUploadResponseDataType<"uploadEnd">,
           };
           wsSend(ws, res);
@@ -435,6 +474,7 @@ const uploadEnd = async (
               _req.fileId,
               JSON.stringify({
                 sourcePath: targetPathRelative,
+                thumbnail: thumbnail,
               })
             );
           } catch (err: any) {
@@ -478,10 +518,18 @@ const deleteFileCb = async (
       _req.ext,
       tokenMapUsername[_req.token]
     );
+    const thumbnailPath = getThumbnailPath(
+      _req.fileId,
+      tokenMapUsername[_req.token]
+    );
     if (!tempPath || !storagePath)
       return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
     redisInst.HDEL(
       redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
+      _req.fileId
+    );
+    redisInst.HDEL(
+      redisNameSpace.fileInvariantInfo(tokenMapUsername[_req.token]),
       _req.fileId
     );
     try {
@@ -489,6 +537,8 @@ const deleteFileCb = async (
         fs.rm(tempPath, { recursive: true, force: true });
       isFileExist(storagePath) &&
         fs.rm(storagePath, { recursive: true, force: true });
+      isFileExist(thumbnailPath || "") &&
+        fs.rm(thumbnailPath || "", { recursive: true, force: true });
       wsSend(ws, {
         type: "upload",
         data: {

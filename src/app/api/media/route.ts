@@ -4,7 +4,11 @@ import log from "@/logs/setting";
 import { CommonResponse } from "@/types/response";
 import { codeMap, codeMapMsg } from "@/utils/backendStatus";
 import errorStringify from "@/utils/errorStringify";
-import { deleteFile, getStoragePath } from "@/utils/fileOperate";
+import {
+  deleteFile,
+  getStoragePath,
+  getThumbnailPath,
+} from "@/utils/fileOperate";
 import { paramsCheck } from "@/utils/paramsCheck";
 import dayjs from "dayjs";
 import { NextRequest } from "next/server";
@@ -168,12 +172,14 @@ export async function DELETE(_req: NextRequest) {
         for (let i = 0; i < sourcePaths.length; i++) {
           const sourcePath = sourcePaths[i].sourcePath;
           const fileId = (sourcePath.split(".")[0] as string).replace(
-            "/media/",
+            `/media/${username}/`,
             ""
           );
           const ext = sourcePath.split(".")[1] as string;
-          const fileStr = getStoragePath(fileId, ext, username);
-          await deleteFile(fileStr || "");
+          const filePath = getStoragePath(fileId, ext, username);
+          const thumbnailPath = getThumbnailPath(fileId, username);
+          await deleteFile(filePath || "");
+          await deleteFile(thumbnailPath || "");
         }
       }
     }

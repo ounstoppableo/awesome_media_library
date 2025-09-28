@@ -59,21 +59,8 @@ export async function POST(
         }
       }
       const promises = _fileInfos.map((file) => {
-        console.log(
-          "INSERT INTO media (title, size, tags,type,sourcePath,createTime,updateTime,status) VALUES (?, ?, ?,?,?,?,?,?)",
-          [
-            file.title,
-            file.size,
-            JSON.stringify(file.tags.slice(0, 3)),
-            file.type,
-            file.sourcePath,
-            file.createTime,
-            file.updateTime,
-            JSON.stringify(file.status) || JSON.stringify(["exhibition"]),
-          ]
-        );
         return getPool().query(
-          "INSERT INTO media (title, size, tags,type,sourcePath,createTime,updateTime,status) VALUES (?, ?, ?,?,?,?,?,?)",
+          "INSERT INTO media (title, size, tags,type,sourcePath,createTime,updateTime,status,thumbnail) VALUES (?, ?, ?,?,?,?,?,?,?)",
           [
             file.title,
             file.size,
@@ -83,6 +70,7 @@ export async function POST(
             file.createTime,
             file.updateTime,
             JSON.stringify(file.status) || JSON.stringify(["exhibition"]),
+            file.thumbnail,
           ]
         );
       });
