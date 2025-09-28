@@ -9,8 +9,7 @@ export default function Home() {
   const router = useRouter();
   useEffect(() => {
     message.config({
-      top: 100,
-      duration: 2,
+      duration: 3,
       maxCount: 1,
       rtl: true,
     });

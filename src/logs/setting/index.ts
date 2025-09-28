@@ -19,40 +19,54 @@ function findTargetLogFile() {
 }
 
 let _logFileInfo: any = null;
-let _consoleLogger: any = null;
+let _pinoLogger: any = null;
+let _filePinoLogger: any = null;
+let _consoleLogger: any = console.log;
 let _fileLogger: any = null;
+
 export default function log(
   content: string,
   type: "info" | "error" | "debug" | "fatal" | "warn" | "trace" = "info"
 ) {
   if (
-    _fileLogger &&
-    _consoleLogger &&
     _logFileInfo &&
     _logFileInfo.logDate === dayjs(new Date()).format("YYYY-MM-DD")
   ) {
-    _consoleLogger[type]?.(content);
-    _fileLogger[type]?.(content);
+    if (__dirname.startsWith("/ROOT/")) {
+      _consoleLogger(content);
+      _fileLogger.write(JSON.stringify({ msg: content }) + "\n\n");
+    } else {
+      _pinoLogger?.[type]?.(content);
+      _filePinoLogger?.[type]?.(content);
+    }
+
     return;
   } else {
+    _fileLogger && _fileLogger.end();
     _logFileInfo = findTargetLogFile();
-    _consoleLogger = pino({
-      transport: {
-        target: "pino-pretty",
-        options: { colorize: true, translateTime: "yyyy-mm-dd HH:MM:ss" },
-      },
-    });
+    if (__dirname.startsWith("/ROOT/")) {
+      _fileLogger = fs.createWriteStream(_logFileInfo.logFilePath);
+      _consoleLogger(content);
+      _fileLogger.write(JSON.stringify({ msg: content }) + "\n\n");
+    } else {
+      _pinoLogger = pino({
+        transport: {
+          target: "pino-pretty",
+          options: { colorize: true, translateTime: "yyyy-mm-dd HH:MM:ss" },
+        },
+      });
 
-    _fileLogger = pino(
-      new SonicBoom({
-        dest: _logFileInfo.logFilePath,
-        mkdir: true,
-        append: true,
-      })
-    );
+      _filePinoLogger = pino(
+        new SonicBoom({
+          dest: _logFileInfo.logFilePath,
+          mkdir: true,
+          append: true,
+        })
+      );
+      _pinoLogger[type](content);
+      _filePinoLogger[type](content);
+    }
 
-    _consoleLogger[type](content);
-    _fileLogger[type](content);
     return;
   }
 }
