@@ -589,6 +589,7 @@ export default function useUploadLogic(props: {
                     localStorage.removeItem("clientFileIdMapServerFileId");
                     setDialogOpen(false);
                     setWaitingUploadFiles([]);
+                    location.reload();
                   }
                   setLoading(false);
                 }

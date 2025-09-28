@@ -39,7 +39,7 @@ export type MediaStruct = {
 };
 
 export default function MediaItem(props: {
-  media: MediaStruct & { play: boolean };
+  media: MediaStruct & { play?: boolean };
   showSelect?: boolean;
   deleteCb?: () => any;
   imgUploadMask?: any;

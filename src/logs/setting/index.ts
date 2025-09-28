@@ -6,8 +6,10 @@ import { resolve } from "path";
 
 function findTargetLogFile() {
   let logFilePath = resolve(
-    __dirname,
-    `../${dayjs(new Date()).format("YYYY-MM-DD")}.log`
+    process.cwd(),
+    "src",
+    "logs",
+    `${dayjs(new Date()).format("YYYY-MM-DD")}.log`
   );
 
   return {

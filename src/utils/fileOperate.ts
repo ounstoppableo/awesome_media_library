@@ -24,13 +24,12 @@ export function isFileExist(path: string) {
 }
 
 export async function deleteFile(path: string): Promise<void> {
-  console.log(path, isFileExist(path));
-  if (isFileExist(path)) rmSync(path, { recursive: true, force: true });
+  isFileExist(path) && rmSync(path, { recursive: true, force: true });
 }
 
-export const fileStorePath = resolve(__dirname, "../../public/media");
-export const tempPath = resolve(__dirname, "../../temp");
-export const thumbnailPath = resolve(__dirname, "../../public/thumbnail");
+export const fileStorePath = resolve(process.cwd(), "public/media");
+export const tempPath = resolve(process.cwd(), "temp");
+export const thumbnailPath = resolve(process.cwd(), "public/thumbnail");
 
 export const getStoragePath = (
   fileId: string,
