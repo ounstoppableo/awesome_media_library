@@ -103,15 +103,17 @@ export default function MediaLibrary() {
     status: [{ value: "exhibition", label: "展示" }],
     timeType: "all",
     title: "",
+    tags: [],
   } as any;
+
   const [searchParams, setSearchParams] = useState<{
     id?: any;
     type: "audio" | "video" | "image" | "all";
     timeType: "all" | "today" | "week" | "month" | "year";
-    tags?: { value: string; label: string }[];
+    tags: { value: string; label: string }[];
     status?: { value: string; label: string }[];
     title?: string;
-  }>(defaultSearchParams);
+  }>({ ...defaultSearchParams });
 
   const { isAuth } = useAuthLogic();
 
@@ -259,7 +261,51 @@ export default function MediaLibrary() {
     />
   );
 
+  const [resetFlag, setResetFlag] = useState<boolean>(false);
+
   useEffect(() => {
+    if (resetFlag) {
+      handleMultiStatusSelectorJsxUpdate();
+      handleMultiTagSelectorJsxUpdate();
+    }
+    setResetFlag(false);
+  }, [resetFlag]);
+  const handleMultiStatusSelectorJsxUpdate = () => {
+    setMultiStatusSelectorJsx(
+      <Select>
+        <SelectTrigger className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+          <SelectValue placeholder="挑选标签" />
+        </SelectTrigger>
+        <SelectContent></SelectContent>
+      </Select>
+    );
+    requestAnimationFrame(() => {
+      setMultiStatusSelectorJsx(
+        <MultipleSelector
+          value={searchParams.status}
+          hidePlaceholderWhenSelected={true}
+          defaultOptions={[
+            { value: "exhibition", label: "展示" },
+            { value: "storage", label: "存储" },
+          ]}
+          placeholder="选择状态"
+          onChange={(value) => {
+            setSearchParams({
+              ...searchParams,
+              status: value,
+              id: "",
+            });
+          }}
+          className=""
+          emptyIndicator={
+            <p className="text-center text-sm">No results found</p>
+          }
+        />
+      );
+    });
+  };
+
+  const handleMultiTagSelectorJsxUpdate = () => {
     setMultiTagSelectorJsx(
       <Select>
         <SelectTrigger className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
@@ -291,6 +337,10 @@ export default function MediaLibrary() {
         />
       );
     });
+  };
+
+  useEffect(() => {
+    handleMultiTagSelectorJsxUpdate();
   }, [tags]);
 
   const { socketRef } = useWebsocketLogic();
@@ -404,7 +454,10 @@ export default function MediaLibrary() {
                   variant="outline"
                   className="cursor-pointer"
                   onClick={() => {
-                    setSearchParams(defaultSearchParams);
+                    setSearchParams({ ...defaultSearchParams });
+                    requestAnimationFrame(() => {
+                      setResetFlag(true);
+                    });
                   }}
                 >
                   <RotateCcw />
