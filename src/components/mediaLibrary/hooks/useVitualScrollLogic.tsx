@@ -115,6 +115,7 @@ export default function useVitualScrollLogic(props: {
 
           setShowData(
             mediasInScreenIndexArray
+              .filter((i: number) => data[i])
               .map((i: number) => ({ ...data[i] }))
               .filter((item: any) => item)
           );

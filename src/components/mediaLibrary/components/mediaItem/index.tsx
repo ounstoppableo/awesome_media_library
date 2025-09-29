@@ -266,7 +266,7 @@ export default function MediaItem(props: {
             <div className="opacity-0 absolute inset-0 bg-white border-t border-gray-100 transition-all translate-y-[100%] group-hover/mediaHover:translate-y-0 group-hover/mediaHover:opacity-100">
               <div className="flex justify-between items-end h-full">
                 <div className="flex-1 overflow-x-auto flex gap-1">
-                  {media.tags.map((tag, index) => (
+                  {media.tags?.map((tag, index) => (
                     <div
                       key={index}
                       className="px-2 py-1 bg-gray-100 rounded-full text-xs capitalize flex gap-2 items-center h-6"
