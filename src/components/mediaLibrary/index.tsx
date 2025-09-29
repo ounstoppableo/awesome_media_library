@@ -517,6 +517,17 @@ export default function MediaLibrary() {
                             },
                           } as WsOperateRequestDataType<"mediaInfoEdit">,
                         });
+                      requestAnimationFrame(() => {
+                        const mediaIndex = mediaData.findIndex(
+                          (media) => media.id === value.id
+                        );
+                        mediaIndex !== -1 &&
+                          setMediaData([
+                            ...mediaData.slice(0, mediaIndex),
+                            value,
+                            ...mediaData.slice(mediaIndex + 1),
+                          ]);
+                      });
                     }}
                   ></MediaItem>
                 ))}
