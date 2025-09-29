@@ -422,12 +422,14 @@ export default function MediaLibrary() {
                   </label>
                   {multiTagSelectorJsx}
                 </div>
-                <div className="flex-1 min-w-[200px]">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    状态
-                  </label>
-                  {multiStatusSelectorJsx}
-                </div>
+                {isAuth && (
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      状态
+                    </label>
+                    {multiStatusSelectorJsx}
+                  </div>
+                )}
                 <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     时间范围
