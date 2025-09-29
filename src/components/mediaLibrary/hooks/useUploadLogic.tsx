@@ -397,7 +397,7 @@ export default function useUploadLogic(props: {
                   <p className="pl-1">or drag and drop</p>
                 </div>
                 <p className="text-xs text-gray-500">
-                  PNG, JPG, WEBP, SVG, GIF, MP4, MP3 up to 500MB
+                  PNG, JPG, WEBP, SVG, GIF, MP4, MP3 up to 20MB
                 </p>
               </div>
             ) : (
