@@ -7,7 +7,6 @@ export const wsSend = (
   msg: Omit<WsRequestMsgType<any>, "token">
 ) => {
   if (socket.readyState !== WebSocket.OPEN) {
-    message.error({ content: "WebSocket 未连接，操作失败" });
     return;
   }
   socket.send(
