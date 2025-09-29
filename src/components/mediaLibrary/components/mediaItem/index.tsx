@@ -72,6 +72,7 @@ export default function MediaItem(props: {
   const mediaItemTitleRef = useRef<any>(null);
   const [mediaTagEdit, setMediaTagEdit] = useState(false);
   const mediaTagRef = useRef<any>(null);
+  const videoRef = useRef<any>(null);
   useEffect(() => {
     if (mediaItemTitleEdit) {
       mediaItemTitleRef.current?.focus();
@@ -106,8 +107,15 @@ export default function MediaItem(props: {
                     preload="metadata"
                     controls
                     autoPlay
+                    ref={videoRef}
                     onPause={() => {
-                      setMedia({ ...media, play: false });
+                      if (
+                        videoRef.current &&
+                        !videoRef.current.seeking &&
+                        !videoRef.current.ended
+                      ) {
+                        setMedia({ ...media, play: false });
+                      }
                     }}
                     src={media.sourcePath}
                     className="w-full h-full object-cover transition-transform duration-500 "
