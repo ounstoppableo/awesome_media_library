@@ -112,9 +112,11 @@ export default function useVitualScrollLogic(props: {
               ),
             ])
           );
-          
+
           setShowData(
-            mediasInScreenIndexArray.map((i: number) => ({ ...data[i] }))
+            mediasInScreenIndexArray
+              .map((i: number) => ({ ...data[i] }))
+              .filter((item: any) => item)
           );
 
           const upCount = mediasInScreenIndexArray[0];
