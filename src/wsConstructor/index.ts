@@ -50,21 +50,28 @@ export default async function wsConstructor(ws: WebSocket) {
         const _message = bufferToObject(
           message
         ) as WsRequestMsgType<wsMessageTypes>;
-        if (await useAuth(_message.token)) {
-          const info = JSON.parse(
-            Buffer.from(_message.token.split(".")[1], "base64").toString(
-              "utf-8"
-            )
-          );
-          tokenMapExpireTime[_message.token] = info.exp;
-          tokenMapUsername[_message.token] = info.data;
+        if (
+          tokenMapExpireTime[_message.token] &&
+          tokenMapExpireTime[_message.token] < +new Date()
+        ) {
         } else {
-          delete tokenMapExpireTime[_message.token];
-          delete tokenMapUsername[_message.token];
-          clientError(ws, "权限不足", codeMap.limitsOfAuthority);
-          ws.close();
-          return;
+          if (await useAuth(_message.token)) {
+            const info = JSON.parse(
+              Buffer.from(_message.token.split(".")[1], "base64").toString(
+                "utf-8"
+              )
+            );
+            tokenMapExpireTime[_message.token] = info.exp;
+            tokenMapUsername[_message.token] = info.data;
+          } else {
+            delete tokenMapExpireTime[_message.token];
+            delete tokenMapUsername[_message.token];
+            clientError(ws, "权限不足", codeMap.limitsOfAuthority);
+            ws.close();
+            return;
+          }
         }
+
         try {
           if (_message.type === "operate") {
             await operateRouter(ws, {
