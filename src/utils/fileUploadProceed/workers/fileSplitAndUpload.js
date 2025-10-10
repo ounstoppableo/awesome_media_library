@@ -54,6 +54,7 @@ const handleFileUploadProceed = (file, processChunkIndex = 0) => {
 };
 
 const wsSend = (socket, msg) => {
+  if (!socket) return;
   if (socket.readyState !== WebSocket.OPEN) {
     return;
   }
@@ -65,6 +66,7 @@ let _stopFlag = { value: false };
 let _totalChunk = 0;
 let Authorization = "";
 let fileProcessInfo = null;
+let hostname = "";
 
 function clearEffect(stopFlag = false) {
   _processFile = null;
@@ -74,102 +76,111 @@ function clearEffect(stopFlag = false) {
   postMessage("lockRelease");
 }
 
-const ws = new WebSocket(`ws://localhost:10000`);
-ws.addEventListener("message", async (e) => {
-  try {
-    const _res = bufferToObject(new Uint8Array(await e.data.arrayBuffer()));
-    if (_res.type === "upload") {
-      if (_res.data.type === "uploadStart") {
-        const data = _res.data;
-        if (_processFile && data.clientFileId === _processFile.id) {
-          clientFileIdMapServerFileId[data.clientFileId] = data.fileId;
-          postMessage({
-            type: "updateClientFileIdMapServerFileId",
-            clientFileIdMapServerFileId,
-          });
-          const _processInfo = handleFileUploadProceed(_processFile);
-          _totalChunk = _processInfo.totalChunks;
-
-          postMessage({
-            type: "uploadStart",
-            totalChunk: _totalChunk,
-            clientFileId: _processFile.id,
-            fileId: _res.data.fileId,
-          });
-          fileProcessInfo = {
-            totalChunk: _totalChunk,
-            processedChunks: _processFile.processedChunks || [],
-          };
-        }
-      }
-      if (_res.data.type === "uploading" && _processFile && fileProcessInfo) {
-        fileProcessInfo.processedChunks.push(_res.data.processedChunkIndex);
-        fileProcessInfo.processedChunks = Array.from(
-          new Set(fileProcessInfo.processedChunks)
-        );
-        if (
-          fileProcessInfo.processedChunks.length === fileProcessInfo.totalChunk
-        ) {
-          wsSend(ws, {
-            type: "upload",
-            data: {
-              type: "uploadEnd",
-              fileId: clientFileIdMapServerFileId[_processFile.id],
-              ext: _processFile.file.name.split(".").pop(),
-            },
-          });
-        }
-        postMessage({
-          clientFileId: _processFile.id,
-          fileId: _res.data.fileId,
-          ..._res.data,
-          ...fileProcessInfo,
-          type: "uploading",
-        });
-        dequeue(
-          fileIdMapQueueItemId[_res.data.fileId + _res.data.processedChunkIndex]
-        );
-        delete fileIdMapQueueItemId[
-          _res.data.fileId + _res.data.processedChunkIndex
-        ];
-      }
-      if (_res.data.type === "uploadEnd" && _processFile) {
-        if (_res.data.size === _processFile.size) {
-          postMessage({
-            ..._res.data,
-            clientFileId: _processFile.id,
-            type: "uploadEnd",
-          });
-        } else {
-          postMessage({
-            clientFileId: _processFile.id,
-            fileId: _res.data.fileId,
-            ..._res.data,
-            msg: "文件内容缺失",
-            type: "error",
-          });
-        }
-
-        clearEffect();
-      }
-    }
-    if (_res.type === "error" && _processFile) {
-      postMessage({
-        clientFileId: _processFile.id,
-        fileId: _res.data.fileId,
-        ..._res.data,
-        type: "error",
-      });
-      clearEffect();
-    }
-  } catch (err) {
-    console.log(err);
-  }
-});
+let ws = null;
 
 onmessage = (e) => {
   if (e.data.type === "init") {
     Authorization = e.data.token;
+    hostname = e.data.hostname;
+    ws = new WebSocket(`ws://${hostname}:10000`);
+    ws.addEventListener("message", async (e) => {
+      try {
+        const _res = bufferToObject(new Uint8Array(await e.data.arrayBuffer()));
+        if (_res.type === "upload") {
+          if (_res.data.type === "uploadStart") {
+            const data = _res.data;
+            if (_processFile && data.clientFileId === _processFile.id) {
+              clientFileIdMapServerFileId[data.clientFileId] = data.fileId;
+              postMessage({
+                type: "updateClientFileIdMapServerFileId",
+                clientFileIdMapServerFileId,
+              });
+              const _processInfo = handleFileUploadProceed(_processFile);
+              _totalChunk = _processInfo.totalChunks;
+
+              postMessage({
+                type: "uploadStart",
+                totalChunk: _totalChunk,
+                clientFileId: _processFile.id,
+                fileId: _res.data.fileId,
+              });
+              fileProcessInfo = {
+                totalChunk: _totalChunk,
+                processedChunks: _processFile.processedChunks || [],
+              };
+            }
+          }
+          if (
+            _res.data.type === "uploading" &&
+            _processFile &&
+            fileProcessInfo
+          ) {
+            fileProcessInfo.processedChunks.push(_res.data.processedChunkIndex);
+            fileProcessInfo.processedChunks = Array.from(
+              new Set(fileProcessInfo.processedChunks)
+            );
+            if (
+              fileProcessInfo.processedChunks.length ===
+              fileProcessInfo.totalChunk
+            ) {
+              wsSend(ws, {
+                type: "upload",
+                data: {
+                  type: "uploadEnd",
+                  fileId: clientFileIdMapServerFileId[_processFile.id],
+                  ext: _processFile.file.name.split(".").pop(),
+                },
+              });
+            }
+            postMessage({
+              clientFileId: _processFile.id,
+              fileId: _res.data.fileId,
+              ..._res.data,
+              ...fileProcessInfo,
+              type: "uploading",
+            });
+            dequeue(
+              fileIdMapQueueItemId[
+                _res.data.fileId + _res.data.processedChunkIndex
+              ]
+            );
+            delete fileIdMapQueueItemId[
+              _res.data.fileId + _res.data.processedChunkIndex
+            ];
+          }
+          if (_res.data.type === "uploadEnd" && _processFile) {
+            if (_res.data.size === _processFile.size) {
+              postMessage({
+                ..._res.data,
+                clientFileId: _processFile.id,
+                type: "uploadEnd",
+              });
+            } else {
+              postMessage({
+                clientFileId: _processFile.id,
+                fileId: _res.data.fileId,
+                ..._res.data,
+                msg: "文件内容缺失",
+                type: "error",
+              });
+            }
+
+            clearEffect();
+          }
+        }
+        if (_res.type === "error" && _processFile) {
+          postMessage({
+            clientFileId: _processFile.id,
+            fileId: _res.data.fileId,
+            ..._res.data,
+            type: "error",
+          });
+          clearEffect();
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    });
   }
   if (e.data.type === "updateClientFileIdMapServerFileId") {
     clientFileIdMapServerFileId = e.data.clientFileIdMapServerFileId;

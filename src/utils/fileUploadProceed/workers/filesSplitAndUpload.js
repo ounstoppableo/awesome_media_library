@@ -89,6 +89,7 @@ onmessage = (e) => {
     broadcast({
       type: "init",
       token: e.data.token,
+      hostname: e.data.hostname,
     });
   }
   if (e.data instanceof Array) {

@@ -9,6 +9,7 @@ _worker.postMessage({
   clientFileIdMapServerFileId: JSON.parse(
     localStorage.getItem("clientFileIdMapServerFileId") || "{}"
   ),
+  hostname: location.hostname,
   token: localStorage.getItem("Authorization"),
 });
 _worker.addEventListener("message", (e) => {
