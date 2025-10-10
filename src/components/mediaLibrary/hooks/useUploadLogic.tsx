@@ -331,9 +331,11 @@ export default function useUploadLogic(props: {
         )
       );
     });
+
     if (
       waitingUploadFiles.filter((item) => item.compelete).length ===
-      waitingUploadFiles.length
+        waitingUploadFiles.length &&
+      waitingUploadFiles.length > 0
     ) {
       setConfirmDisabled(false);
     }
@@ -430,6 +432,11 @@ export default function useUploadLogic(props: {
                               },
                             } as WsUploadRequestDataType<"edit">,
                           });
+                        setWaitingUploadFiles([
+                          ...waitingUploadFiles.slice(0, index),
+                          value,
+                          ...waitingUploadFiles.slice(index + 1),
+                        ]);
                       }}
                       deleteCb={() => {
                         const _temp = [
