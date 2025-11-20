@@ -27,6 +27,8 @@ export default function useVitualScrollLogic(props: {
 
   const rowBaseCountRef = useRef(0);
 
+  const scollAntiShake = useRef<any>(null);
+
   useEffect(() => {
     const smoothGetMessagesInScreenFn = smoothDisposeArrayUnitFactory(
       () => data,
@@ -136,16 +138,17 @@ export default function useVitualScrollLogic(props: {
     );
     smoothGetMessagesInScreenFn.execute();
 
-    scrollContainerRef.current?.addEventListener(
-      "scroll",
-      smoothGetMessagesInScreenFn.execute
-    );
+    const scollCb = () => {
+      if (scollAntiShake.current) clearTimeout(scollAntiShake.current);
+      scollAntiShake.current = setTimeout(() => {
+        smoothGetMessagesInScreenFn.execute();
+      }, 100);
+    };
+
+    scrollContainerRef.current?.addEventListener("scroll", scollCb);
 
     return () => {
-      scrollContainerRef.current?.removeEventListener(
-        "scroll",
-        smoothGetMessagesInScreenFn.execute
-      );
+      scrollContainerRef.current?.removeEventListener("scroll", scollCb);
     };
   }, [data]);
 
