@@ -31,7 +31,7 @@ export default function useMoveCursor() {
   const cursor = (
     <div
       ref={cursorRef}
-      className="absolute w-24 h-24 z-10 flex justify-center items-center text-white select-none pointer-events-none opacity-60 transition-opacity duration-200"
+      className="absolute w-24 h-24 z-50 flex justify-center items-center text-white select-none pointer-events-none opacity-60 transition-opacity duration-200"
       style={{
         top: point.y,
         left: point.x,

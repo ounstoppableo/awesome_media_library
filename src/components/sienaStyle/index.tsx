@@ -9,7 +9,11 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   const scrollContainer = useRef<HTMLDivElement>(null);
   const scrollContainerItems = useRef<HTMLDivElement[]>([]);
   const imgeContainerItems = useRef<(HTMLImageElement | null)[]>([]);
-  const computedImgOffset = useRef<(y: number) => void>(() => {});
+  const computedImgOffset = useRef<
+    (offset: number, animateType?: "set" | "to") => void
+  >(() => {});
+  const [currentDirection, setCurrentDirection] = useState<"y" | "x">("y");
+  const computedItemOffset = useRef<(offset: number) => void>(() => {});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [data, setData] = useState([
     {
@@ -26,12 +30,18 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   const [snap, setSnap] = useState<number[]>([]);
   const resizeAntiShake = useRef<NodeJS.Timeout | null>(null);
   const gap = 32;
-  const ySetter = useRef<any>(null);
+  const offsetSetter = useRef<any>(null);
 
   const currentIndexWatcher = useRef<any>(null);
+  useEffect(() => {
+    offsetSetter.current = gsap.quickSetter(
+      scrollContainer.current,
+      currentDirection,
+      "px"
+    );
+  }, [currentDirection]);
 
   useEffect(() => {
-    ySetter.current = gsap.quickSetter(scrollContainer.current, "y", "px");
     const _main = () => {
       if (
         scrollWrapper.current === null ||
@@ -54,38 +64,48 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       );
       setSnap(_snap);
 
-      ySetter.current(_snap[Math.ceil(_snap.length / 2) - 1]);
+      offsetSetter.current(_snap[Math.ceil(_snap.length / 2) - 1]);
       // img静止
-      computedImgOffset.current = (y: number) => {
+      computedImgOffset.current = (
+        offset: number,
+        animateType: "set" | "to" = "set"
+      ) => {
         for (let i = 0; i < _snap.length; i++) {
           const imgEl = imgeContainerItems.current[i];
           if (!imgEl) continue;
-          const changeY =
-            ((y - _snap[i]) * imageHeight) / scrollContainerHeight;
-          const maxChangeY = (imageHeight - itemHeight) / 2;
-          gsap.set(imgEl, {
-            y: changeY < -maxChangeY ? -maxChangeY : changeY,
+          const changeOffset =
+            ((_snap[i] - offset) * 2 * imageHeight) / scrollContainerHeight;
+          const maxChangeOffset = (imageHeight - itemHeight) / 2;
+          gsap[animateType](imgEl, {
+            [currentDirection]:
+              changeOffset < -maxChangeOffset ? -maxChangeOffset : changeOffset,
           });
         }
       };
 
       loop.current = function (this: any) {
         // 无限loop
-        let _y = this.y;
-        if (this.y <= _snap[_snap.length - data.length]) {
-          _y = this.y + (gap + itemHeight) * data.length;
-          ySetter.current(_y);
-          computedImgOffset.current(_y);
+        let _offset = +gsap.getProperty(
+          scrollContainer.current,
+          currentDirection
+        );
+        if (_offset <= _snap[_snap.length - data.length]) {
+          this.endDrag?.();
+          _offset = _offset + (gap + itemHeight) * data.length;
+          offsetSetter.current(_offset);
+          computedImgOffset.current(_offset);
+          this.update?.();
           return;
         }
-        if (this.y >= _snap[data.length - 1]) {
-          _y = this.y - (gap + itemHeight) * data.length;
-          ySetter.current(_y);
-          computedImgOffset.current(_y);
-
+        if (_offset >= _snap[data.length - 1]) {
+          this.endDrag?.();
+          _offset = _offset - (gap + itemHeight) * data.length;
+          offsetSetter.current(_offset);
+          computedImgOffset.current(_offset);
+          this.update?.();
           return;
         }
-        computedImgOffset.current(_y);
+        computedImgOffset.current(_offset);
       };
       return _snap;
     };
@@ -104,15 +124,16 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     let velosity = itemHeight;
     let brightness = 1;
     let blur = 1;
+    let scrollOffset = 0;
     const init = () => {
-      scrollY %= -_snap[_snap.length - data.length];
+      scrollOffset %= -_snap[_snap.length - data.length];
       gsap.set(scrollContainer.current, {
-        y: -scrollY,
+        [currentDirection]: -scrollOffset,
         filter: `brightness(${brightness}) saturate(${
           brightness / 3
         }) blur(${blur}px)`,
       });
-      scrollY += velosity;
+      scrollOffset += velosity;
     };
     gsap.to(
       {},
@@ -127,7 +148,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         },
         onComplete() {
           gsap.to(scrollContainer.current, {
-            y: _snap[Math.ceil(_snap.length / 2) - 1],
+            [currentDirection]: _snap[Math.ceil(_snap.length / 2) - 1],
             filter: `brightness(1)`,
           });
         },
@@ -139,7 +160,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     return () => {
       window.removeEventListener("resize", resizeCb);
     };
-  }, []);
+  }, [currentDirection]);
 
   useEffect(() => {
     // 控制滚轮事件
@@ -148,30 +169,36 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     const itemHeight = scrollContainerItems.current[0].offsetHeight;
     const wheelCb = (e: any) => {
       // offset越靠近itemHeight，速度越慢
-      offset += (Math.abs(itemHeight - offset) * e.deltaY) / 500;
-      if (e.deltaY > 0) {
+      offset +=
+        (Math.abs(itemHeight - offset) *
+          e["delta" + currentDirection.toLocaleUpperCase()]) /
+        500;
+      if (e["delta" + currentDirection.toLocaleUpperCase()] > 0) {
         offset = offset >= itemHeight / 2 ? itemHeight / 2 : offset;
       } else {
         offset = offset <= -itemHeight / 2 ? -itemHeight / 2 : offset;
       }
 
-      const currentY = +gsap.getProperty(scrollContainer.current, "y");
-      const targetY = gsap.utils.snap(snap, currentY) + offset;
+      const currentOffset = +gsap.getProperty(
+        scrollContainer.current,
+        currentDirection
+      );
+      const targetOffset = gsap.utils.snap(snap, currentOffset) + offset;
       gsap.to(scrollContainer.current, {
-        y: targetY,
+        [currentDirection]: targetOffset,
       });
-      computedImgOffset.current(targetY);
+      computedImgOffset.current(targetOffset, "to");
       clearTimeout(wheelTimer);
       wheelTimer = setTimeout(() => {
         offset = 0;
-        const targetY = gsap.utils.snap(
+        const targetOffset = gsap.utils.snap(
           snap,
-          +gsap.getProperty(scrollContainer.current, "y")
+          +gsap.getProperty(scrollContainer.current, currentDirection)
         );
         gsap.to(scrollContainer.current, {
-          y: targetY,
+          [currentDirection]: targetOffset,
         });
-        computedImgOffset.current(targetY);
+        computedImgOffset.current(targetOffset, "to");
       }, 100);
     };
     window.addEventListener("wheel", wheelCb);
@@ -182,8 +209,9 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
 
   const dragInst = useRef<any>(null);
   useEffect(() => {
+    const wrapperHeight = scrollWrapper.current!.offsetHeight;
     dragInst.current = Draggable.create(scrollContainer.current, {
-      type: "y",
+      type: currentDirection,
       inertia: true,
       cursor: "grab",
       activeCursor: "grabbing",
@@ -194,14 +222,14 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       onThrowUpdate: function () {
         loop.current.call(this);
       },
-      snap: { y: snap },
+      snap: { [currentDirection]: snap },
     });
     return () => {
       dragInst.current[0].kill();
     };
   }, [snap]);
 
-  const { cursor, setForm } = useMoveCursor();
+  const { form, cursor, setForm } = useMoveCursor();
 
   // 控制cursor状态
   const handleControlCursor = (index: number) => {
@@ -212,7 +240,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       setForm("down");
     }
     if (index === currentIndex) {
-      setForm("default");
+      setForm(form === "mousedown" ? "mousedown" : "default");
     }
   };
   useEffect(() => {
@@ -226,17 +254,30 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     dragInst.current[0].disable();
     twine.current = gsap.to(scrollContainer.current, {
       overwrite: false,
-      y: snap[type === "down" ? currentIndex - 1 : currentIndex + 1],
+      [currentDirection]:
+        snap[type === "down" ? currentIndex - 1 : currentIndex + 1],
       onUpdate: () => {
-        const y = gsap.getProperty(scrollContainer.current, "y");
-        loop.current.call({ y, target: scrollContainer.current });
+        const offset = gsap.getProperty(
+          scrollContainer.current,
+          currentDirection
+        );
+        loop.current.call({
+          [currentDirection]: offset,
+          target: scrollContainer.current,
+        });
         handleControlCursor(
           type === "down" ? currentIndex - 1 : currentIndex + 1
         );
       },
       onComplete: () => {
-        const y = gsap.getProperty(scrollContainer.current, "y");
-        loop.current.call({ y, target: scrollContainer.current });
+        const offset = gsap.getProperty(
+          scrollContainer.current,
+          currentDirection
+        );
+        loop.current.call({
+          [currentDirection]: offset,
+          target: scrollContainer.current,
+        });
         handleControlCursor(
           type === "down" ? currentIndex - 1 : currentIndex + 1
         );
@@ -249,9 +290,12 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   useEffect(() => {
     currentIndexWatcher.current = setInterval(() => {
       if (scrollContainer.current === null) return;
-      const y = +gsap.getProperty(scrollContainer.current, "y");
+      const offset = +gsap.getProperty(
+        scrollContainer.current,
+        currentDirection
+      );
       setCurrentIndex(
-        snap.findIndex((item) => item === gsap.utils.snap(snap, y))
+        snap.findIndex((item) => item === gsap.utils.snap(snap, offset))
       );
     }, 16);
     return () => {
@@ -261,7 +305,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   return (
     <div
       ref={scrollWrapper}
-      className="bg-black h-[100dvh] w-full overflow-hidden relative"
+      className="bg-black h-[100dvh] w-full overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(#000_0%,transparent_10%,transparent_90%,#000_100%)]"
     >
       {cursor}
       <div
@@ -274,7 +318,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       >
         {[...data, ...data, ...data].map((item, index) => (
           <div
-            className="h-[60dvh] w-full rounded-4xl flex justify-center items-center text-4xl overflow-hidden"
+            className="h-[70dvh] w-full rounded-4xl flex justify-center items-center text-4xl overflow-hidden"
             key={index}
             ref={(el: any) => {
               scrollContainerItems.current[index] = el;
@@ -283,7 +327,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               handleControlCursor(index);
             }}
             onMouseLeave={(e) => {
-              handleControlCursor(index);
+              handleControlCursor(currentIndex);
             }}
             onMouseMove={(e) => {
               handleControlCursor(index);
