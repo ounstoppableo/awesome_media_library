@@ -1,7 +1,13 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-export default function useMoveCursor() {
+export default function useMoveCursor(props: { currentDirection: "x" | "y" }) {
+  const { currentDirection } = props;
   const [point, setPoint] = useState({ x: 0, y: 0 });
   const cursorRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState<"default" | "mousedown" | "up" | "down">(
@@ -59,11 +65,15 @@ export default function useMoveCursor() {
           form === "default"
             ? "w-4/6 h-4/6 opacity-0"
             : "w-[120%] h-[120%] opacity-100"
-        } transition-all duration-200 flex flex-col justify-center items-center absolute`}
+        } transition-all duration-200 flex ${
+          currentDirection === "y" ? "flex-col" : ""
+        } justify-center items-center absolute`}
       >
-        {(form === "mousedown" || form === "up") && <ChevronUp />}
+        {(form === "mousedown" || form === "up") &&
+          (currentDirection === "y" ? <ChevronUp /> : <ChevronLeft />)}
         <div className="flex-1"></div>
-        {(form === "mousedown" || form === "down") && <ChevronDown />}
+        {(form === "mousedown" || form === "down") &&
+          (currentDirection === "y" ? <ChevronDown /> : <ChevronRight />)}
       </div>
     </div>
   );
