@@ -41,6 +41,9 @@ importers:
       '@types/ws':
         specifier: ^8.18.1
         version: 8.18.1
+      animejs:
+        specifier: ^4.2.2
+        version: 4.2.2
       antd:
         specifier: ^5.27.3
         version: 5.27.3(date-fns@2.30.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1447,6 +1450,9 @@ packages:
     resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
     engines: {node: '>=0.4.0'}
     hasBin: true
+
+  animejs@4.2.2:
+    resolution: {integrity: sha512-Ys3RuvLdAeI14fsdKCQy7ytu4057QX6Bb7m4jwmfd6iKmUmLquTwk1ut0e4NtRQgCeq/s2Lv5+oMBjz6c7ZuIg==}
 
   ansi-regex@5.0.1:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
@@ -3875,6 +3881,8 @@ snapshots:
       acorn: 8.15.0
 
   acorn@8.15.0: {}
+
+  animejs@4.2.2: {}
 
   ansi-regex@5.0.1: {}
 

@@ -3,6 +3,8 @@ import gsap from "gsap";
 import { Draggable, InertiaPlugin } from "gsap/all";
 import useMoveCursor from "@/hooks/useMoveCursor";
 import { scaleNumber } from "@/utils/convention";
+import { createDraggable } from "animejs";
+import { InteractiveHoverButton } from "../ui/interactive-hover-button";
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
 export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
@@ -13,7 +15,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   const computedImgOffset = useRef<
     (offset: number, animateType?: "set" | "to") => void
   >(() => {});
-  const [currentDirection, setCurrentDirection] = useState<"y" | "x">("x");
+  const [currentDirection, setCurrentDirection] = useState<"y" | "x">("y");
   const computedItemOffset = useRef<
     (offset: number, animateType?: "set" | "to") => void
   >(() => {});
@@ -34,6 +36,8 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   const resizeAntiShake = useRef<NodeJS.Timeout | null>(null);
   const gap = 32;
   const offsetSetter = useRef<any>(null);
+  const [init, setInit] = useState(false);
+  const [repeatCount, setRepeatCount] = useState(5);
 
   const currentIndexWatcher = useRef<any>(null);
 
@@ -44,7 +48,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       "px"
     );
   }, [currentDirection]);
-
+  const lastSpeed = useRef<any>(0);
   useEffect(() => {
     const _main = () => {
       if (
@@ -66,11 +70,10 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         currentDirection === "y"
           ? imgeContainerItems.current[0].offsetHeight
           : imgeContainerItems.current[0].offsetWidth;
-
-      const itemCount = data.length * 3;
+      const itemCount = data.length * repeatCount;
       const _snap = Array.from(
         { length: itemCount },
-        (_, i) => -i * (gap + itemSize) + (wrapperSize / 2 - itemSize / 2 - gap)
+        (_, i) => -i * (itemSize + gap) + (wrapperSize / 2 - itemSize / 2)
       );
       setSnap(_snap);
 
@@ -96,21 +99,26 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           : () => {};
 
       computedItemOffset.current = (offset: number, animateType = "set") => {
-        const snapGap = Math.abs(_snap[1] - _snap[0]);
-        const speed = InertiaPlugin.getVelocity(
-          scrollContainer.current!,
-          currentDirection
-        );
+        if (currentDirection === "y") return;
+        const snapGap = Math.abs(_snap[0] - _snap[_snap.length - 1]);
+        const _speed =
+          InertiaPlugin.getVelocity(
+            scrollContainer.current!,
+            currentDirection
+          ) || 0;
+        const speed = gsap.utils.interpolate(lastSpeed.current, _speed, 0.1);
+        lastSpeed.current = speed;
         const maxSpeed = 5000;
         const minSpeed = 0;
         const maxLeapOffset = 100;
         const minLeapOffset = 0;
-        const maxBlur = 5;
-        const minBlur = 1;
-        const maxBrightnessMinus = 0.2;
+        const maxBlur = 30;
+        const minBlur = 0;
+        const maxBrightnessMinus = 2;
         const minBrightnessMinus = 0;
-        const minGap = 0;
-        const maxGap = gap * 6;
+        const maxGap = gap * 150;
+        const minScale = 1;
+        const maxScale = 1.2;
 
         for (let i = 0; i < _snap.length; i++) {
           const scrollItem = scrollContainerItems.current[i];
@@ -125,47 +133,47 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             maxBrightnessMinus
           );
 
-          const _gap = scaleNumber(
-            (Math.abs(speed) > maxSpeed ? maxSpeed : Math.abs(speed)) *
-              (offset - _snap[i]),
-            0,
-            snapGap,
-            0,
-            maxGap
-          );
+          // const _gap = scaleNumber(
+          //   Math.abs(speed) > maxSpeed
+          //     ? maxSpeed * (offset - _snap[i])
+          //     : Math.abs(speed) * (offset - _snap[i]),
+          //   0,
+          //   snapGap * maxSpeed,
+          //   0,
+          //   maxGap
+          // );
 
-          // gsap.set(scrollItem, {
-          //   [currentDirection]: _gap / maxSpeed,
+          // const _scale =
+          //   scaleNumber(
+          //     Math.abs(speed) > maxSpeed ? maxSpeed : Math.abs(speed),
+          //     0,
+          //     maxSpeed,
+          //     minScale,
+          //     maxScale
+          //   ) || 1;
+
+          // gsap.to(scrollItem, {
+          //   [currentDirection]: _gap,
+          //   ["scale" + currentDirection.toUpperCase()]:
+          //     _scale < minScale ? minScale : _scale,
           // });
+
           gsap[animateType](scrollItem, {
             filter: `blur(${blur}px) brightness(${1 - brightness})`,
           });
         }
       };
 
-      loop.current = function (this: any) {
-        let _offset = +gsap.getProperty(
-          scrollContainer.current,
-          currentDirection
-        );
-        if (_offset <= _snap[_snap.length - data.length]) {
-          _offset = _offset + (gap + itemSize) * data.length;
-          offsetSetter.current(_offset);
-          computedImgOffset.current(_offset);
-          computedItemOffset.current(_offset);
-          this.update?.();
-          return;
-        }
-        if (_offset >= _snap[data.length - 1]) {
-          _offset = _offset - (gap + itemSize) * data.length;
-          offsetSetter.current(_offset);
-          computedImgOffset.current(_offset);
-          computedItemOffset.current(_offset);
-          this.update?.();
-          return;
-        }
-        computedImgOffset.current(_offset);
+      loop.current = function (offset: any) {
+        let _offset =
+          (parseFloat(offset) % ((gap + itemSize) * data.length)) -
+          (gap + itemSize) * data.length;
+
         computedItemOffset.current(_offset);
+        if (currentDirection === "y") {
+          computedImgOffset.current(_offset);
+        }
+        return _offset;
       };
       return _snap;
     };
@@ -189,37 +197,39 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         : scrollContainerItems.current[0]!.offsetWidth;
     let velosity = itemSize;
     let brightness = 1;
-    let blur = 1;
     let scrollOffset = 0;
     const init = () => {
       scrollOffset %= -_snap[_snap.length - data.length];
       gsap.set(scrollContainer.current, {
         [currentDirection]: -scrollOffset,
-        filter: `brightness(${brightness}) saturate(${
-          brightness / 3
-        }) blur(${blur}px)`,
+        filter: `brightness(${brightness}) saturate(${brightness / 3})`,
       });
       scrollOffset += velosity;
+      computedItemOffset.current(scrollOffset);
     };
-    gsap.to(
-      {},
-      {
-        duration: 2,
-        ease: "power1.inOut",
-        onUpdate() {
-          velosity *= 1.003;
-          brightness *= 1.02;
-          blur *= 1.02;
-          init();
-        },
-        onComplete() {
-          gsap.to(scrollContainer.current, {
-            [currentDirection]: _snap[Math.ceil(_snap.length / 2) - 1],
-            filter: `brightness(1)`,
-          });
-        },
-      }
-    );
+    gsap
+      .to(
+        {},
+        {
+          duration: 2,
+          ease: "power1.inOut",
+          onUpdate() {
+            velosity *= 1.003;
+            brightness *= 1.02;
+            init();
+          },
+          onComplete() {
+            gsap.to(scrollContainer.current, {
+              [currentDirection]: _snap[Math.ceil(_snap.length / 2) - 1],
+              filter: `brightness(1)`,
+            });
+            computedItemOffset.current(_snap[Math.ceil(_snap.length / 2) - 1]);
+          },
+        }
+      )
+      .then(() => {
+        setInit(true);
+      });
 
     window.addEventListener("resize", resizeCb);
 
@@ -238,16 +248,12 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         : scrollContainerItems.current[0]!.offsetWidth;
     const wheelCb = (e: any) => {
       // offset越靠近itemSize，速度越慢
-      offset +=
-        (Math.abs(itemSize - offset) *
-          e["delta" + currentDirection.toLocaleUpperCase()]) /
-        500;
-      if (e["delta" + currentDirection.toLocaleUpperCase()] > 0) {
+      offset += (Math.abs(itemSize - offset) * e["deltaY"]) / 500;
+      if (e["deltaY"] > 0) {
         offset = offset >= itemSize / 2 ? itemSize / 2 : offset;
       } else {
         offset = offset <= -itemSize / 2 ? -itemSize / 2 : offset;
       }
-
       const currentOffset = +gsap.getProperty(
         scrollContainer.current,
         currentDirection
@@ -280,25 +286,76 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
 
   const dragInst = useRef<any>(null);
   useEffect(() => {
+    if (!init) return;
+    let snapExecLock: any = null;
     dragInst.current = Draggable.create(scrollContainer.current, {
       type: currentDirection,
-      inertia: true,
       cursor: "grab",
       activeCursor: "grabbing",
       allowEventDefault: false,
-
       onDrag: function () {
-        loop.current.call(this);
+        if (snapExecLock) clearTimeout(snapExecLock);
+        snapExecLock = setTimeout(() => {
+          snapExecLock = null;
+        }, 500);
+        computedItemOffset.current(this[currentDirection]);
+        if (currentDirection === "y") {
+          computedImgOffset.current(this[currentDirection]);
+        }
       },
-      onThrowUpdate: function () {
-        loop.current.call(this);
+      onDragEnd: function () {
+        const snapGap = Math.abs(snap[0] - snap[1]);
+        const execSnap = (immediate = false) => {
+          const duration = 1;
+          const velosity = InertiaPlugin.getVelocity(
+            scrollContainer.current!,
+            currentDirection
+          );
+          const offset = +gsap.getProperty(
+            scrollContainer.current,
+            currentDirection
+          );
+          const targetOffset =
+            velosity > 0
+              ? gsap.utils.snap(snap, offset)
+              : gsap.utils.snap(snap, offset);
+          if (
+            Math.abs(velosity) <=
+              Math.abs((targetOffset - offset) / duration) &&
+            (!snapExecLock || immediate)
+          ) {
+            gsap.to(scrollContainer.current, {
+              overwrite: true,
+              duration: duration,
+              [currentDirection]: targetOffset,
+              modifiers: {
+                [currentDirection]: (offset) => {
+                  return loop.current(offset) + "px";
+                },
+              },
+            });
+          }
+        };
+        gsap.to(this.target, {
+          inertia: { [currentDirection]: true } as any,
+          onUpdate() {
+            execSnap();
+          },
+          onComplete() {
+            execSnap(true);
+          },
+          modifiers: {
+            [currentDirection]: (offset) => {
+              return loop.current(offset) + "px";
+            },
+          },
+        });
       },
-      snap: { [currentDirection]: snap },
     });
     return () => {
       dragInst.current[0].kill();
     };
-  }, [snap, currentDirection]);
+  }, [snap, currentDirection, init]);
 
   const { form, cursor, setForm } = useMoveCursor({ currentDirection });
 
@@ -332,9 +389,8 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           scrollContainer.current,
           currentDirection
         );
-        loop.current.call({
-          [currentDirection]: offset,
-          target: scrollContainer.current,
+        gsap.set(scrollContainer.current, {
+          [currentDirection]: loop.current(offset),
         });
         handleControlCursor(
           type === "down" ? currentIndex - 1 : currentIndex + 1
@@ -345,9 +401,8 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           scrollContainer.current,
           currentDirection
         );
-        loop.current.call({
-          [currentDirection]: offset,
-          target: scrollContainer.current,
+        gsap.set(scrollContainer.current, {
+          [currentDirection]: loop.current(offset),
         });
         handleControlCursor(
           type === "down" ? currentIndex - 1 : currentIndex + 1
@@ -385,55 +440,129 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       {cursor}
       <div
         className={`${
-          currentDirection === "y" ? "h-fit w-full" : "h-full w-fit"
-        }  flex items-center justify-center px-[4%] ${
+          currentDirection === "y" ? "h-fit w-full px-[4%]" : "h-full w-fit"
+        }  flex items-center justify-center ${
           currentDirection === "y" ? "flex-col" : ""
         } gap-8`}
-        style={{
-          paddingTop: "calc(var(--spacing) * 8)",
-          paddingBottom: "calc(var(--spacing) * 8)",
-        }}
         ref={scrollContainer}
       >
-        {[...data, ...data, ...data].map((item, index) => (
-          <div
-            className={`${
-              currentDirection === "y"
-                ? "h-[70dvh] w-full"
-                : "h-[60dvh] aspect-[3/4]"
-            }  rounded-4xl flex justify-center items-center text-4xl overflow-hidden`}
-            key={index}
-            ref={(el: any) => {
-              scrollContainerItems.current[index] = el;
-            }}
-            onMouseEnter={(e) => {
-              handleControlCursor(index);
-            }}
-            onMouseLeave={(e) => {
-              handleControlCursor(currentIndex);
-            }}
-            onMouseMove={(e) => {
-              handleControlCursor(index);
-            }}
-            onClick={() =>
-              handleChangeCurrent(
-                currentIndex > index ? "down" : currentIndex < index ? "up" : ""
-              )
-            }
-          >
-            <div className="h-full w-full overflow-hidden relative select-none">
-              <img
-                src={item.img}
-                className={`${
-                  currentDirection === "y" ? "w-[100vw] h-fit" : "w-fit h-full"
-                } object-cover absolute top-1/2 left-1/2 -translate-1/2 select-none`}
-                ref={(el) => {
-                  imgeContainerItems.current[index] = el;
-                }}
-              ></img>
+        {Array.from({ length: repeatCount }, (_, i) => data)
+          .flat()
+          .map((item, index) => (
+            <div
+              className={`${
+                currentDirection === "y"
+                  ? "h-[70dvh] w-full"
+                  : "h-[60dvh] aspect-[3/4]"
+              } flex justify-center items-center text-4xl relative`}
+              key={index}
+              ref={(el: any) => {
+                scrollContainerItems.current[index] = el;
+              }}
+              onMouseEnter={(e) => {
+                handleControlCursor(index);
+              }}
+              onMouseLeave={(e) => {
+                handleControlCursor(currentIndex);
+              }}
+              onMouseMove={(e) => {
+                handleControlCursor(index);
+              }}
+              onClick={() =>
+                handleChangeCurrent(
+                  currentIndex > index
+                    ? "down"
+                    : currentIndex < index
+                    ? "up"
+                    : ""
+                )
+              }
+            >
+              <div
+                className={`h-full w-full overflow-hidden relative select-none rounded-4xl ${
+                  currentDirection === "x"
+                    ? "after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(transparent_0%,transparent_50%,#000_100%)]"
+                    : ""
+                }`}
+              >
+                <img
+                  src={item.img}
+                  className={`${
+                    currentDirection === "y"
+                      ? "w-[100vw] h-fit"
+                      : "w-fit h-[100vh]"
+                  } object-cover absolute top-1/2 left-1/2 -translate-1/2 select-none`}
+                  ref={(el) => {
+                    imgeContainerItems.current[index] = el;
+                  }}
+                ></img>
+              </div>
+              <div
+                className={`absolute z-10 w-fit h-fit flex flex-col justify-center items-center text-white gap-4 bottom-8 ${
+                  currentDirection === "y" ? "left-8" : ""
+                }`}
+              >
+                <div
+                  className={`flex flex-col justify-center items-center ${
+                    currentDirection === "y" ? "gap-4" : "gap-1"
+                  }`}
+                >
+                  <div
+                    className="text-xs tracking-[4px]"
+                    style={{
+                      fontFamily: "P22 Parrish Roman,Arial,sans-serif",
+                    }}
+                  >
+                    {"Documentary".toUpperCase()}
+                  </div>
+                  <div
+                    className={`${
+                      currentDirection === "y" ? "text-6xl" : "text-3xl"
+                    }`}
+                    style={{ fontFamily: "Neue Brucke,Arial,sans-serif" }}
+                  >
+                    {"My Project X".toUpperCase()}
+                  </div>
+                </div>
+                <div
+                  className={`${
+                    currentDirection === "y" ? "text-lg" : "text-base"
+                  } flex flex-col w-full justify-center items-center`}
+                  style={{
+                    fontFamily: "Neue Brucke,Arial,sans-serif",
+                    lineHeight:
+                      currentDirection === "y"
+                        ? "calc(var(--text-lg) - 4px)"
+                        : "calc(var(--text-base) - 4px)",
+                    verticalAlign: "center",
+                  }}
+                >
+                  <div className="flex border-t border-white items-center justify-center gap-16 px-4 w-full">
+                    <div>YEAR</div>
+                    <div>2024</div>
+                  </div>
+                  <div className="flex border-t border-white items-center justify-center  gap-8 px-6 w-full">
+                    <div>LOCATION</div>
+                    <div>TEL AVIV</div>
+                  </div>
+                  <div className="flex border-t border-white border-b items-center justify-center gap-12 px-2 w-full">
+                    <div>CATEGORY</div>
+                    <div>DOCUMENTARY</div>
+                  </div>
+                </div>
+              </div>
+              {currentDirection === "y" && (
+                <div className="absolute bottom-8 right-8">
+                  <InteractiveHoverButton
+                    className="text-xl w-48"
+                    text="Explore"
+                    defaultColor="bg-transparent"
+                    hoverColor="white"
+                  />
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );

@@ -1,0 +1,12 @@
+@font-face {
+  font-family: "Neue Brucke";
+  src: url("./NeueBrucke-Regular.eot");
+  src: local("./Neue Brucke Regular"), local("./NeueBrucke-Regular"),
+    url("./NeueBrucke-Regular.eot?#iefix") format("embedded-opentype"),
+    url("./NeueBrucke-Regular.woff2") format("woff2"),
+    url("./NeueBrucke-Regular.woff") format("woff"),
+    url("./NeueBrucke-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}

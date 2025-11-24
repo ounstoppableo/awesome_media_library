@@ -26,6 +26,11 @@ export default function RootLayout({
     <html lang="cn">
       <head>
         <script src="/iconfont/iconfont.js"></script>
+        <link rel="stylesheet" href="/font/neueBrucke/stylesheet.css"></link>
+        <link
+          rel="stylesheet"
+          href="/font/p22ParrishRoman/stylesheet.css"
+        ></link>
       </head>
 
       <body
