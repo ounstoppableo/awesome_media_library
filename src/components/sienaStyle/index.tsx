@@ -5,6 +5,8 @@ import useMoveCursor from "@/hooks/useMoveCursor";
 import { scaleNumber } from "@/utils/convention";
 import { createDraggable } from "animejs";
 import { InteractiveHoverButton } from "../ui/interactive-hover-button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import SvgIcon from "../svgIcon";
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
 export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
@@ -15,7 +17,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   const computedImgOffset = useRef<
     (offset: number, animateType?: "set" | "to") => void
   >(() => {});
-  const [currentDirection, setCurrentDirection] = useState<"y" | "x">("y");
+  const [currentDirection, setCurrentDirection] = useState<"y" | "x">("x");
   const computedItemOffset = useRef<
     (offset: number, animateType?: "set" | "to") => void
   >(() => {});
@@ -38,6 +40,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   const offsetSetter = useRef<any>(null);
   const [init, setInit] = useState(false);
   const [repeatCount, setRepeatCount] = useState(5);
+  const [tabValue, setTabValue] = useState("singleScroll");
 
   const currentIndexWatcher = useRef<any>(null);
 
@@ -132,7 +135,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             minBrightnessMinus,
             maxBrightnessMinus
           );
-
           // const _gap = scaleNumber(
           //   Math.abs(speed) > maxSpeed
           //     ? maxSpeed * (offset - _snap[i])
@@ -287,70 +289,29 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   const dragInst = useRef<any>(null);
   useEffect(() => {
     if (!init) return;
-    let snapExecLock: any = null;
     dragInst.current = Draggable.create(scrollContainer.current, {
       type: currentDirection,
       cursor: "grab",
       activeCursor: "grabbing",
       allowEventDefault: false,
+      inertia: true,
       onDrag: function () {
-        if (snapExecLock) clearTimeout(snapExecLock);
-        snapExecLock = setTimeout(() => {
-          snapExecLock = null;
-        }, 500);
         computedItemOffset.current(this[currentDirection]);
         if (currentDirection === "y") {
           computedImgOffset.current(this[currentDirection]);
         }
       },
-      onDragEnd: function () {
-        const snapGap = Math.abs(snap[0] - snap[1]);
-        const execSnap = (immediate = false) => {
-          const duration = 1;
-          const velosity = InertiaPlugin.getVelocity(
-            scrollContainer.current!,
-            currentDirection
-          );
-          const offset = +gsap.getProperty(
-            scrollContainer.current,
-            currentDirection
-          );
-          const targetOffset =
-            velosity > 0
-              ? gsap.utils.snap(snap, offset)
-              : gsap.utils.snap(snap, offset);
-          if (
-            Math.abs(velosity) <=
-              Math.abs((targetOffset - offset) / duration) &&
-            (!snapExecLock || immediate)
-          ) {
-            gsap.to(scrollContainer.current, {
-              overwrite: true,
-              duration: duration,
-              [currentDirection]: targetOffset,
-              modifiers: {
-                [currentDirection]: (offset) => {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-          }
-        };
-        gsap.to(this.target, {
-          inertia: { [currentDirection]: true } as any,
-          onUpdate() {
-            execSnap();
-          },
-          onComplete() {
-            execSnap(true);
-          },
+      onThrowUpdate() {
+        gsap.set(this.target, {
+          [currentDirection]: this[currentDirection],
           modifiers: {
-            [currentDirection]: (offset) => {
+            [currentDirection]: function (offset) {
               return loop.current(offset) + "px";
             },
           },
         });
       },
+      snap: { [currentDirection]: snap },
     });
     return () => {
       dragInst.current[0].kill();
@@ -431,19 +392,58 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   return (
     <div
       ref={scrollWrapper}
-      className={`bg-black h-[100dvh] w-full overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10 ${
+      className={`bg-black select-none h-[100dvh] w-full overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10 flex flex-col py-16 gap-8 ${
         currentDirection === "y"
           ? "after:bg-[linear-gradient(#000_0%,transparent_10%,transparent_90%,#000_100%)"
-          : "after:bg-[linear-gradient(to right,#000_0%,transparent_10%,transparent_90%,#000_100%)"
+          : "after:bg-[linear-gradient(to_right,#000_0%,transparent_10%,transparent_90%,#000_100%)"
       }]`}
     >
       {cursor}
+      {currentDirection === "x" && init && (
+        <Tabs
+          defaultValue="tab-1"
+          className="self-center dark z-20"
+          value={tabValue}
+          onValueChange={(value) => setTabValue(value)}
+        >
+          <TabsList>
+            <TabsTrigger value="singleScroll">
+              <div
+                className={`w-6 h-8 overflow-hidden flex justify-center items-center ${
+                  tabValue === "singleScroll"
+                    ? " relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(to_right,#000_0%,transparent_20%,transparent_80%,#000_100%)]"
+                    : ""
+                }`}
+              >
+                <SvgIcon
+                  path={"/siena/singleScroll.svg"}
+                  className="w-8 h-8"
+                ></SvgIcon>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger value="dualScroll">
+              <div
+                className={`w-6 h-8 overflow-hidden flex justify-center items-center relative ${
+                  tabValue === "dualScroll"
+                    ? "relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(to_right,#000_0%,transparent_30%,transparent_70%,#000_100%)]"
+                    : ""
+                }`}
+              >
+                <SvgIcon
+                  path={"/siena/dualScroll.svg"}
+                  className="w-8 h-8"
+                ></SvgIcon>
+              </div>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
       <div
         className={`${
           currentDirection === "y" ? "h-fit w-full px-[4%]" : "h-full w-fit"
         }  flex items-center justify-center ${
           currentDirection === "y" ? "flex-col" : ""
-        } gap-8`}
+        } gap-8 z-[0!important]`}
         ref={scrollContainer}
       >
         {Array.from({ length: repeatCount }, (_, i) => data)
@@ -453,8 +453,8 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               className={`${
                 currentDirection === "y"
                   ? "h-[70dvh] w-full"
-                  : "h-[60dvh] aspect-[3/4]"
-              } flex justify-center items-center text-4xl relative`}
+                  : "h-[60dvh] aspect-[4/5]"
+              } flex justify-center items-center text-4xl relative select-none`}
               key={index}
               ref={(el: any) => {
                 scrollContainerItems.current[index] = el;
@@ -497,61 +497,63 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                   }}
                 ></img>
               </div>
-              <div
-                className={`absolute z-10 w-fit h-fit flex flex-col justify-center items-center text-white gap-4 bottom-8 ${
-                  currentDirection === "y" ? "left-8" : ""
-                }`}
-              >
+              {init && (
                 <div
-                  className={`flex flex-col justify-center items-center ${
-                    currentDirection === "y" ? "gap-4" : "gap-1"
+                  className={`absolute z-10 w-fit h-fit flex flex-col justify-center items-center text-white gap-4 bottom-8 ${
+                    currentDirection === "y" ? "left-8" : ""
                   }`}
                 >
                   <div
-                    className="text-xs tracking-[4px]"
-                    style={{
-                      fontFamily: "P22 Parrish Roman,Arial,sans-serif",
-                    }}
+                    className={`flex flex-col justify-center items-center ${
+                      currentDirection === "y" ? "gap-4" : "gap-1"
+                    }`}
                   >
-                    {"Documentary".toUpperCase()}
+                    <div
+                      className="text-xs tracking-[4px]"
+                      style={{
+                        fontFamily: "P22 Parrish Roman,Arial,sans-serif",
+                      }}
+                    >
+                      {"Documentary".toUpperCase()}
+                    </div>
+                    <div
+                      className={`${
+                        currentDirection === "y" ? "text-6xl" : "text-3xl"
+                      }`}
+                      style={{ fontFamily: "Neue Brucke,Arial,sans-serif" }}
+                    >
+                      {"My Project X".toUpperCase()}
+                    </div>
                   </div>
                   <div
                     className={`${
-                      currentDirection === "y" ? "text-6xl" : "text-3xl"
-                    }`}
-                    style={{ fontFamily: "Neue Brucke,Arial,sans-serif" }}
+                      currentDirection === "y" ? "text-lg" : "text-base"
+                    } flex flex-col w-full justify-center items-center`}
+                    style={{
+                      fontFamily: "Neue Brucke,Arial,sans-serif",
+                      lineHeight:
+                        currentDirection === "y"
+                          ? "calc(var(--text-lg) - 4px)"
+                          : "calc(var(--text-base) - 4px)",
+                      verticalAlign: "center",
+                    }}
                   >
-                    {"My Project X".toUpperCase()}
+                    <div className="flex border-t border-white items-center justify-center gap-16 px-4 w-full">
+                      <div>YEAR</div>
+                      <div>2024</div>
+                    </div>
+                    <div className="flex border-t border-white items-center justify-center  gap-8 px-6 w-full">
+                      <div>LOCATION</div>
+                      <div>TEL AVIV</div>
+                    </div>
+                    <div className="flex border-t border-white border-b items-center justify-center gap-12 px-2 w-full">
+                      <div>CATEGORY</div>
+                      <div>DOCUMENTARY</div>
+                    </div>
                   </div>
                 </div>
-                <div
-                  className={`${
-                    currentDirection === "y" ? "text-lg" : "text-base"
-                  } flex flex-col w-full justify-center items-center`}
-                  style={{
-                    fontFamily: "Neue Brucke,Arial,sans-serif",
-                    lineHeight:
-                      currentDirection === "y"
-                        ? "calc(var(--text-lg) - 4px)"
-                        : "calc(var(--text-base) - 4px)",
-                    verticalAlign: "center",
-                  }}
-                >
-                  <div className="flex border-t border-white items-center justify-center gap-16 px-4 w-full">
-                    <div>YEAR</div>
-                    <div>2024</div>
-                  </div>
-                  <div className="flex border-t border-white items-center justify-center  gap-8 px-6 w-full">
-                    <div>LOCATION</div>
-                    <div>TEL AVIV</div>
-                  </div>
-                  <div className="flex border-t border-white border-b items-center justify-center gap-12 px-2 w-full">
-                    <div>CATEGORY</div>
-                    <div>DOCUMENTARY</div>
-                  </div>
-                </div>
-              </div>
-              {currentDirection === "y" && (
+              )}
+              {currentDirection === "y" && init && (
                 <div className="absolute bottom-8 right-8">
                   <InteractiveHoverButton
                     className="text-xl w-48"
@@ -564,6 +566,20 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             </div>
           ))}
       </div>
+
+      {currentDirection === "x" && init && (
+        <>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-[1px] scale-x-20 bg-white z-10"></div>
+          <div className="self-end mr-16">
+            <InteractiveHoverButton
+              className="text-xl w-48 z-20"
+              text="Explore"
+              defaultColor="bg-transparent"
+              hoverColor="white"
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
