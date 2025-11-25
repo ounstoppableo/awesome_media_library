@@ -24,13 +24,70 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   const [currentIndex, setCurrentIndex] = useState(0);
   const [data, setData] = useState([
     {
+      id: "1",
       img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/675eb903f604a7a856c87467_taboo.webp",
+      children: [
+        {
+          id: "1.1",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/675eb903f604a7a856c87467_taboo.webp",
+        },
+        {
+          id: "1.2",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
+        },
+        {
+          id: "1.3",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
+        },
+        {
+          id: "1.4",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/675eb903f604a7a856c87467_taboo.webp",
+        },
+        {
+          id: "1.5",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
+        },
+        {
+          id: "1.6",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
+        },
+      ],
     },
     {
+      id: "2",
       img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
+      children: [
+        {
+          id: "2.1",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/675eb903f604a7a856c87467_taboo.webp",
+        },
+        {
+          id: "2.2",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
+        },
+        {
+          id: "2.3",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
+        },
+      ],
     },
     {
+      id: "3",
       img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
+      children: [
+        {
+          id: "3.1",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/675eb903f604a7a856c87467_taboo.webp",
+        },
+        {
+          id: "3.2",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
+        },
+        {
+          id: "3.3",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
+        },
+      ],
     },
   ]);
   const loop = useRef<(...params: any) => any>(function () {});
@@ -41,6 +98,9 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   const [init, setInit] = useState(false);
   const [repeatCount, setRepeatCount] = useState(5);
   const [tabValue, setTabValue] = useState("singleScroll");
+  const odometer = useRef<HTMLDivElement | null>(null);
+  const [currentReadPhotoId, setCurrentReadPhotoId] = useState("");
+  const dualScrollRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const currentIndexWatcher = useRef<any>(null);
 
@@ -50,7 +110,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       currentDirection,
       "px"
     );
-  }, [currentDirection]);
+  }, [currentDirection, currentReadPhotoId]);
   const lastSpeed = useRef<any>(0);
   useEffect(() => {
     const _main = () => {
@@ -82,24 +142,26 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
 
       offsetSetter.current(_snap[Math.ceil(_snap.length / 2) - 1]);
       // img静止
-      computedImgOffset.current =
-        currentDirection === "y"
-          ? (offset: number, animateType: "set" | "to" = "set") => {
-              for (let i = 0; i < _snap.length; i++) {
-                const imgEl = imgeContainerItems.current[i];
-                if (!imgEl) continue;
-                const changeOffset =
-                  ((_snap[i] - offset) * 2 * imageSize) / scrollContainerSize;
-                const maxChangeOffset = (imageSize - itemSize) / 2;
-                gsap[animateType](imgEl, {
-                  [currentDirection]:
-                    changeOffset < -maxChangeOffset
-                      ? -maxChangeOffset
-                      : changeOffset,
-                });
-              }
-            }
-          : () => {};
+      computedImgOffset.current = (
+        offset: number,
+        animateType: "set" | "to" = "set"
+      ) => {
+        if (currentDirection === "y") {
+          for (let i = 0; i < _snap.length; i++) {
+            const imgEl = imgeContainerItems.current[i];
+            if (!imgEl) continue;
+            const changeOffset =
+              ((_snap[i] - offset) * 2 * imageSize) / scrollContainerSize;
+            const maxChangeOffset = (imageSize - itemSize) / 2;
+            gsap[animateType](imgEl, {
+              [currentDirection]:
+                changeOffset < -maxChangeOffset
+                  ? -maxChangeOffset
+                  : changeOffset,
+            });
+          }
+        }
+      };
 
       computedItemOffset.current = (offset: number, animateType = "set") => {
         if (currentDirection === "y") return;
@@ -123,46 +185,49 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         const minScale = 1;
         const maxScale = 1.2;
 
-        for (let i = 0; i < _snap.length; i++) {
-          const scrollItem = scrollContainerItems.current[i];
-          if (!scrollItem) continue;
-          const offsetDiff = Math.abs(_snap[i] - offset);
-          const blur = scaleNumber(offsetDiff, 0, snapGap, minBlur, maxBlur);
-          const brightness = scaleNumber(
-            offsetDiff,
-            0,
-            snapGap,
-            minBrightnessMinus,
-            maxBrightnessMinus
-          );
-          // const _gap = scaleNumber(
-          //   Math.abs(speed) > maxSpeed
-          //     ? maxSpeed * (offset - _snap[i])
-          //     : Math.abs(speed) * (offset - _snap[i]),
-          //   0,
-          //   snapGap * maxSpeed,
-          //   0,
-          //   maxGap
-          // );
+        if (currentReadPhotoId) {
+        } else {
+          for (let i = 0; i < _snap.length; i++) {
+            const scrollItem = scrollContainerItems.current[i];
+            if (!scrollItem) continue;
+            const offsetDiff = Math.abs(_snap[i] - offset);
+            const blur = scaleNumber(offsetDiff, 0, snapGap, minBlur, maxBlur);
+            const brightness = scaleNumber(
+              offsetDiff,
+              0,
+              snapGap,
+              minBrightnessMinus,
+              maxBrightnessMinus
+            );
+            // const _gap = scaleNumber(
+            //   Math.abs(speed) > maxSpeed
+            //     ? maxSpeed * (offset - _snap[i])
+            //     : Math.abs(speed) * (offset - _snap[i]),
+            //   0,
+            //   snapGap * maxSpeed,
+            //   0,
+            //   maxGap
+            // );
 
-          // const _scale =
-          //   scaleNumber(
-          //     Math.abs(speed) > maxSpeed ? maxSpeed : Math.abs(speed),
-          //     0,
-          //     maxSpeed,
-          //     minScale,
-          //     maxScale
-          //   ) || 1;
+            // const _scale =
+            //   scaleNumber(
+            //     Math.abs(speed) > maxSpeed ? maxSpeed : Math.abs(speed),
+            //     0,
+            //     maxSpeed,
+            //     minScale,
+            //     maxScale
+            //   ) || 1;
 
-          // gsap.to(scrollItem, {
-          //   [currentDirection]: _gap,
-          //   ["scale" + currentDirection.toUpperCase()]:
-          //     _scale < minScale ? minScale : _scale,
-          // });
+            // gsap.to(scrollItem, {
+            //   [currentDirection]: _gap,
+            //   ["scale" + currentDirection.toUpperCase()]:
+            //     _scale < minScale ? minScale : _scale,
+            // });
 
-          gsap[animateType](scrollItem, {
-            filter: `blur(${blur}px) brightness(${1 - brightness})`,
-          });
+            gsap[animateType](scrollItem, {
+              filter: `blur(${blur}px) brightness(${1 - brightness})`,
+            });
+          }
         }
       };
 
@@ -200,7 +265,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     let velosity = itemSize;
     let brightness = 1;
     let scrollOffset = 0;
-    const init = () => {
+    const _init = () => {
       scrollOffset %= -_snap[_snap.length - data.length];
       gsap.set(scrollContainer.current, {
         [currentDirection]: -scrollOffset,
@@ -209,36 +274,38 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       scrollOffset += velosity;
       computedItemOffset.current(scrollOffset);
     };
-    gsap
-      .to(
-        {},
-        {
-          duration: 2,
-          ease: "power1.inOut",
-          onUpdate() {
-            velosity *= 1.003;
-            brightness *= 1.02;
-            init();
-          },
-          onComplete() {
-            gsap.to(scrollContainer.current, {
-              [currentDirection]: _snap[Math.ceil(_snap.length / 2) - 1],
-              filter: `brightness(1)`,
-            });
-            computedItemOffset.current(_snap[Math.ceil(_snap.length / 2) - 1]);
-          },
-        }
-      )
-      .then(() => {
-        setInit(true);
-      });
-
+    !init &&
+      gsap
+        .to(
+          {},
+          {
+            duration: 2,
+            ease: "power1.inOut",
+            onUpdate() {
+              velosity *= 1.003;
+              brightness *= 1.02;
+              _init();
+            },
+            onComplete() {
+              gsap.to(scrollContainer.current, {
+                [currentDirection]: _snap[Math.ceil(_snap.length / 2) - 1],
+                filter: `brightness(1)`,
+              });
+              computedItemOffset.current(
+                _snap[Math.ceil(_snap.length / 2) - 1]
+              );
+            },
+          }
+        )
+        .then(() => {
+          setInit(true);
+        });
     window.addEventListener("resize", resizeCb);
 
     return () => {
       window.removeEventListener("resize", resizeCb);
     };
-  }, [currentDirection]);
+  }, [currentDirection, currentReadPhotoId]);
 
   useEffect(() => {
     // 控制滚轮事件
@@ -251,21 +318,38 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     const wheelCb = (e: any) => {
       // offset越靠近itemSize，速度越慢
       offset += (Math.abs(itemSize - offset) * e["deltaY"]) / 500;
-      if (e["deltaY"] > 0) {
-        offset = offset >= itemSize / 2 ? itemSize / 2 : offset;
+      offset = offset % (itemSize / 2);
+
+      if (currentReadPhotoId) {
+        gsap.to(dualScrollRef.current[0], {
+          [currentDirection]:
+            gsap.utils.snap(
+              snap,
+              +gsap.getProperty(dualScrollRef.current[0], currentDirection)
+            ) + offset,
+        });
+        gsap.to(dualScrollRef.current[1], {
+          [currentDirection]:
+            gsap.utils.snap(
+              snap,
+              +gsap.getProperty(dualScrollRef.current[1], currentDirection)
+            ) - offset,
+        });
+        computedImgOffset.current(offset, "to");
+        computedItemOffset.current(offset, "to");
       } else {
-        offset = offset <= -itemSize / 2 ? -itemSize / 2 : offset;
+        const currentOffset = +gsap.getProperty(
+          scrollContainer.current,
+          currentDirection
+        );
+        const targetOffset = gsap.utils.snap(snap, currentOffset) + offset;
+        gsap.to(scrollContainer.current, {
+          [currentDirection]: targetOffset,
+        });
+        computedImgOffset.current(targetOffset, "to");
+        computedItemOffset.current(targetOffset, "to");
       }
-      const currentOffset = +gsap.getProperty(
-        scrollContainer.current,
-        currentDirection
-      );
-      const targetOffset = gsap.utils.snap(snap, currentOffset) + offset;
-      gsap.to(scrollContainer.current, {
-        [currentDirection]: targetOffset,
-      });
-      computedImgOffset.current(targetOffset, "to");
-      computedItemOffset.current(targetOffset, "to");
+
       clearTimeout(wheelTimer);
       wheelTimer = setTimeout(() => {
         offset = 0;
@@ -273,37 +357,39 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           snap,
           +gsap.getProperty(scrollContainer.current, currentDirection)
         );
-        gsap.to(scrollContainer.current, {
-          [currentDirection]: targetOffset,
-        });
-        computedImgOffset.current(targetOffset, "to");
-        computedItemOffset.current(targetOffset, "to");
+        if (currentReadPhotoId) {
+        } else {
+          gsap.to(scrollContainer.current, {
+            [currentDirection]: targetOffset,
+          });
+          computedImgOffset.current(targetOffset, "to");
+          computedItemOffset.current(targetOffset, "to");
+        }
       }, 100);
     };
     window.addEventListener("wheel", wheelCb);
     return () => {
       window.removeEventListener("wheel", wheelCb);
     };
-  }, [snap, currentDirection]);
+  }, [snap, currentDirection, currentReadPhotoId]);
 
   const dragInst = useRef<any>(null);
   useEffect(() => {
     if (!init) return;
-    dragInst.current = Draggable.create(scrollContainer.current, {
-      type: currentDirection,
-      cursor: "grab",
-      activeCursor: "grabbing",
-      allowEventDefault: false,
-      inertia: true,
-      onDrag: function () {
-        computedItemOffset.current(this[currentDirection]);
-        if (currentDirection === "y") {
-          computedImgOffset.current(this[currentDirection]);
-        }
-      },
-      onThrowUpdate() {
-        gsap.set(this.target, {
-          [currentDirection]: this[currentDirection],
+    const odometerDistance = odometer.current?.parentElement?.offsetWidth;
+    const wrapperSize =
+      currentDirection === "y"
+        ? scrollWrapper.current?.offsetHeight
+        : scrollWrapper.current?.offsetWidth;
+    const scrollSize =
+      currentDirection === "y"
+        ? scrollContainer.current?.offsetHeight
+        : scrollContainer.current?.offsetWidth;
+
+    const trickerQueue = [
+      () => {
+        gsap.set(dualScrollRef.current[0], {
+          [currentDirection]: "+=1",
           modifiers: {
             [currentDirection]: function (offset) {
               return loop.current(offset) + "px";
@@ -311,12 +397,184 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           },
         });
       },
-      snap: { [currentDirection]: snap },
-    });
+      () => {
+        gsap.set(dualScrollRef.current[1], {
+          [currentDirection]: "-=1",
+          modifiers: {
+            [currentDirection]: function (offset) {
+              return loop.current(offset) + "px";
+            },
+          },
+        });
+      },
+    ];
+
+    if (currentReadPhotoId) {
+      gsap.set(scrollContainer.current, {
+        [currentDirection]: 0,
+      });
+      gsap.to(dualScrollRef.current[0], {
+        [currentDirection]: snap[Math.ceil(snap.length / 2) - 1],
+      });
+      gsap.to(dualScrollRef.current[0], {
+        [currentDirection]:
+          snap[Math.ceil(snap.length / 2) - 1] + (snap[0] - snap[1]),
+      });
+      trickerQueue.forEach((trickerCb) => gsap.ticker.add(trickerCb));
+      dragInst.current = [
+        ...Draggable.create(dualScrollRef.current[0], {
+          type: currentDirection,
+          cursor: "grab",
+          activeCursor: "grabbing",
+          allowEventDefault: false,
+          inertia: true,
+          onDrag: function () {
+            trickerQueue.forEach((trickerCb) => gsap.ticker.remove(trickerCb));
+            gsap.set(dualScrollRef.current[1], {
+              [currentDirection]: -this[currentDirection],
+              modifiers: {
+                [currentDirection]: function (offset) {
+                  return loop.current(offset) + "px";
+                },
+              },
+            });
+            odometer.current &&
+              gsap.to(odometer.current, {
+                x:
+                  ((this["pointer" + currentDirection.toUpperCase()] -
+                    wrapperSize! / 2) /
+                    wrapperSize!) *
+                  odometerDistance!,
+              });
+          },
+          onDragEnd: function () {
+            odometer.current &&
+              gsap.to(odometer.current, {
+                x: 0,
+              });
+          },
+          onThrowUpdate() {
+            gsap.set(dualScrollRef.current[1], {
+              [currentDirection]: -this[currentDirection],
+              modifiers: {
+                [currentDirection]: function (offset) {
+                  return loop.current(offset) + "px";
+                },
+              },
+            });
+            gsap.set(this.target, {
+              [currentDirection]: this[currentDirection],
+              modifiers: {
+                [currentDirection]: function (offset) {
+                  return loop.current(offset) + "px";
+                },
+              },
+            });
+          },
+          onThrowComplete() {
+            trickerQueue.forEach((trickerCb) => gsap.ticker.add(trickerCb));
+          },
+        }),
+        ...Draggable.create(dualScrollRef.current[1], {
+          type: currentDirection,
+          cursor: "grab",
+          activeCursor: "grabbing",
+          allowEventDefault: false,
+          inertia: true,
+          onDrag: function () {
+            gsap.set(dualScrollRef.current[0], {
+              [currentDirection]: -this[currentDirection],
+              modifiers: {
+                [currentDirection]: function (offset) {
+                  return loop.current(offset) + "px";
+                },
+              },
+            });
+            odometer.current &&
+              gsap.to(odometer.current, {
+                x:
+                  ((this["pointer" + currentDirection.toUpperCase()] -
+                    wrapperSize! / 2) /
+                    wrapperSize!) *
+                  odometerDistance!,
+              });
+          },
+          onDragEnd: function () {
+            odometer.current &&
+              gsap.to(odometer.current, {
+                x: 0,
+              });
+          },
+          onThrowUpdate() {
+            gsap.set(dualScrollRef.current[0], {
+              [currentDirection]: -this[currentDirection],
+              modifiers: {
+                [currentDirection]: function (offset) {
+                  return loop.current(offset) + "px";
+                },
+              },
+            });
+            gsap.set(this.target, {
+              [currentDirection]: this[currentDirection],
+              modifiers: {
+                [currentDirection]: function (offset) {
+                  return loop.current(offset) + "px";
+                },
+              },
+            });
+          },
+        }),
+      ];
+    } else {
+      dragInst.current = Draggable.create(scrollContainer.current, {
+        type: currentDirection,
+        cursor: "grab",
+        activeCursor: "grabbing",
+        allowEventDefault: false,
+        inertia: true,
+        onDrag: function () {
+          computedItemOffset.current(this[currentDirection]);
+          if (currentDirection === "y") {
+            computedImgOffset.current(this[currentDirection]);
+          }
+
+          odometer.current &&
+            gsap.to(odometer.current, {
+              x:
+                ((this["pointer" + currentDirection.toUpperCase()] -
+                  wrapperSize! / 2) /
+                  wrapperSize!) *
+                odometerDistance!,
+            });
+        },
+        onDragEnd: function () {
+          odometer.current &&
+            gsap.to(odometer.current, {
+              x: 0,
+            });
+        },
+        onThrowUpdate() {
+          gsap.set(this.target, {
+            [currentDirection]: this[currentDirection],
+            modifiers: {
+              [currentDirection]: function (offset) {
+                return loop.current(offset) + "px";
+              },
+            },
+          });
+        },
+        snap: { [currentDirection]: snap },
+      });
+    }
+
     return () => {
       dragInst.current[0].kill();
+      dragInst.current.forEach((item: any) => {
+        item.kill();
+      });
+      trickerQueue.forEach((trickerCb) => gsap.ticker.remove(trickerCb));
     };
-  }, [snap, currentDirection, init]);
+  }, [snap, currentDirection, init, currentReadPhotoId]);
 
   const { form, cursor, setForm } = useMoveCursor({ currentDirection });
 
@@ -374,25 +632,158 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     });
   };
 
+  const getCurrentReadPhotoChildren = (
+    type: "all" | "front" | "back" = "all"
+  ) => {
+    const arr = data.find(
+      (item) => item.id === currentReadPhotoId.split("-")[0]
+    )!.children;
+    return type === "front"
+      ? arr.slice(0, Math.ceil(arr.length / 2) - 1)
+      : type === "back"
+      ? arr.slice(Math.ceil(arr.length / 2) - 1, arr.length - 1)
+      : arr;
+  };
+
+  const photoItem = (
+    item: any,
+    index: number,
+    type: "small" | "default" = "default"
+  ) => {
+    return (
+      <>
+        <div
+          className={`h-full w-full overflow-hidden relative select-none   ${
+            type === "small"
+              ? "transition-all after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(transparent_0%,transparent_50%,#000_100%)]"
+              : currentDirection === "x"
+              ? "rounded-4xl after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(transparent_0%,transparent_50%,#000_100%)]"
+              : "rounded-4xl"
+          }`}
+        >
+          <img
+            src={item.img}
+            className={`${
+              type === "small"
+                ? "w-16 h-20 rounded-lg transition-all"
+                : currentDirection === "y"
+                ? "w-[100vw] h-fit top-1/2 left-1/2 -translate-1/2"
+                : "w-fit h-[100vh] top-1/2 left-1/2 -translate-1/2"
+            } object-cover absolute  select-none`}
+            ref={(el) => {
+              type === "default" && (imgeContainerItems.current[index] = el);
+            }}
+          ></img>
+        </div>
+        {init && (
+          <div
+            className={`absolute z-10 w-fit  flex text-white gap-4   ${
+              type === "small"
+                ? "left-22 h-full transition-all"
+                : currentDirection === "y"
+                ? "h-fit left-8 flex-col justify-center items-center bottom-8"
+                : "h-fit flex-col justify-center items-center bottom-8"
+            }`}
+          >
+            <div
+              className={`flex flex-col justify-center items-center  ${
+                type === "small"
+                  ? "whitespace-nowrap scale-80 -translate-x-1/8 self-end transition-all"
+                  : currentDirection === "y"
+                  ? "gap-4"
+                  : "gap-1"
+              }`}
+            >
+              <div
+                className="text-xs tracking-[4px]"
+                style={{
+                  fontFamily: "P22 Parrish Roman,Arial,sans-serif",
+                }}
+              >
+                {"Documentary".toUpperCase()}
+              </div>
+              <div
+                className={`${
+                  currentDirection === "y" ? "text-6xl" : "text-3xl"
+                }`}
+                style={{ fontFamily: "Neue Brucke,Arial,sans-serif" }}
+              >
+                {"My Project X".toUpperCase()}
+              </div>
+            </div>
+            <div
+              className={`${
+                currentDirection === "y" ? "text-lg" : "text-base"
+              } flex flex-col w-full justify-center items-center`}
+              style={{
+                fontFamily: "Neue Brucke,Arial,sans-serif",
+                lineHeight:
+                  currentDirection === "y"
+                    ? "calc(var(--text-lg) - 4px)"
+                    : "calc(var(--text-base) - 4px)",
+                verticalAlign: "center",
+              }}
+            >
+              <div className="flex border-t border-white items-center justify-center gap-16 px-4 w-full">
+                <div>YEAR</div>
+                <div>2024</div>
+              </div>
+              <div className="flex border-t border-white items-center justify-center  gap-8 px-6 w-full">
+                <div>LOCATION</div>
+                <div>TEL AVIV</div>
+              </div>
+              <div className="flex border-t border-white border-b items-center justify-center gap-12 px-2 w-full">
+                <div>CATEGORY</div>
+                <div>DOCUMENTARY</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  const daulScrollItem = (item: any, index: number) => {
+    return (
+      <div
+        ref={(el: any) => {
+          currentReadPhotoId && (scrollContainerItems.current[index] = el);
+        }}
+        key={item.id + index}
+        className="h-full aspect-1/1 overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[radial-gradient(transparent_0%,#000_90%)]"
+      >
+        <img
+          src={item.img}
+          className={`w-full h-full object-cover select-none rounded-lg`}
+          ref={(el) => {
+            currentReadPhotoId && (imgeContainerItems.current[index] = el);
+          }}
+        ></img>
+      </div>
+    );
+  };
+
   useEffect(() => {
-    currentIndexWatcher.current = setInterval(() => {
-      if (scrollContainer.current === null) return;
-      const offset = +gsap.getProperty(
-        scrollContainer.current,
-        currentDirection
-      );
-      setCurrentIndex(
-        snap.findIndex((item) => item === gsap.utils.snap(snap, offset))
-      );
-    }, 16);
+    if (!currentReadPhotoId) {
+      currentIndexWatcher.current = setInterval(() => {
+        if (scrollContainer.current === null) return;
+        const offset = +gsap.getProperty(
+          scrollContainer.current,
+          currentDirection
+        );
+        setCurrentIndex(
+          snap.findIndex((item) => item === gsap.utils.snap(snap, offset))
+        );
+      }, 16);
+    }
     return () => {
       clearInterval(currentIndexWatcher.current);
     };
-  }, [snap]);
+  }, [snap, currentReadPhotoId]);
   return (
     <div
       ref={scrollWrapper}
-      className={`bg-black select-none h-[100dvh] w-full overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10 flex flex-col py-16 gap-8 ${
+      className={`bg-black select-none h-[100dvh] w-full overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10 flex flex-col py-12 gap-8 ${
         currentDirection === "y"
           ? "after:bg-[linear-gradient(#000_0%,transparent_10%,transparent_90%,#000_100%)"
           : "after:bg-[linear-gradient(to_right,#000_0%,transparent_10%,transparent_90%,#000_100%)"
@@ -404,15 +795,29 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           defaultValue="tab-1"
           className="self-center dark z-20"
           value={tabValue}
-          onValueChange={(value) => setTabValue(value)}
+          onValueChange={(value) => {
+            setTabValue(value);
+            if (value === "singleScroll") {
+              setCurrentReadPhotoId("");
+            }
+            if (value === "dualScroll") {
+              setCurrentReadPhotoId(
+                Array.from({ length: repeatCount }, (_, i) => data).flat()[
+                  currentIndex
+                ].id +
+                  "-" +
+                  currentIndex
+              );
+            }
+          }}
         >
           <TabsList>
             <TabsTrigger value="singleScroll">
               <div
-                className={`w-6 h-8 overflow-hidden flex justify-center items-center ${
+                className={`w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
                   tabValue === "singleScroll"
-                    ? " relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(to_right,#000_0%,transparent_20%,transparent_80%,#000_100%)]"
-                    : ""
+                    ? "after:bg-[linear-gradient(to_right,#0a0a0a_0%,transparent_20%,transparent_80%,#0a0a0a_100%)]"
+                    : "after:bg-[linear-gradient(to_right,#262626_0%,transparent_20%,transparent_80%,#262626_100%)]"
                 }`}
               >
                 <SvgIcon
@@ -423,10 +828,10 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             </TabsTrigger>
             <TabsTrigger value="dualScroll">
               <div
-                className={`w-6 h-8 overflow-hidden flex justify-center items-center relative ${
+                className={`w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
                   tabValue === "dualScroll"
-                    ? "relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(to_right,#000_0%,transparent_30%,transparent_70%,#000_100%)]"
-                    : ""
+                    ? "after:bg-[linear-gradient(to_right,#0a0a0a_0%,transparent_30%,transparent_70%,#0a0a0a_100%)]"
+                    : "after:bg-[linear-gradient(to_right,#262626_0%,transparent_30%,transparent_70%,#262626_100%)]"
                 }`}
               >
                 <SvgIcon
@@ -438,139 +843,149 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           </TabsList>
         </Tabs>
       )}
-      <div
-        className={`${
-          currentDirection === "y" ? "h-fit w-full px-[4%]" : "h-full w-fit"
-        }  flex items-center justify-center ${
-          currentDirection === "y" ? "flex-col" : ""
-        } gap-8 z-[0!important]`}
-        ref={scrollContainer}
-      >
-        {Array.from({ length: repeatCount }, (_, i) => data)
-          .flat()
-          .map((item, index) => (
-            <div
-              className={`${
-                currentDirection === "y"
-                  ? "h-[70dvh] w-full"
-                  : "h-[60dvh] aspect-[4/5]"
-              } flex justify-center items-center text-4xl relative select-none`}
-              key={index}
-              ref={(el: any) => {
-                scrollContainerItems.current[index] = el;
-              }}
-              onMouseEnter={(e) => {
-                handleControlCursor(index);
-              }}
-              onMouseLeave={(e) => {
-                handleControlCursor(currentIndex);
-              }}
-              onMouseMove={(e) => {
-                handleControlCursor(index);
-              }}
-              onClick={() =>
-                handleChangeCurrent(
-                  currentIndex > index
-                    ? "down"
-                    : currentIndex < index
-                    ? "up"
-                    : ""
-                )
-              }
-            >
+      {!currentReadPhotoId && (
+        <div
+          className={`flex  ${
+            currentDirection === "y"
+              ? "h-fit w-full px-[4%] flex-col z-[0!important] items-center justify-center gap-8"
+              : "h-full w-fit z-[0!important] items-center justify-center gap-8"
+          } `}
+          ref={(el) => {
+            if (!currentReadPhotoId) {
+              scrollContainer.current = el;
+            }
+          }}
+        >
+          {Array.from({ length: repeatCount }, (_, i) => data)
+            .flat()
+            .map((item, index) => (
               <div
-                className={`h-full w-full overflow-hidden relative select-none rounded-4xl ${
-                  currentDirection === "x"
-                    ? "after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(transparent_0%,transparent_50%,#000_100%)]"
-                    : ""
-                }`}
+                className={`
+                    ${
+                      currentDirection === "y"
+                        ? "h-[70dvh] w-full justify-center items-center"
+                        : "h-[60dvh] aspect-[4/5] justify-center items-center"
+                    } flex text-4xl relative select-none `}
+                key={item.id + index}
+                ref={(el: any) => {
+                  !currentReadPhotoId &&
+                    (scrollContainerItems.current[index] = el);
+                }}
+                onMouseEnter={(e) => {
+                  handleControlCursor(index);
+                }}
+                onMouseLeave={(e) => {
+                  handleControlCursor(currentIndex);
+                }}
+                onMouseMove={(e) => {
+                  handleControlCursor(index);
+                }}
+                onClick={() =>
+                  handleChangeCurrent(
+                    currentIndex > index
+                      ? "down"
+                      : currentIndex < index
+                      ? "up"
+                      : ""
+                  )
+                }
               >
-                <img
-                  src={item.img}
-                  className={`${
-                    currentDirection === "y"
-                      ? "w-[100vw] h-fit"
-                      : "w-fit h-[100vh]"
-                  } object-cover absolute top-1/2 left-1/2 -translate-1/2 select-none`}
-                  ref={(el) => {
-                    imgeContainerItems.current[index] = el;
-                  }}
-                ></img>
+                {photoItem(item, index, "default")}
+                {currentDirection === "y" && init && (
+                  <div className="absolute bottom-8 right-8">
+                    <InteractiveHoverButton
+                      className="text-xl w-48"
+                      text="Explore"
+                      defaultColor="bg-transparent"
+                      hoverColor="white"
+                    />
+                  </div>
+                )}
               </div>
-              {init && (
-                <div
-                  className={`absolute z-10 w-fit h-fit flex flex-col justify-center items-center text-white gap-4 bottom-8 ${
-                    currentDirection === "y" ? "left-8" : ""
-                  }`}
-                >
-                  <div
-                    className={`flex flex-col justify-center items-center ${
-                      currentDirection === "y" ? "gap-4" : "gap-1"
-                    }`}
-                  >
-                    <div
-                      className="text-xs tracking-[4px]"
-                      style={{
-                        fontFamily: "P22 Parrish Roman,Arial,sans-serif",
-                      }}
-                    >
-                      {"Documentary".toUpperCase()}
-                    </div>
-                    <div
-                      className={`${
-                        currentDirection === "y" ? "text-6xl" : "text-3xl"
-                      }`}
-                      style={{ fontFamily: "Neue Brucke,Arial,sans-serif" }}
-                    >
-                      {"My Project X".toUpperCase()}
-                    </div>
-                  </div>
-                  <div
-                    className={`${
-                      currentDirection === "y" ? "text-lg" : "text-base"
-                    } flex flex-col w-full justify-center items-center`}
-                    style={{
-                      fontFamily: "Neue Brucke,Arial,sans-serif",
-                      lineHeight:
-                        currentDirection === "y"
-                          ? "calc(var(--text-lg) - 4px)"
-                          : "calc(var(--text-base) - 4px)",
-                      verticalAlign: "center",
-                    }}
-                  >
-                    <div className="flex border-t border-white items-center justify-center gap-16 px-4 w-full">
-                      <div>YEAR</div>
-                      <div>2024</div>
-                    </div>
-                    <div className="flex border-t border-white items-center justify-center  gap-8 px-6 w-full">
-                      <div>LOCATION</div>
-                      <div>TEL AVIV</div>
-                    </div>
-                    <div className="flex border-t border-white border-b items-center justify-center gap-12 px-2 w-full">
-                      <div>CATEGORY</div>
-                      <div>DOCUMENTARY</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {currentDirection === "y" && init && (
-                <div className="absolute bottom-8 right-8">
-                  <InteractiveHoverButton
-                    className="text-xl w-48"
-                    text="Explore"
-                    defaultColor="bg-transparent"
-                    hoverColor="white"
-                  />
-                </div>
-              )}
-            </div>
-          ))}
-      </div>
+            ))}
+        </div>
+      )}
+      {currentReadPhotoId && (
+        <div className="absolute h-20 w-[50dvw] flex bottom-8 translate-0 left-16 z-20">
+          {photoItem(
+            data.find((item) => item.id === currentReadPhotoId.split("-")[0]),
+            0,
+            "small"
+          )}
+        </div>
+      )}
+      {currentReadPhotoId && (
+        <div
+          className="h-full w-fit flex flex-col gap-8 overflow-hidden m-12 rounded-lg"
+          ref={(el) => {
+            if (currentReadPhotoId) {
+              scrollContainer.current = el;
+            }
+          }}
+        >
+          <div
+            ref={(el) => {
+              dualScrollRef.current[0] = el;
+            }}
+            className="w-fit flex-1 flex gap-8 overflow-hidden"
+          >
+            {Array.from({ length: repeatCount * 5 }, (_, i) =>
+              getCurrentReadPhotoChildren("front")
+            )
+              .flat()
+              .map((item: any, index) => daulScrollItem(item, index))}
+          </div>
+          <div
+            ref={(el) => {
+              dualScrollRef.current[1] = el;
+            }}
+            className="w-fit flex-1 flex gap-8 overflow-hidden"
+          >
+            {Array.from({ length: repeatCount * 5 }, (_, i) =>
+              getCurrentReadPhotoChildren("front")
+            )
+              .flat()
+              .map((item: any, index) => daulScrollItem(item, index))}
+          </div>
+        </div>
+      )}
 
       {currentDirection === "x" && init && (
         <>
           <div className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-[1px] scale-x-20 bg-white z-10"></div>
-          <div className="self-end mr-16">
+          <div className="w-full px-16 flex justify-between items-center relative">
+            <div className="flex:1"></div>
+            <div className="flex gap-2 items-end h-fit absolute top-1/2 left-1/2 -translate-1/2 z-20">
+              <div className="w-[1px] h-3 bg-white"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-3 bg-white"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-3 bg-white"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-3 bg-white"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-3 bg-white"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-3 bg-white"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-1.5 bg-gray-200"></div>
+              <div className="w-[1px] h-3 bg-white"></div>
+              <div
+                className="absolute top-1/2 left-1/2 w-5 h-3 rounded-[4px] bg-black border border-white -translate-1/2"
+                ref={odometer}
+              ></div>
+            </div>
             <InteractiveHoverButton
               className="text-xl w-48 z-20"
               text="Explore"
