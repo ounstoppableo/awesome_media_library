@@ -151,7 +151,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             const imgEl = imgeContainerItems.current[i];
             if (!imgEl) continue;
             const changeOffset =
-              ((_snap[i] - offset) * 2 * imageSize) / scrollContainerSize;
+              ((_snap[i] - offset) * 3 * imageSize) / scrollContainerSize;
             const maxChangeOffset = (imageSize - itemSize) / 2;
             gsap[animateType](imgEl, {
               [currentDirection]:
@@ -783,11 +783,11 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   return (
     <div
       ref={scrollWrapper}
-      className={`bg-black select-none h-[100dvh] w-full overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10 flex flex-col py-12 gap-8 ${
+      className={`bg-black flex flex-col gap-8 select-none h-[100dvh] w-full overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10  ${
         currentDirection === "y"
-          ? "after:bg-[linear-gradient(#000_0%,transparent_10%,transparent_90%,#000_100%)"
-          : "after:bg-[linear-gradient(to_right,#000_0%,transparent_10%,transparent_90%,#000_100%)"
-      }]`}
+          ? "after:bg-[linear-gradient(#000_0%,transparent_10%,transparent_90%,#000_100%)]"
+          : "after:bg-[linear-gradient(to_right,#000_0%,transparent_10%,transparent_90%,#000_100%)] py-12"
+      }`}
     >
       {cursor}
       {currentDirection === "x" && init && (
