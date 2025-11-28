@@ -1,639 +1,67 @@
 import { JSX, use, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { Draggable, InertiaPlugin } from "gsap/all";
-import useMoveCursor from "@/hooks/useMoveCursor";
-import { scaleNumber } from "@/utils/convention";
-import { createDraggable } from "animejs";
 import { InteractiveHoverButton } from "../ui/interactive-hover-button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import SvgIcon from "../svgIcon";
+import useWheelLogic from "./hooks/useWheelLogic";
+import useBaseLogic from "./hooks/useBaseLogic";
+import useDraggableLogic from "./hooks/useDraggableLogic";
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
 export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
-  const scrollWrapper = useRef<HTMLDivElement>(null);
-  const scrollContainer = useRef<HTMLDivElement>(null);
-  const scrollContainerItems = useRef<HTMLDivElement[]>([]);
-  const imgeContainerItems = useRef<(HTMLImageElement | null)[]>([]);
-  const computedImgOffset = useRef<
-    (offset: number, animateType?: "set" | "to") => void
-  >(() => {});
-  const [currentDirection, setCurrentDirection] = useState<"y" | "x">("x");
-  const computedItemOffset = useRef<
-    (offset: number, animateType?: "set" | "to") => void
-  >(() => {});
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [data, setData] = useState([
-    {
-      id: "1",
-      img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/675eb903f604a7a856c87467_taboo.webp",
-      children: [
-        {
-          id: "1.1",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/675eb903f604a7a856c87467_taboo.webp",
-        },
-        {
-          id: "1.2",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
-        },
-        {
-          id: "1.3",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
-        },
-        {
-          id: "1.4",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/675eb903f604a7a856c87467_taboo.webp",
-        },
-        {
-          id: "1.5",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
-        },
-        {
-          id: "1.6",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
-        },
-      ],
-    },
-    {
-      id: "2",
-      img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
-      children: [
-        {
-          id: "2.1",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/675eb903f604a7a856c87467_taboo.webp",
-        },
-        {
-          id: "2.2",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
-        },
-        {
-          id: "2.3",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
-        },
-      ],
-    },
-    {
-      id: "3",
-      img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
-      children: [
-        {
-          id: "3.1",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/675eb903f604a7a856c87467_taboo.webp",
-        },
-        {
-          id: "3.2",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
-        },
-        {
-          id: "3.3",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
-        },
-      ],
-    },
-  ]);
-  const loop = useRef<(...params: any) => any>(function () {});
-  const [snap, setSnap] = useState<number[]>([]);
-  const resizeAntiShake = useRef<NodeJS.Timeout | null>(null);
-  const gap = 32;
-  const [init, setInit] = useState(false);
-  const [repeatCount, setRepeatCount] = useState(5);
   const [tabValue, setTabValue] = useState("singleScroll");
   const odometer = useRef<HTMLDivElement | null>(null);
-  const [currentReadPhotoId, setCurrentReadPhotoId] = useState("");
-  const dualScrollRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  const currentIndexWatcher = useRef<any>(null);
+  const {
+    currentDirection,
+    scrollContainerItems,
+    currentReadPhotoId,
+    dualScrollRef,
+    snap,
+    switchToItemWithEffect,
+    scrollContainer,
+    init,
+    scrollWrapper,
+    setCurrentReadPhotoId,
+    setRepeatCount,
+    repeatCount,
+    data,
+    currentIndexWatcher,
+    loop,
+    imgeContainerItems,
+    currentIndex,
+    setCurrentIndex,
+    getCurrentReadPhotoChildren,
+    getIdFromKey,
+  } = useBaseLogic({});
 
-  const lastSpeed = useRef<any>(0);
-  useEffect(() => {
-    const _main = () => {
-      if (
-        scrollWrapper.current === null ||
-        scrollContainerItems.current[0] === null ||
-        scrollContainer.current === null ||
-        imgeContainerItems.current[0] === null
-      )
-        return;
-      const wrapperSize =
-        currentDirection === "y"
-          ? scrollWrapper.current.offsetHeight
-          : scrollWrapper.current.offsetWidth;
-      const itemSize =
-        currentDirection === "y"
-          ? scrollContainerItems.current[0].offsetHeight
-          : scrollContainerItems.current[0].offsetWidth;
-      const imageSize =
-        currentDirection === "y"
-          ? imgeContainerItems.current[0].offsetHeight
-          : imgeContainerItems.current[0].offsetWidth;
-      const itemCount = data.length * repeatCount;
-      const _snap = Array.from(
-        { length: itemCount },
-        (_, i) => -i * (itemSize + gap) + (wrapperSize / 2 - itemSize / 2)
-      );
-      setSnap(_snap);
+  useWheelLogic({
+    currentDirection,
+    scrollContainerItems,
+    currentReadPhotoId,
+    dualScrollRef,
+    snap,
+    switchToItemWithEffect,
+    scrollContainer,
+  });
 
-      // img静止
-      computedImgOffset.current = (
-        offset: number,
-        animateType: "set" | "to" = "set"
-      ) => {
-        if (currentDirection === "y") {
-          for (let i = 0; i < _snap.length; i++) {
-            const imgEl = imgeContainerItems.current[i];
-            if (!imgEl) continue;
-            const changeOffset =
-              ((_snap[i] - offset) * 3 * imageSize) / scrollContainerSize;
-            const maxChangeOffset = (imageSize - itemSize) / 2;
-            gsap[animateType](imgEl, {
-              [currentDirection]:
-                changeOffset < -maxChangeOffset
-                  ? -maxChangeOffset
-                  : changeOffset,
-            });
-          }
-        }
-      };
-
-      computedItemOffset.current = (offset: number, animateType = "set") => {
-        if (currentDirection === "y") return;
-        const snapGap = Math.abs(_snap[0] - _snap[_snap.length - 1]);
-        const _speed =
-          InertiaPlugin.getVelocity(
-            scrollContainer.current!,
-            currentDirection
-          ) || 0;
-        const speed = gsap.utils.interpolate(lastSpeed.current, _speed, 0.1);
-        lastSpeed.current = speed;
-        const maxSpeed = 5000;
-        const minSpeed = 0;
-        const maxLeapOffset = 100;
-        const minLeapOffset = 0;
-        const maxBlur = 30;
-        const minBlur = 0;
-        const maxBrightnessMinus = 2;
-        const minBrightnessMinus = 0;
-        const maxGap = gap * 150;
-        const minScale = 1;
-        const maxScale = 1.2;
-
-        if (currentReadPhotoId) {
-        } else {
-          for (let i = 0; i < _snap.length; i++) {
-            const scrollItem = scrollContainerItems.current[i];
-            if (!scrollItem) continue;
-            const offsetDiff = Math.abs(_snap[i] - offset);
-            const blur = scaleNumber(offsetDiff, 0, snapGap, minBlur, maxBlur);
-            const brightness = scaleNumber(
-              offsetDiff,
-              0,
-              snapGap,
-              minBrightnessMinus,
-              maxBrightnessMinus
-            );
-            // const _gap = scaleNumber(
-            //   Math.abs(speed) > maxSpeed
-            //     ? maxSpeed * (offset - _snap[i])
-            //     : Math.abs(speed) * (offset - _snap[i]),
-            //   0,
-            //   snapGap * maxSpeed,
-            //   0,
-            //   maxGap
-            // );
-
-            // const _scale =
-            //   scaleNumber(
-            //     Math.abs(speed) > maxSpeed ? maxSpeed : Math.abs(speed),
-            //     0,
-            //     maxSpeed,
-            //     minScale,
-            //     maxScale
-            //   ) || 1;
-
-            // gsap.to(scrollItem, {
-            //   [currentDirection]: _gap,
-            //   ["scale" + currentDirection.toUpperCase()]:
-            //     _scale < minScale ? minScale : _scale,
-            // });
-
-            gsap[animateType](scrollItem, {
-              filter: `blur(${blur}px) brightness(${1 - brightness})`,
-            });
-          }
-        }
-      };
-
-      loop.current = function (offset: any) {
-        let _offset =
-          (parseFloat(offset) % ((gap + itemSize) * data.length)) -
-          (gap + itemSize) * data.length;
-
-        computedItemOffset.current(_offset);
-        if (currentDirection === "y") {
-          computedImgOffset.current(_offset);
-        }
-        return _offset;
-      };
-      return _snap;
-    };
-    const resizeCb = () => {
-      resizeAntiShake.current && clearTimeout(resizeAntiShake.current);
-      resizeAntiShake.current = setTimeout(() => {
-        _main();
-      }, 500);
-    };
-
-    const _snap: any = _main();
-
-    // 初始化电影轮播
-    const scrollContainerSize: number =
-      currentDirection === "y"
-        ? scrollContainer.current!.offsetHeight
-        : scrollContainer.current!.offsetWidth;
-    const itemSize =
-      currentDirection === "y"
-        ? scrollContainerItems.current[0]!.offsetHeight
-        : scrollContainerItems.current[0]!.offsetWidth;
-    let velosity = itemSize;
-    let brightness = 1;
-    let scrollOffset = 0;
-    const _init = () => {
-      scrollOffset %= -_snap[_snap.length - data.length];
-      gsap.set(scrollContainer.current, {
-        [currentDirection]: -scrollOffset,
-        filter: `brightness(${brightness}) saturate(${brightness / 3})`,
-      });
-      scrollOffset += velosity;
-      computedItemOffset.current(scrollOffset);
-    };
-    !init &&
-      gsap
-        .to(
-          {},
-          {
-            duration: 2,
-            ease: "power1.inOut",
-            onUpdate() {
-              velosity *= 1.003;
-              brightness *= 1.02;
-              _init();
-            },
-            onComplete() {
-              gsap.to(scrollContainer.current, {
-                [currentDirection]: _snap[Math.ceil(_snap.length / 2) - 1],
-                filter: `brightness(1)`,
-              });
-              computedItemOffset.current(
-                _snap[Math.ceil(_snap.length / 2) - 1]
-              );
-            },
-          }
-        )
-        .then(() => {
-          setInit(true);
-        });
-    window.addEventListener("resize", resizeCb);
-
-    return () => {
-      window.removeEventListener("resize", resizeCb);
-    };
-  }, [currentDirection, currentReadPhotoId, repeatCount]);
-
-  useEffect(() => {
-    // 控制滚轮事件
-    let wheelTimer: any = null;
-    let offset = 0;
-    const itemSize =
-      currentDirection === "y"
-        ? scrollContainerItems.current[0].offsetHeight
-        : scrollContainerItems.current[0]!.offsetWidth;
-    const wheelCb = (e: any) => {
-      // offset越靠近itemSize，速度越慢
-      offset += (Math.abs(itemSize - offset) * e["deltaY"]) / 500;
-      offset = offset % (itemSize / 2);
-
-      if (currentReadPhotoId) {
-        gsap.to(dualScrollRef.current[0], {
-          [currentDirection]:
-            gsap.utils.snap(
-              snap,
-              +gsap.getProperty(dualScrollRef.current[0], currentDirection)
-            ) + offset,
-        });
-        gsap.to(dualScrollRef.current[1], {
-          [currentDirection]:
-            gsap.utils.snap(
-              snap,
-              +gsap.getProperty(dualScrollRef.current[1], currentDirection)
-            ) - offset,
-        });
-        computedImgOffset.current(offset, "to");
-        computedItemOffset.current(offset, "to");
-      } else {
-        const currentOffset = +gsap.getProperty(
-          scrollContainer.current,
-          currentDirection
-        );
-        const targetOffset = gsap.utils.snap(snap, currentOffset) + offset;
-        gsap.to(scrollContainer.current, {
-          [currentDirection]: targetOffset,
-        });
-        computedImgOffset.current(targetOffset, "to");
-        computedItemOffset.current(targetOffset, "to");
-      }
-
-      clearTimeout(wheelTimer);
-      wheelTimer = setTimeout(() => {
-        offset = 0;
-        const targetOffset = gsap.utils.snap(
-          snap,
-          +gsap.getProperty(scrollContainer.current, currentDirection)
-        );
-        if (currentReadPhotoId) {
-        } else {
-          gsap.to(scrollContainer.current, {
-            [currentDirection]: targetOffset,
-          });
-          computedImgOffset.current(targetOffset, "to");
-          computedItemOffset.current(targetOffset, "to");
-        }
-      }, 100);
-    };
-    window.addEventListener("wheel", wheelCb);
-    return () => {
-      window.removeEventListener("wheel", wheelCb);
-    };
-  }, [snap, currentDirection, currentReadPhotoId]);
-
-  const dragInst = useRef<any>(null);
-  useEffect(() => {
-    if (!init) return;
-    const odometerDistance = odometer.current?.parentElement?.offsetWidth;
-    const wrapperSize =
-      currentDirection === "y"
-        ? scrollWrapper.current?.offsetHeight
-        : scrollWrapper.current?.offsetWidth;
-    const scrollSize =
-      currentDirection === "y"
-        ? scrollContainer.current?.offsetHeight
-        : scrollContainer.current?.offsetWidth;
-
-    const trickerQueue = [
-      () => {
-        gsap.set(dualScrollRef.current[0], {
-          [currentDirection]: "+=1",
-          modifiers: {
-            [currentDirection]: function (offset) {
-              return loop.current(offset) + "px";
-            },
-          },
-        });
-      },
-      () => {
-        gsap.set(dualScrollRef.current[1], {
-          [currentDirection]: "-=1",
-          modifiers: {
-            [currentDirection]: function (offset) {
-              return loop.current(offset) + "px";
-            },
-          },
-        });
-      },
-    ];
-
-    if (currentReadPhotoId) {
-      gsap.set(scrollContainer.current, {
-        [currentDirection]: 0,
-      });
-      gsap.set(dualScrollRef.current[0], {
-        [currentDirection]: snap[Math.ceil(snap.length / 2) - 1],
-      });
-      gsap.set(dualScrollRef.current[1], {
-        [currentDirection]:
-          snap[Math.ceil(snap.length / 2) - 1] + (snap[0] - snap[1]),
-      });
-      trickerQueue.forEach((trickerCb) => gsap.ticker.add(trickerCb));
-      dragInst.current = [
-        ...Draggable.create(dualScrollRef.current[0], {
-          type: currentDirection,
-          cursor: "grab",
-          activeCursor: "grabbing",
-          allowEventDefault: false,
-          inertia: true,
-          onDrag: function () {
-            trickerQueue.forEach((trickerCb) => gsap.ticker.remove(trickerCb));
-            gsap.set(dualScrollRef.current[1], {
-              [currentDirection]: -this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-            odometer.current &&
-              gsap.to(odometer.current, {
-                x:
-                  ((this["pointer" + currentDirection.toUpperCase()] -
-                    wrapperSize! / 2) /
-                    wrapperSize!) *
-                  odometerDistance!,
-              });
-          },
-          onDragEnd: function () {
-            odometer.current &&
-              gsap.to(odometer.current, {
-                x: 0,
-              });
-          },
-          onThrowUpdate() {
-            gsap.set(dualScrollRef.current[1], {
-              [currentDirection]: -this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-            gsap.set(this.target, {
-              [currentDirection]: this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-          },
-          onThrowComplete() {
-            trickerQueue.forEach((trickerCb) => gsap.ticker.add(trickerCb));
-          },
-        }),
-        ...Draggable.create(dualScrollRef.current[1], {
-          type: currentDirection,
-          cursor: "grab",
-          activeCursor: "grabbing",
-          allowEventDefault: false,
-          inertia: true,
-          onDrag: function () {
-            gsap.set(dualScrollRef.current[0], {
-              [currentDirection]: -this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-            odometer.current &&
-              gsap.to(odometer.current, {
-                x:
-                  ((this["pointer" + currentDirection.toUpperCase()] -
-                    wrapperSize! / 2) /
-                    wrapperSize!) *
-                  odometerDistance!,
-              });
-          },
-          onDragEnd: function () {
-            odometer.current &&
-              gsap.to(odometer.current, {
-                x: 0,
-              });
-          },
-          onThrowUpdate() {
-            gsap.set(dualScrollRef.current[0], {
-              [currentDirection]: -this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-            gsap.set(this.target, {
-              [currentDirection]: this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-          },
-        }),
-      ];
-    } else {
-      dragInst.current = Draggable.create(scrollContainer.current, {
-        type: currentDirection,
-        cursor: "grab",
-        activeCursor: "grabbing",
-        allowEventDefault: false,
-        inertia: true,
-        onDrag: function () {
-          computedItemOffset.current(this[currentDirection]);
-          if (currentDirection === "y") {
-            computedImgOffset.current(this[currentDirection]);
-          }
-
-          odometer.current &&
-            gsap.to(odometer.current, {
-              x:
-                ((this["pointer" + currentDirection.toUpperCase()] -
-                  wrapperSize! / 2) /
-                  wrapperSize!) *
-                odometerDistance!,
-            });
-        },
-        onDragEnd: function () {
-          odometer.current &&
-            gsap.to(odometer.current, {
-              x: 0,
-            });
-        },
-        onThrowUpdate() {
-          gsap.set(this.target, {
-            [currentDirection]: this[currentDirection],
-            modifiers: {
-              [currentDirection]: function (offset) {
-                return loop.current(offset) + "px";
-              },
-            },
-          });
-        },
-        snap: { [currentDirection]: snap },
-      });
-    }
-
-    return () => {
-      dragInst.current.forEach((item: any) => {
-        item.kill();
-      });
-      trickerQueue.forEach((trickerCb) => gsap.ticker.remove(trickerCb));
-    };
-  }, [snap, currentDirection, init, currentReadPhotoId]);
-
-  const { form, cursor, setForm } = useMoveCursor({ currentDirection });
-
-  // 控制cursor状态
-  const handleControlCursor = (index: number) => {
-    if (index < currentIndex) {
-      setForm("up");
-    }
-    if (index > currentIndex) {
-      setForm("down");
-    }
-    if (index === currentIndex) {
-      setForm(form === "mousedown" ? "mousedown" : "default");
-    }
-  };
-  useEffect(() => {
-    handleControlCursor(currentIndex);
-  }, [currentIndex]);
-
-  const twine = useRef<any>(null);
-  const handleChangeCurrent = (type: "up" | "down" | "") => {
-    if (!type) return;
-    if (twine.current) return;
-    dragInst.current[0].disable();
-    twine.current = gsap.to(scrollContainer.current, {
-      overwrite: false,
-      [currentDirection]:
-        snap[type === "down" ? currentIndex - 1 : currentIndex + 1],
-      onUpdate: () => {
-        const offset = gsap.getProperty(
-          scrollContainer.current,
-          currentDirection
-        );
-        gsap.set(scrollContainer.current, {
-          [currentDirection]: loop.current(offset),
-        });
-        handleControlCursor(
-          type === "down" ? currentIndex - 1 : currentIndex + 1
-        );
-      },
-      onComplete: () => {
-        const offset = gsap.getProperty(
-          scrollContainer.current,
-          currentDirection
-        );
-        gsap.set(scrollContainer.current, {
-          [currentDirection]: loop.current(offset),
-        });
-        handleControlCursor(
-          type === "down" ? currentIndex - 1 : currentIndex + 1
-        );
-        dragInst.current[0].enable();
-        twine.current = null;
-      },
+  const { cursor, handleChangeCurrent, handleControlCursor } =
+    useDraggableLogic({
+      init,
+      odometer,
+      currentDirection,
+      scrollContainer,
+      dualScrollRef,
+      loop,
+      scrollWrapper,
+      currentReadPhotoId,
+      snap,
+      switchToItemWithEffect,
+      currentIndex,
+      currentIndexWatcher,
+      setCurrentIndex,
     });
-  };
-
-  const getCurrentReadPhotoChildren = (
-    type: "all" | "front" | "back" = "all"
-  ) => {
-    const arr = data.find(
-      (item) => item.id === currentReadPhotoId.split("-")[0]
-    )!.children;
-    return type === "front"
-      ? arr.slice(0, Math.ceil(arr.length / 2))
-      : type === "back"
-      ? arr.slice(Math.ceil(arr.length / 2), arr.length - 1)
-      : arr;
-  };
 
   const photoItem = (
     item: any,
@@ -753,23 +181,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     );
   };
 
-  useEffect(() => {
-    if (!currentReadPhotoId) {
-      currentIndexWatcher.current = setInterval(() => {
-        if (scrollContainer.current === null) return;
-        const offset = +gsap.getProperty(
-          scrollContainer.current,
-          currentDirection
-        );
-        setCurrentIndex(
-          snap.findIndex((item) => item === gsap.utils.snap(snap, offset))
-        );
-      }, 16);
-    }
-    return () => {
-      clearInterval(currentIndexWatcher.current);
-    };
-  }, [snap, currentReadPhotoId]);
   return (
     <div
       ref={scrollWrapper}
@@ -789,6 +200,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             setTabValue(value);
             if (value === "singleScroll") {
               if (tabValue === "singleScroll") return;
+              switchToItemWithEffect(getIdFromKey(currentReadPhotoId));
               setCurrentReadPhotoId("");
               setRepeatCount(5);
             }
@@ -902,7 +314,9 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       {currentReadPhotoId && (
         <div className="absolute h-20 w-[50dvw] flex bottom-8 translate-0 left-16 z-20">
           {photoItem(
-            data.find((item) => item.id === currentReadPhotoId.split("-")[0]),
+            data.find(
+              (item: any) => item.id === getIdFromKey(currentReadPhotoId)
+            ),
             0,
             "small"
           )}
