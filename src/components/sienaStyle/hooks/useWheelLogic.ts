@@ -64,7 +64,7 @@ export default function useWheelLogic(props: any) {
           gsap.to(scrollContainer.current, {
             [currentDirection]: targetOffset,
           });
-          scrollContainerItems(null, null, targetOffset, "to");
+          switchToItemWithEffect(null, null, targetOffset, "to");
         }
       }, 100);
     };

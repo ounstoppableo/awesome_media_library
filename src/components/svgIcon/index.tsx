@@ -15,7 +15,7 @@ export default function SvgIcon(props: SvgIconProps) {
   return (
     <div
       className={cn(
-        "w-4 h-4 flex justify-center items-center text-yellow-600",
+        "w-4 h-4 flex justify-center items-center",
         props.className
       )}
       dangerouslySetInnerHTML={{ __html: svgString }}

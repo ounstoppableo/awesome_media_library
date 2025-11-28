@@ -7,10 +7,13 @@ import SvgIcon from "../svgIcon";
 import useWheelLogic from "./hooks/useWheelLogic";
 import useBaseLogic from "./hooks/useBaseLogic";
 import useDraggableLogic from "./hooks/useDraggableLogic";
+import { Transition } from "@headlessui/react";
+import clsx from "clsx";
+
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
 export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
-  const [tabValue, setTabValue] = useState("singleScroll");
+  const [tabValue, setTabValue] = useState("horizontalSingleScroll");
   const odometer = useRef<HTMLDivElement | null>(null);
 
   const {
@@ -34,6 +37,8 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     setCurrentIndex,
     getCurrentReadPhotoChildren,
     getIdFromKey,
+    generateKey,
+    setCurrentDirection,
   } = useBaseLogic({});
 
   useWheelLogic({
@@ -75,7 +80,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             type === "small"
               ? "transition-all after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(transparent_0%,transparent_50%,#000_100%)]"
               : currentDirection === "x"
-              ? "rounded-4xl after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(transparent_0%,transparent_50%,#000_100%)]"
+              ? "rounded-4xl after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(transparent_0%,transparent_40%,#000_100%)]"
               : "rounded-4xl"
           }`}
         >
@@ -198,37 +203,57 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           value={tabValue}
           onValueChange={(value) => {
             setTabValue(value);
-            if (value === "singleScroll") {
-              if (tabValue === "singleScroll") return;
+            if (tabValue === value) return;
+            if (value === "verticalSingleScroll") {
+              setCurrentDirection("y");
+              setCurrentReadPhotoId("");
+              setRepeatCount(5);
+            }
+            if (value === "horizontalSingleScroll") {
+              setCurrentDirection("x");
               switchToItemWithEffect(getIdFromKey(currentReadPhotoId));
               setCurrentReadPhotoId("");
               setRepeatCount(5);
             }
             if (value === "dualScroll") {
-              if (tabValue === "dualScroll") return;
               setCurrentReadPhotoId(
-                Array.from({ length: repeatCount }, (_, i) => data).flat()[
+                generateKey(
+                  Array.from({ length: repeatCount }, (_, i) => data).flat()[
+                    currentIndex
+                  ].id,
                   currentIndex
-                ].id +
-                  "-" +
-                  currentIndex
+                )
               );
               setRepeatCount(25);
             }
           }}
         >
           <TabsList>
-            <TabsTrigger value="singleScroll">
+            <TabsTrigger value="verticalSingleScroll">
               <div
-                className={`w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
-                  tabValue === "singleScroll"
-                    ? "after:bg-[linear-gradient(to_right,#0a0a0a_0%,transparent_20%,transparent_80%,#0a0a0a_100%)]"
-                    : "after:bg-[linear-gradient(to_right,#262626_0%,transparent_20%,transparent_80%,#262626_100%)]"
+                className={`w-6 h-8 overflow-hidden rotate-90 flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
+                  tabValue === "verticalSingleScroll"
+                    ? "after:bg-[radial-gradient(transparent_0%,transparent_20%,#0a0a0a_100%)]"
+                    : "after:bg-[radial-gradient(transparent_0%,transparent_20%,#262626_100%)]"
                 }`}
               >
                 <SvgIcon
-                  path={"/siena/singleScroll.svg"}
-                  className="w-8 h-8"
+                  path={"/siena/horizontalSingleScroll.svg"}
+                  className="w-8 h-8 text-yellow-400"
+                ></SvgIcon>
+              </div>
+            </TabsTrigger>
+            <TabsTrigger value="horizontalSingleScroll">
+              <div
+                className={`w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
+                  tabValue === "horizontalSingleScroll"
+                    ? "after:bg-[radial-gradient(transparent_0%,transparent_20%,#0a0a0a_100%)]"
+                    : "after:bg-[radial-gradient(transparent_0%,transparent_20%,#262626_100%)]"
+                }`}
+              >
+                <SvgIcon
+                  path={"/siena/horizontalSingleScroll.svg"}
+                  className="w-8 h-8 text-yellow-400"
                 ></SvgIcon>
               </div>
             </TabsTrigger>
@@ -236,13 +261,13 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               <div
                 className={`w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
                   tabValue === "dualScroll"
-                    ? "after:bg-[linear-gradient(to_right,#0a0a0a_0%,transparent_30%,transparent_70%,#0a0a0a_100%)]"
-                    : "after:bg-[linear-gradient(to_right,#262626_0%,transparent_30%,transparent_70%,#262626_100%)]"
+                    ? "after:bg-[radial-gradient(transparent_0%,transparent_20%,#0a0a0a_100%)]"
+                    : "after:bg-[radial-gradient(transparent_0%,transparent_20%,#262626_100%)]"
                 }`}
               >
                 <SvgIcon
                   path={"/siena/dualScroll.svg"}
-                  className="w-8 h-8"
+                  className="w-8 h-8 text-yellow-400"
                 ></SvgIcon>
               </div>
             </TabsTrigger>
@@ -251,7 +276,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       )}
       {!currentReadPhotoId && (
         <div
-          className={`flex  ${
+          className={`flex ${
             currentDirection === "y"
               ? "h-fit w-full px-[4%] flex-col z-[0!important] items-center justify-center gap-8"
               : "h-full w-fit z-[0!important] items-center justify-center gap-8"
@@ -311,17 +336,27 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             ))}
         </div>
       )}
-      {currentReadPhotoId && (
-        <div className="absolute h-20 w-[50dvw] flex bottom-8 translate-0 left-16 z-20">
-          {photoItem(
-            data.find(
-              (item: any) => item.id === getIdFromKey(currentReadPhotoId)
-            ),
-            0,
-            "small"
-          )}
-        </div>
-      )}
+      {
+        <Transition show={currentReadPhotoId as any}>
+          <div
+            className={clsx([
+              "absolute h-20 w-[50dvw] flex z-20 transition ease-in-out bottom-8 left-16 translate-0",
+              "data-closed:opacity-0 data-enter:duration-300 data-leave:duration-300",
+            ])}
+          >
+            {photoItem(
+              data.find(
+                (item: any) => item.id === getIdFromKey(currentReadPhotoId)
+              ) ||
+                Array.from({ length: repeatCount }, (_, i) => data).flat()[
+                  currentIndex
+                ],
+              0,
+              "small"
+            )}
+          </div>
+        </Transition>
+      }
       {currentReadPhotoId && (
         <div
           className="h-full w-fit flex flex-col gap-8 overflow-hidden m-12 rounded-lg"

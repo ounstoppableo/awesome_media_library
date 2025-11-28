@@ -96,6 +96,14 @@ export default function useBaseLogic(props: any) {
     (offset: number, animateType?: "set" | "to") => void
   >(() => {});
   useEffect(() => {
+    setInit(false);
+    gsap.set(scrollContainer.current, {
+      x: 0,
+      y: 0,
+    });
+    clearItemEffect();
+  }, [currentDirection]);
+  useEffect(() => {
     const _data = currentReadPhotoId
       ? getCurrentReadPhotoChildren("front")
       : data;
@@ -228,7 +236,15 @@ export default function useBaseLogic(props: any) {
     const resizeCb = () => {
       resizeAntiShake.current && clearTimeout(resizeAntiShake.current);
       resizeAntiShake.current = setTimeout(() => {
-        _main();
+        const _snap = _main() as number[];
+        const _offset = +gsap.getProperty(
+          scrollContainer.current,
+          currentDirection
+        );
+        gsap.to(scrollContainer.current, {
+          [currentDirection]: gsap.utils.snap(_snap, _offset),
+        });
+        switchToItemWithEffect(null, null, _offset, "to");
       }, 500);
     };
 
@@ -254,10 +270,16 @@ export default function useBaseLogic(props: any) {
       scrollOffset %= -_snap[_snap.length - _data.length];
       gsap.set(scrollContainer.current, {
         [currentDirection]: -scrollOffset,
-        filter: `brightness(${brightness}) saturate(${brightness / 3})`,
       });
+      scrollContainerItems.current.forEach((item) => {
+        gsap.set(item, {
+          filter: `brightness(${brightness}) saturate(${brightness / 3}) blur(${
+            5 + brightness / 2
+          }px)`,
+        });
+      });
+
       scrollOffset += velosity;
-      switchToItemWithEffect(null, null, scrollOffset);
     };
     !init &&
       gsap.set(scrollContainer.current, {
@@ -280,11 +302,20 @@ export default function useBaseLogic(props: any) {
                 [currentDirection]: _snap[Math.ceil(_snap.length / 2) - 1],
                 filter: `brightness(1)`,
               });
-              switchToItemWithEffect(
-                null,
-                null,
-                _snap[Math.ceil(_snap.length / 2) - 1]
-              );
+
+              if (currentDirection === "y") {
+                scrollContainerItems.current.forEach((item) => {
+                  gsap.to(item, {
+                    filter: `unset`,
+                  });
+                });
+              } else {
+                switchToItemWithEffect(
+                  null,
+                  null,
+                  _snap[Math.ceil(_snap.length / 2) - 1]
+                );
+              }
             },
           }
         )
@@ -296,7 +327,7 @@ export default function useBaseLogic(props: any) {
     return () => {
       window.removeEventListener("resize", resizeCb);
     };
-  }, [currentDirection, currentReadPhotoId, repeatCount]);
+  }, [currentDirection, currentReadPhotoId, repeatCount, init]);
 
   const generateKey = (id: string, index: any) => {
     return id + "-" + index;
@@ -346,6 +377,16 @@ export default function useBaseLogic(props: any) {
       computedImgOffset.current(_offset, animateType);
     }
   };
+  const clearItemEffect = () => {
+    for (let i = 0; i < imgeContainerItems.current.length; i++) {
+      gsap.set(imgeContainerItems.current[i], {
+        filter: "unset",
+      });
+      gsap.set(scrollContainerItems.current[i], {
+        filter: "unset",
+      });
+    }
+  };
 
   const getCurrentReadPhotoChildren = (
     type: "all" | "front" | "back" = "all"
@@ -382,5 +423,6 @@ export default function useBaseLogic(props: any) {
     getCurrentReadPhotoChildren,
     getIdFromKey,
     generateKey,
+    setCurrentDirection,
   };
 }
