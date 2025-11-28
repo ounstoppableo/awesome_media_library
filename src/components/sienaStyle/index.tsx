@@ -45,11 +45,11 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         },
         {
           id: "1.5",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
         },
         {
           id: "1.6",
-          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c37a45465ae82ee3f8b_kafka.jpg",
+          img: "https://cdn.prod.website-files.com/673306db3b111afa559bc378/67923c551123732db723b050_ana.jpg",
         },
       ],
     },
@@ -94,7 +94,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   const [snap, setSnap] = useState<number[]>([]);
   const resizeAntiShake = useRef<NodeJS.Timeout | null>(null);
   const gap = 32;
-  const offsetSetter = useRef<any>(null);
   const [init, setInit] = useState(false);
   const [repeatCount, setRepeatCount] = useState(5);
   const [tabValue, setTabValue] = useState("singleScroll");
@@ -104,13 +103,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
 
   const currentIndexWatcher = useRef<any>(null);
 
-  useEffect(() => {
-    offsetSetter.current = gsap.quickSetter(
-      scrollContainer.current,
-      currentDirection,
-      "px"
-    );
-  }, [currentDirection, currentReadPhotoId]);
   const lastSpeed = useRef<any>(0);
   useEffect(() => {
     const _main = () => {
@@ -140,7 +132,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       );
       setSnap(_snap);
 
-      offsetSetter.current(_snap[Math.ceil(_snap.length / 2) - 1]);
       // img静止
       computedImgOffset.current = (
         offset: number,
@@ -305,7 +296,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     return () => {
       window.removeEventListener("resize", resizeCb);
     };
-  }, [currentDirection, currentReadPhotoId]);
+  }, [currentDirection, currentReadPhotoId, repeatCount]);
 
   useEffect(() => {
     // 控制滚轮事件
@@ -413,10 +404,10 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       gsap.set(scrollContainer.current, {
         [currentDirection]: 0,
       });
-      gsap.to(dualScrollRef.current[0], {
+      gsap.set(dualScrollRef.current[0], {
         [currentDirection]: snap[Math.ceil(snap.length / 2) - 1],
       });
-      gsap.to(dualScrollRef.current[0], {
+      gsap.set(dualScrollRef.current[1], {
         [currentDirection]:
           snap[Math.ceil(snap.length / 2) - 1] + (snap[0] - snap[1]),
       });
@@ -568,7 +559,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     }
 
     return () => {
-      dragInst.current[0].kill();
       dragInst.current.forEach((item: any) => {
         item.kill();
       });
@@ -639,9 +629,9 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       (item) => item.id === currentReadPhotoId.split("-")[0]
     )!.children;
     return type === "front"
-      ? arr.slice(0, Math.ceil(arr.length / 2) - 1)
+      ? arr.slice(0, Math.ceil(arr.length / 2))
       : type === "back"
-      ? arr.slice(Math.ceil(arr.length / 2) - 1, arr.length - 1)
+      ? arr.slice(Math.ceil(arr.length / 2), arr.length - 1)
       : arr;
   };
 
@@ -798,9 +788,12 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           onValueChange={(value) => {
             setTabValue(value);
             if (value === "singleScroll") {
+              if (tabValue === "singleScroll") return;
               setCurrentReadPhotoId("");
+              setRepeatCount(5);
             }
             if (value === "dualScroll") {
+              if (tabValue === "dualScroll") return;
               setCurrentReadPhotoId(
                 Array.from({ length: repeatCount }, (_, i) => data).flat()[
                   currentIndex
@@ -808,6 +801,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                   "-" +
                   currentIndex
               );
+              setRepeatCount(25);
             }
           }}
         >
@@ -929,7 +923,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             }}
             className="w-fit flex-1 flex gap-8 overflow-hidden"
           >
-            {Array.from({ length: repeatCount * 5 }, (_, i) =>
+            {Array.from({ length: repeatCount }, (_, i) =>
               getCurrentReadPhotoChildren("front")
             )
               .flat()
@@ -941,7 +935,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             }}
             className="w-fit flex-1 flex gap-8 overflow-hidden"
           >
-            {Array.from({ length: repeatCount * 5 }, (_, i) =>
+            {Array.from({ length: repeatCount }, (_, i) =>
               getCurrentReadPhotoChildren("front")
             )
               .flat()
