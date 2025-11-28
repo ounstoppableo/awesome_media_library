@@ -350,7 +350,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             className="w-fit flex-1 flex gap-8 overflow-hidden"
           >
             {Array.from({ length: repeatCount }, (_, i) =>
-              getCurrentReadPhotoChildren("front")
+              getCurrentReadPhotoChildren("back")
             )
               .flat()
               .map((item: any, index) => daulScrollItem(item, index))}

@@ -96,6 +96,9 @@ export default function useBaseLogic(props: any) {
     (offset: number, animateType?: "set" | "to") => void
   >(() => {});
   useEffect(() => {
+    const _data = currentReadPhotoId
+      ? getCurrentReadPhotoChildren("front")
+      : data;
     const _main = () => {
       if (
         scrollWrapper.current === null ||
@@ -116,7 +119,7 @@ export default function useBaseLogic(props: any) {
         currentDirection === "y"
           ? imgeContainerItems.current[0].offsetHeight
           : imgeContainerItems.current[0].offsetWidth;
-      const itemCount = data.length * repeatCount;
+      const itemCount = _data.length * repeatCount;
       const _snap = Array.from(
         { length: itemCount },
         (_, i) => -i * (itemSize + gap) + (wrapperSize / 2 - itemSize / 2)
@@ -215,8 +218,8 @@ export default function useBaseLogic(props: any) {
 
       loop.current = function (offset: any) {
         let _offset =
-          (parseFloat(offset) % ((gap + itemSize) * data.length)) -
-          (gap + itemSize) * data.length;
+          (parseFloat(offset) % ((gap + itemSize) * _data.length)) -
+          (gap + itemSize) * _data.length;
         switchToItemWithEffect(null, null, _offset);
         return _offset;
       };
@@ -248,7 +251,7 @@ export default function useBaseLogic(props: any) {
     let brightness = 1;
     let scrollOffset = 0;
     const _init = () => {
-      scrollOffset %= -_snap[_snap.length - data.length];
+      scrollOffset %= -_snap[_snap.length - _data.length];
       gsap.set(scrollContainer.current, {
         [currentDirection]: -scrollOffset,
         filter: `brightness(${brightness}) saturate(${brightness / 3})`,
@@ -256,6 +259,10 @@ export default function useBaseLogic(props: any) {
       scrollOffset += velosity;
       switchToItemWithEffect(null, null, scrollOffset);
     };
+    !init &&
+      gsap.set(scrollContainer.current, {
+        [currentDirection]: _snap[Math.ceil(_snap.length / 2) - 1],
+      });
     !init &&
       gsap
         .to(
@@ -349,7 +356,7 @@ export default function useBaseLogic(props: any) {
     return type === "front"
       ? arr.slice(0, Math.ceil(arr.length / 2))
       : type === "back"
-      ? arr.slice(Math.ceil(arr.length / 2), arr.length - 1)
+      ? arr.slice(Math.ceil(arr.length / 2), arr.length)
       : arr;
   };
 
