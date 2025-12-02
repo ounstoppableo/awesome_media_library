@@ -39,6 +39,8 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     getIdFromKey,
     generateKey,
     setCurrentDirection,
+    gap,
+    initEffect,
   } = useBaseLogic({});
 
   useWheelLogic({
@@ -49,6 +51,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     snap,
     switchToItemWithEffect,
     scrollContainer,
+    init,
   });
 
   const { cursor, handleChangeCurrent, handleControlCursor } =
@@ -66,6 +69,8 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       currentIndex,
       currentIndexWatcher,
       setCurrentIndex,
+      scrollContainerItems,
+      gap,
     });
 
   const photoItem = (
@@ -186,6 +191,15 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     );
   };
 
+  const toggleToHorizontal = () => {
+    setCurrentDirection("x");
+    switchToItemWithEffect(getIdFromKey(currentReadPhotoId));
+    setCurrentReadPhotoId("");
+    setRepeatCount(5);
+  };
+
+  const [showCursorStyle, setShowCursorStyle] = useState(false);
+
   return (
     <div
       ref={scrollWrapper}
@@ -195,27 +209,25 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           : "after:bg-[linear-gradient(to_right,#000_0%,transparent_10%,transparent_90%,#000_100%)] py-12"
       }`}
     >
-      {cursor}
-      {currentDirection === "x" && init && (
+      {showCursorStyle && cursor}
+      <Transition show={init && currentDirection === "x"}>
         <Tabs
           defaultValue="tab-1"
-          className="self-center dark z-20"
+          className={clsx([
+            "self-center dark z-20",
+            "data-closed:opacity-0 data-enter:duration-300 data-leave:duration-300",
+            "data-enter:data-closed:-translate-y-full",
+            "data-leave:data-closed:-translate-y-full",
+          ])}
           value={tabValue}
           onValueChange={(value) => {
             setTabValue(value);
             if (tabValue === value) return;
-            if (value === "verticalSingleScroll") {
-              setCurrentDirection("y");
-              setCurrentReadPhotoId("");
-              setRepeatCount(5);
-            }
             if (value === "horizontalSingleScroll") {
-              setCurrentDirection("x");
-              switchToItemWithEffect(getIdFromKey(currentReadPhotoId));
-              setCurrentReadPhotoId("");
-              setRepeatCount(5);
+              toggleToHorizontal();
             }
             if (value === "dualScroll") {
+              toggleToHorizontal();
               setCurrentReadPhotoId(
                 generateKey(
                   Array.from({ length: repeatCount }, (_, i) => data).flat()[
@@ -224,28 +236,18 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                   currentIndex
                 )
               );
-              setRepeatCount(25);
+              setRepeatCount(
+                Math.floor(
+                  (5 * innerWidth) / scrollContainerItems.current[0].offsetWidth
+                )
+              );
             }
           }}
         >
           <TabsList>
-            <TabsTrigger value="verticalSingleScroll">
-              <div
-                className={`w-6 h-8 overflow-hidden rotate-90 flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
-                  tabValue === "verticalSingleScroll"
-                    ? "after:bg-[radial-gradient(transparent_0%,transparent_20%,#0a0a0a_100%)]"
-                    : "after:bg-[radial-gradient(transparent_0%,transparent_20%,#262626_100%)]"
-                }`}
-              >
-                <SvgIcon
-                  path={"/siena/horizontalSingleScroll.svg"}
-                  className="w-8 h-8 text-yellow-400"
-                ></SvgIcon>
-              </div>
-            </TabsTrigger>
             <TabsTrigger value="horizontalSingleScroll">
               <div
-                className={`w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
+                className={`cursor-pointer w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
                   tabValue === "horizontalSingleScroll"
                     ? "after:bg-[radial-gradient(transparent_0%,transparent_20%,#0a0a0a_100%)]"
                     : "after:bg-[radial-gradient(transparent_0%,transparent_20%,#262626_100%)]"
@@ -259,7 +261,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             </TabsTrigger>
             <TabsTrigger value="dualScroll">
               <div
-                className={`w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
+                className={`cursor-pointer w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
                   tabValue === "dualScroll"
                     ? "after:bg-[radial-gradient(transparent_0%,transparent_20%,#0a0a0a_100%)]"
                     : "after:bg-[radial-gradient(transparent_0%,transparent_20%,#262626_100%)]"
@@ -273,18 +275,55 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             </TabsTrigger>
           </TabsList>
         </Tabs>
-      )}
+      </Transition>
+
+      <Transition show={init && (!currentReadPhotoId as any)}>
+        {
+          <div
+            className={clsx([
+              "absolute top-12 left-16 text-white text-3xl font-semibold cursor-pointer z-20",
+              "data-closed:opacity-0 data-enter:duration-300 data-leave:duration-300",
+              "data-enter:data-closed:-translate-x-full",
+              "data-leave:data-closed:-translate-x-full",
+            ])}
+            style={{
+              fontFamily: "P22 Parrish Roman,Arial,sans-serif",
+            }}
+            onClick={() => {
+              setCurrentDirection(currentDirection === "y" ? "x" : "y");
+            }}
+          >
+            {(currentDirection === "y"
+              ? "vertical"
+              : "horizontal"
+            ).toUpperCase()}
+            <div
+              className="text-xs font-thin w-full"
+              style={{ textAlign: "justify", textAlignLast: "justify" }}
+            >
+              C l i c k T o T o g g l e
+            </div>
+          </div>
+        }
+      </Transition>
+
       {!currentReadPhotoId && (
         <div
           className={`flex ${
             currentDirection === "y"
-              ? "h-fit w-full px-[4%] flex-col z-[0!important] items-center justify-center gap-8"
+              ? "h-fit w-full px-16 flex-col z-[0!important] items-center justify-center gap-8"
               : "h-full w-fit z-[0!important] items-center justify-center gap-8"
           } `}
           ref={(el) => {
             if (!currentReadPhotoId) {
               scrollContainer.current = el;
             }
+          }}
+          onMouseMove={() => {
+            setShowCursorStyle(true);
+          }}
+          onMouseLeave={() => {
+            setShowCursorStyle(false);
           }}
         >
           {Array.from({ length: repeatCount }, (_, i) => data)
@@ -342,6 +381,8 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             className={clsx([
               "absolute h-20 w-[50dvw] flex z-20 transition ease-in-out bottom-8 left-16 translate-0",
               "data-closed:opacity-0 data-enter:duration-300 data-leave:duration-300",
+              "data-enter:data-closed:-translate-x-full",
+              "data-leave:data-closed:-translate-x-full",
             ])}
           >
             {photoItem(
@@ -360,6 +401,12 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       {currentReadPhotoId && (
         <div
           className="h-full w-fit flex flex-col gap-8 overflow-hidden m-12 rounded-lg"
+          onMouseMove={() => {
+            setShowCursorStyle(true);
+          }}
+          onMouseLeave={() => {
+            setShowCursorStyle(false);
+          }}
           ref={(el) => {
             if (currentReadPhotoId) {
               scrollContainer.current = el;

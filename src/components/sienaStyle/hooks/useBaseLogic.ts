@@ -103,6 +103,7 @@ export default function useBaseLogic(props: any) {
     });
     clearItemEffect();
   }, [currentDirection]);
+
   useEffect(() => {
     const _data = currentReadPhotoId
       ? getCurrentReadPhotoChildren("front")
@@ -166,17 +167,10 @@ export default function useBaseLogic(props: any) {
           ) || 0;
         const speed = gsap.utils.interpolate(lastSpeed.current, _speed, 0.1);
         lastSpeed.current = speed;
-        const maxSpeed = 5000;
-        const minSpeed = 0;
-        const maxLeapOffset = 100;
-        const minLeapOffset = 0;
         const maxBlur = 30;
         const minBlur = 0;
         const maxBrightnessMinus = 2;
         const minBrightnessMinus = 0;
-        const maxGap = gap * 150;
-        const minScale = 1;
-        const maxScale = 1.2;
 
         if (currentReadPhotoId) {
         } else {
@@ -192,30 +186,6 @@ export default function useBaseLogic(props: any) {
               minBrightnessMinus,
               maxBrightnessMinus
             );
-            // const _gap = scaleNumber(
-            //   Math.abs(speed) > maxSpeed
-            //     ? maxSpeed * (offset - _snap[i])
-            //     : Math.abs(speed) * (offset - _snap[i]),
-            //   0,
-            //   snapGap * maxSpeed,
-            //   0,
-            //   maxGap
-            // );
-
-            // const _scale =
-            //   scaleNumber(
-            //     Math.abs(speed) > maxSpeed ? maxSpeed : Math.abs(speed),
-            //     0,
-            //     maxSpeed,
-            //     minScale,
-            //     maxScale
-            //   ) || 1;
-
-            // gsap.to(scrollItem, {
-            //   [currentDirection]: _gap,
-            //   ["scale" + currentDirection.toUpperCase()]:
-            //     _scale < minScale ? minScale : _scale,
-            // });
 
             gsap[animateType](scrollItem, {
               filter: `blur(${blur}px) brightness(${1 - brightness})`,
@@ -380,6 +350,7 @@ export default function useBaseLogic(props: any) {
   const clearItemEffect = () => {
     for (let i = 0; i < imgeContainerItems.current.length; i++) {
       gsap.set(imgeContainerItems.current[i], {
+        transform: "translate(-50%,-50%)",
         filter: "unset",
       });
       gsap.set(scrollContainerItems.current[i], {
@@ -424,5 +395,7 @@ export default function useBaseLogic(props: any) {
     getIdFromKey,
     generateKey,
     setCurrentDirection,
+    gap,
+    initEffect,
   };
 }

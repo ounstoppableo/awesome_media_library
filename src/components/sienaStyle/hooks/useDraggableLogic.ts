@@ -18,6 +18,8 @@ export default function useDraggableLogic(props: any) {
     currentIndex,
     currentIndexWatcher,
     setCurrentIndex,
+    scrollContainerItems,
+    gap,
   } = props;
   const dragInst = useRef<any>(null);
   const { form, cursor, setForm } = useMoveCursor({ currentDirection });
@@ -60,13 +62,21 @@ export default function useDraggableLogic(props: any) {
       gsap.set(scrollContainer.current, {
         [currentDirection]: 0,
       });
-      gsap.set(dualScrollRef.current[0], {
-        [currentDirection]: snap[Math.ceil(snap.length / 2) - 1],
-      });
-      gsap.set(dualScrollRef.current[1], {
-        [currentDirection]:
-          snap[Math.ceil(snap.length / 2) - 1] + (snap[0] - snap[1]),
-      });
+      gsap.fromTo(
+        dualScrollRef.current[0],
+        { [currentDirection]: snap[snap.length - 1] },
+        {
+          [currentDirection]: snap[Math.ceil(snap.length / 2) - 1],
+        }
+      );
+      gsap.fromTo(
+        dualScrollRef.current[1],
+        { [currentDirection]: 0 },
+        {
+          [currentDirection]:
+            snap[Math.ceil(snap.length / 2) - 1] + (snap[0] - snap[1]),
+        }
+      );
       trickerQueue.forEach((trickerCb) => gsap.ticker.add(trickerCb));
       dragInst.current = [
         ...Draggable.create(dualScrollRef.current[0], {
@@ -173,6 +183,13 @@ export default function useDraggableLogic(props: any) {
         }),
       ];
     } else {
+      if (currentDirection === "x") {
+        gsap.fromTo(
+          scrollContainer.current,
+          { gap: Math.abs(snap[0] - snap[1]) * 2 },
+          { gap, duration: 0.8 }
+        );
+      }
       dragInst.current = Draggable.create(scrollContainer.current, {
         type: currentDirection,
         cursor: "grab",

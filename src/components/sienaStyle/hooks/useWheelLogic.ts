@@ -10,6 +10,7 @@ export default function useWheelLogic(props: any) {
     snap,
     switchToItemWithEffect,
     scrollContainer,
+    init,
   } = props;
   useEffect(() => {
     // 控制滚轮事件
@@ -68,9 +69,9 @@ export default function useWheelLogic(props: any) {
         }
       }, 100);
     };
-    window.addEventListener("wheel", wheelCb);
+    init && window.addEventListener("wheel", wheelCb);
     return () => {
       window.removeEventListener("wheel", wheelCb);
     };
-  }, [snap, currentDirection, currentReadPhotoId]);
+  }, [snap, currentDirection, currentReadPhotoId, init]);
 }
