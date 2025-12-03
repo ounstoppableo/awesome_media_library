@@ -2,6 +2,8 @@ import useMoveCursor from "@/hooks/useMoveCursor";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { Draggable, InertiaPlugin } from "gsap/all";
+import { createTimeline, stagger, splitText } from "animejs";
+import { useGSAP } from "@gsap/react";
 
 export default function useDraggableLogic(props: any) {
   const {
@@ -23,200 +25,24 @@ export default function useDraggableLogic(props: any) {
   } = props;
   const dragInst = useRef<any>(null);
   const { form, cursor, setForm } = useMoveCursor({ currentDirection });
-  useEffect(() => {
-    if (!init) return;
-    const odometerDistance = odometer.current?.parentElement?.offsetWidth;
-    const wrapperSize =
-      currentDirection === "y"
-        ? scrollWrapper.current?.offsetHeight
-        : scrollWrapper.current?.offsetWidth;
-    const scrollSize =
-      currentDirection === "y"
-        ? scrollContainer.current?.offsetHeight
-        : scrollContainer.current?.offsetWidth;
+  const { contextSafe } = useGSAP({ scope: scrollWrapper });
+  useGSAP(
+    () => {
+      if (!init) return;
+      const odometerDistance = odometer.current?.parentElement?.offsetWidth;
+      const wrapperSize =
+        currentDirection === "y"
+          ? scrollWrapper.current?.offsetHeight
+          : scrollWrapper.current?.offsetWidth;
+      const scrollSize =
+        currentDirection === "y"
+          ? scrollContainer.current?.offsetHeight
+          : scrollContainer.current?.offsetWidth;
 
-    const trickerQueue = [
-      () => {
-        gsap.set(dualScrollRef.current[0], {
-          [currentDirection]: "+=1",
-          modifiers: {
-            [currentDirection]: function (offset) {
-              return loop.current(offset) + "px";
-            },
-          },
-        });
-      },
-      () => {
-        gsap.set(dualScrollRef.current[1], {
-          [currentDirection]: "-=1",
-          modifiers: {
-            [currentDirection]: function (offset) {
-              return loop.current(offset) + "px";
-            },
-          },
-        });
-      },
-    ];
-
-    if (currentReadPhotoId) {
-      gsap.set(scrollContainer.current, {
-        [currentDirection]: 0,
-      });
-      gsap.fromTo(
-        dualScrollRef.current[0],
-        { [currentDirection]: snap[snap.length - 1] },
-        {
-          [currentDirection]: snap[Math.ceil(snap.length / 2) - 1],
-        }
-      );
-      gsap.fromTo(
-        dualScrollRef.current[1],
-        { [currentDirection]: 0 },
-        {
-          [currentDirection]:
-            snap[Math.ceil(snap.length / 2) - 1] + (snap[0] - snap[1]),
-        }
-      );
-      trickerQueue.forEach((trickerCb) => gsap.ticker.add(trickerCb));
-      dragInst.current = [
-        ...Draggable.create(dualScrollRef.current[0], {
-          type: currentDirection,
-          cursor: "grab",
-          activeCursor: "grabbing",
-          allowEventDefault: false,
-          inertia: true,
-          onDrag: function () {
-            trickerQueue.forEach((trickerCb) => gsap.ticker.remove(trickerCb));
-            gsap.set(dualScrollRef.current[1], {
-              [currentDirection]: -this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-            odometer.current &&
-              gsap.to(odometer.current, {
-                x:
-                  ((this["pointer" + currentDirection.toUpperCase()] -
-                    wrapperSize! / 2) /
-                    wrapperSize!) *
-                  odometerDistance!,
-              });
-          },
-          onDragEnd: function () {
-            odometer.current &&
-              gsap.to(odometer.current, {
-                x: 0,
-              });
-          },
-          onThrowUpdate() {
-            gsap.set(dualScrollRef.current[1], {
-              [currentDirection]: -this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-            gsap.set(this.target, {
-              [currentDirection]: this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-          },
-          onThrowComplete() {
-            trickerQueue.forEach((trickerCb) => gsap.ticker.add(trickerCb));
-          },
-        }),
-        ...Draggable.create(dualScrollRef.current[1], {
-          type: currentDirection,
-          cursor: "grab",
-          activeCursor: "grabbing",
-          allowEventDefault: false,
-          inertia: true,
-          onDrag: function () {
-            gsap.set(dualScrollRef.current[0], {
-              [currentDirection]: -this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-            odometer.current &&
-              gsap.to(odometer.current, {
-                x:
-                  ((this["pointer" + currentDirection.toUpperCase()] -
-                    wrapperSize! / 2) /
-                    wrapperSize!) *
-                  odometerDistance!,
-              });
-          },
-          onDragEnd: function () {
-            odometer.current &&
-              gsap.to(odometer.current, {
-                x: 0,
-              });
-          },
-          onThrowUpdate() {
-            gsap.set(dualScrollRef.current[0], {
-              [currentDirection]: -this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-            gsap.set(this.target, {
-              [currentDirection]: this[currentDirection],
-              modifiers: {
-                [currentDirection]: function (offset) {
-                  return loop.current(offset) + "px";
-                },
-              },
-            });
-          },
-        }),
-      ];
-    } else {
-      if (currentDirection === "x") {
-        gsap.fromTo(
-          scrollContainer.current,
-          { gap: Math.abs(snap[0] - snap[1]) * 2 },
-          { gap, duration: 0.8 }
-        );
-      }
-      dragInst.current = Draggable.create(scrollContainer.current, {
-        type: currentDirection,
-        cursor: "grab",
-        activeCursor: "grabbing",
-        allowEventDefault: false,
-        inertia: true,
-        onDrag: function () {
-          switchToItemWithEffect(null, null, this[currentDirection]);
-
-          odometer.current &&
-            gsap.to(odometer.current, {
-              x:
-                ((this["pointer" + currentDirection.toUpperCase()] -
-                  wrapperSize! / 2) /
-                  wrapperSize!) *
-                odometerDistance!,
-            });
-        },
-        onDragEnd: function () {
-          odometer.current &&
-            gsap.to(odometer.current, {
-              x: 0,
-            });
-        },
-        onThrowUpdate() {
-          gsap.set(this.target, {
-            [currentDirection]: this[currentDirection],
+      const trickerQueue = [
+        () => {
+          gsap.set(dualScrollRef.current[0], {
+            [currentDirection]: "+=1",
             modifiers: {
               [currentDirection]: function (offset) {
                 return loop.current(offset) + "px";
@@ -224,17 +50,203 @@ export default function useDraggableLogic(props: any) {
             },
           });
         },
-        snap: { [currentDirection]: snap },
-      });
-    }
+        () => {
+          gsap.set(dualScrollRef.current[1], {
+            [currentDirection]: "-=1",
+            modifiers: {
+              [currentDirection]: function (offset) {
+                return loop.current(offset) + "px";
+              },
+            },
+          });
+        },
+      ];
 
-    return () => {
-      dragInst.current.forEach((item: any) => {
-        item.kill();
-      });
-      trickerQueue.forEach((trickerCb) => gsap.ticker.remove(trickerCb));
-    };
-  }, [snap, currentDirection, init, currentReadPhotoId]);
+      if (currentReadPhotoId) {
+        gsap.set(scrollContainer.current, {
+          [currentDirection]: 0,
+        });
+        gsap.fromTo(
+          dualScrollRef.current[0],
+          { [currentDirection]: snap[snap.length - 1] },
+          {
+            [currentDirection]: snap[Math.ceil(snap.length / 2) - 1],
+          }
+        );
+        gsap.fromTo(
+          dualScrollRef.current[1],
+          { [currentDirection]: 0 },
+          {
+            [currentDirection]:
+              snap[Math.ceil(snap.length / 2) - 1] + (snap[0] - snap[1]),
+          }
+        );
+        trickerQueue.forEach((trickerCb) => gsap.ticker.add(trickerCb));
+        dragInst.current = [
+          ...Draggable.create(dualScrollRef.current[0], {
+            type: currentDirection,
+            cursor: "grab",
+            activeCursor: "grabbing",
+            allowEventDefault: false,
+            inertia: true,
+            onDrag: function () {
+              trickerQueue.forEach((trickerCb) =>
+                gsap.ticker.remove(trickerCb)
+              );
+              gsap.set(dualScrollRef.current[1], {
+                [currentDirection]: -this[currentDirection],
+                modifiers: {
+                  [currentDirection]: function (offset) {
+                    return loop.current(offset) + "px";
+                  },
+                },
+              });
+              odometer.current &&
+                gsap.to(odometer.current, {
+                  x:
+                    ((this["pointer" + currentDirection.toUpperCase()] -
+                      wrapperSize! / 2) /
+                      wrapperSize!) *
+                    odometerDistance!,
+                });
+            },
+            onDragEnd: function () {
+              odometer.current &&
+                gsap.to(odometer.current, {
+                  x: 0,
+                });
+            },
+            onThrowUpdate() {
+              gsap.set(dualScrollRef.current[1], {
+                [currentDirection]: -this[currentDirection],
+                modifiers: {
+                  [currentDirection]: function (offset) {
+                    return loop.current(offset) + "px";
+                  },
+                },
+              });
+              gsap.set(this.target, {
+                [currentDirection]: this[currentDirection],
+                modifiers: {
+                  [currentDirection]: function (offset) {
+                    return loop.current(offset) + "px";
+                  },
+                },
+              });
+            },
+            onThrowComplete() {
+              trickerQueue.forEach((trickerCb) => gsap.ticker.add(trickerCb));
+            },
+          }),
+          ...Draggable.create(dualScrollRef.current[1], {
+            type: currentDirection,
+            cursor: "grab",
+            activeCursor: "grabbing",
+            allowEventDefault: false,
+            inertia: true,
+            onDrag: function () {
+              gsap.set(dualScrollRef.current[0], {
+                [currentDirection]: -this[currentDirection],
+                modifiers: {
+                  [currentDirection]: function (offset) {
+                    return loop.current(offset) + "px";
+                  },
+                },
+              });
+              odometer.current &&
+                gsap.to(odometer.current, {
+                  x:
+                    ((this["pointer" + currentDirection.toUpperCase()] -
+                      wrapperSize! / 2) /
+                      wrapperSize!) *
+                    odometerDistance!,
+                });
+            },
+            onDragEnd: function () {
+              odometer.current &&
+                gsap.to(odometer.current, {
+                  x: 0,
+                });
+            },
+            onThrowUpdate() {
+              gsap.set(dualScrollRef.current[0], {
+                [currentDirection]: -this[currentDirection],
+                modifiers: {
+                  [currentDirection]: function (offset) {
+                    return loop.current(offset) + "px";
+                  },
+                },
+              });
+              gsap.set(this.target, {
+                [currentDirection]: this[currentDirection],
+                modifiers: {
+                  [currentDirection]: function (offset) {
+                    return loop.current(offset) + "px";
+                  },
+                },
+              });
+            },
+          }),
+        ];
+      } else {
+        if (currentDirection === "x") {
+          gsap.fromTo(
+            scrollContainer.current,
+            { gap: Math.abs(snap[0] - snap[1]) * 2 },
+            { gap, duration: 0.8 }
+          );
+        }
+        dragInst.current = Draggable.create(scrollContainer.current, {
+          type: currentDirection,
+          cursor: "grab",
+          activeCursor: "grabbing",
+          allowEventDefault: false,
+          inertia: true,
+          onDrag: function () {
+            switchToItemWithEffect(null, null, this[currentDirection]);
+
+            odometer.current &&
+              gsap.to(odometer.current, {
+                x:
+                  ((this["pointer" + currentDirection.toUpperCase()] -
+                    wrapperSize! / 2) /
+                    wrapperSize!) *
+                  odometerDistance!,
+              });
+          },
+          onDragEnd: function () {
+            odometer.current &&
+              gsap.to(odometer.current, {
+                x: 0,
+              });
+          },
+          onThrowUpdate() {
+            gsap.set(this.target, {
+              [currentDirection]: this[currentDirection],
+              modifiers: {
+                [currentDirection]: function (offset) {
+                  return loop.current(offset) + "px";
+                },
+              },
+            });
+          },
+          snap: { [currentDirection]: snap },
+        });
+      }
+
+      return () => {
+        dragInst.current.forEach((item: any) => {
+          item.kill();
+        });
+        trickerQueue.forEach((trickerCb) => gsap.ticker.remove(trickerCb));
+      };
+    },
+    {
+      dependencies: [snap, currentDirection, init, currentReadPhotoId],
+      scope: scrollWrapper,
+      revertOnUpdate: true,
+    }
+  );
   const twine = useRef<any>(null);
   // 控制cursor状态
   const handleControlCursor = (index: number) => {
@@ -248,7 +260,7 @@ export default function useDraggableLogic(props: any) {
       setForm(form === "mousedown" ? "mousedown" : "default");
     }
   };
-  const handleChangeCurrent = (type: "up" | "down" | "") => {
+  const handleChangeCurrent = contextSafe((type: "up" | "down" | "") => {
     if (!type) return;
     if (twine.current) return;
     dragInst.current[0].disable();
@@ -283,26 +295,68 @@ export default function useDraggableLogic(props: any) {
         twine.current = null;
       },
     });
-  };
+  });
   useEffect(() => {
     handleControlCursor(currentIndex);
   }, [currentIndex]);
-  useEffect(() => {
-    if (!currentReadPhotoId) {
-      currentIndexWatcher.current = setInterval(() => {
-        if (scrollContainer.current === null) return;
-        const offset = +gsap.getProperty(
-          scrollContainer.current,
-          currentDirection
-        );
-        setCurrentIndex(
-          snap.findIndex((item: any) => item === gsap.utils.snap(snap, offset))
-        );
-      }, 16);
+  useGSAP(
+    () => {
+      if (!currentReadPhotoId) {
+        currentIndexWatcher.current = setInterval(() => {
+          if (scrollContainer.current === null) return;
+          const offset = +gsap.getProperty(
+            scrollContainer.current,
+            currentDirection
+          );
+          setCurrentIndex(
+            snap.findIndex(
+              (item: any) => item === gsap.utils.snap(snap, offset)
+            )
+          );
+        }, 16);
+      }
+      return () => {
+        clearInterval(currentIndexWatcher.current);
+      };
+    },
+    {
+      dependencies: [snap, currentReadPhotoId],
+      scope: scrollWrapper,
+      revertOnUpdate: true,
     }
+  );
+
+  const textSplitAntiShake = useRef<any>(null);
+  const textSplitTimeLine = useRef<any>(createTimeline());
+  useEffect(() => {
+    const textContainer =
+      scrollContainerItems.current[currentIndex]?.querySelector(".photoTitle");
+    if (!textContainer) return;
+    if (textSplitAntiShake.current) clearTimeout(textSplitAntiShake.current);
+    const splits = splitText(textContainer, {
+      chars: {
+        wrap: "clip",
+        clone: "bottom",
+      },
+    });
+    textSplitAntiShake.current = setTimeout(() => {
+      textSplitTimeLine.current.add(
+        splits.chars,
+        {
+          y: "-100%",
+          loop: true,
+          loopDelay: 350,
+          duration: 750,
+          ease: "inOut(2)",
+        },
+        stagger(150, { from: "center" })
+      );
+    }, 2000);
     return () => {
-      clearInterval(currentIndexWatcher.current);
+      textSplitTimeLine.current.reset();
+      textSplitTimeLine.current.remove(splits.chars);
+      splits.revert();
     };
-  }, [snap, currentReadPhotoId]);
+  }, [currentIndex]);
   return { cursor, handleChangeCurrent, handleControlCursor };
 }

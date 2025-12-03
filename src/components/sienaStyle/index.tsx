@@ -52,6 +52,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     switchToItemWithEffect,
     scrollContainer,
     init,
+    scrollWrapper,
   });
 
   const { cursor, handleChangeCurrent, handleControlCursor } =
@@ -78,6 +79,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     index: number,
     type: "small" | "default" = "default"
   ) => {
+    if (!item) return <></>;
     return (
       <>
         <div
@@ -86,7 +88,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               ? "transition-all after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(transparent_0%,transparent_50%,#000_100%)]"
               : currentDirection === "x"
               ? "rounded-4xl after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(transparent_0%,transparent_40%,#000_100%)]"
-              : "rounded-4xl"
+              : "rounded-4xl after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(rgba(0,0,0,0.6)_0%,transparent_20%,transparent_80%,rgba(0,0,0,0.6)_100%)]"
           }`}
         >
           <img
@@ -131,7 +133,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                 {"Documentary".toUpperCase()}
               </div>
               <div
-                className={`${
+                className={`photoTitle ${
                   currentDirection === "y" ? "text-6xl" : "text-3xl"
                 }`}
                 style={{ fontFamily: "Neue Brucke,Arial,sans-serif" }}
@@ -364,7 +366,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                 {currentDirection === "y" && init && (
                   <div className="absolute bottom-8 right-8">
                     <InteractiveHoverButton
-                      className="text-xl w-48"
+                      className="text-xl w-48 z-20"
                       text="Explore"
                       defaultColor="bg-transparent"
                       hoverColor="white"
