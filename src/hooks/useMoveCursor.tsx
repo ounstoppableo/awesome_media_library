@@ -1,3 +1,6 @@
+import { checkIsNone } from "@/utils/convention";
+import { Transition } from "@headlessui/react";
+import clsx from "clsx";
 import {
   ChevronDown,
   ChevronLeft,
@@ -8,15 +11,15 @@ import { useEffect, useRef, useState } from "react";
 
 export default function useMoveCursor(props: { currentDirection: "x" | "y" }) {
   const { currentDirection } = props;
-  const [point, setPoint] = useState({ x: 0, y: 0 });
+  const [point, setPoint] = useState<any>({ x: null, y: null });
   const cursorRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState<"default" | "mousedown" | "up" | "down">(
     "default"
   );
+
   const [cursorVisible, setCursorVisible] = useState(false);
   useEffect(() => {
     const mousemoveCb = (e: any) => {
-      setCursorVisible(true);
       requestAnimationFrame(() => {
         setPoint({ x: e.clientX, y: e.clientY });
       });
@@ -35,16 +38,19 @@ export default function useMoveCursor(props: { currentDirection: "x" | "y" }) {
       window.removeEventListener("mousedown", mousedownCb);
       window.removeEventListener("mouseup", mouseupCb);
     };
-  });
+  }, []);
   const cursor = (
     <div
       ref={cursorRef}
-      className="absolute w-24 h-24 z-[9999] flex justify-center items-center text-white select-none pointer-events-none opacity-60 transition-opacity duration-200"
+      className={clsx(
+        "absolute w-24 h-24 z-[9999] flex justify-center items-center text-white select-none pointer-events-none opacity-60 origin-[0%_0%] transition-[opacity,transform] ",
+        cursorVisible && !checkIsNone(point.x) && !checkIsNone(point.y)
+          ? "transform-[scale(1,1)_translate(-50%,-50%)]"
+          : " transform-[scale(0,0)_translate(-50%,-50%)]"
+      )}
       style={{
         top: point.y,
         left: point.x,
-        opacity: cursorVisible ? 0.6 : 0,
-        transform: "translate(-50%, -50%)",
       }}
     >
       <div
@@ -80,5 +86,5 @@ export default function useMoveCursor(props: { currentDirection: "x" | "y" }) {
     </div>
   );
 
-  return { form, cursor, setForm };
+  return { form, cursor, setForm, setCursorVisible };
 }

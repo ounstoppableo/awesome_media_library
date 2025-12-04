@@ -24,7 +24,9 @@ export default function useDraggableLogic(props: any) {
     gap,
   } = props;
   const dragInst = useRef<any>(null);
-  const { form, cursor, setForm } = useMoveCursor({ currentDirection });
+  const { form, cursor, setForm, setCursorVisible } = useMoveCursor({
+    currentDirection,
+  });
   const { contextSafe } = useGSAP({ scope: scrollWrapper });
   useGSAP(
     () => {
@@ -358,5 +360,5 @@ export default function useDraggableLogic(props: any) {
       splits.revert();
     };
   }, [currentIndex]);
-  return { cursor, handleChangeCurrent, handleControlCursor };
+  return { cursor, handleChangeCurrent, handleControlCursor, setCursorVisible };
 }

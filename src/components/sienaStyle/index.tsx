@@ -55,7 +55,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     scrollWrapper,
   });
 
-  const { cursor, handleChangeCurrent, handleControlCursor } =
+  const { cursor, handleChangeCurrent, handleControlCursor, setCursorVisible } =
     useDraggableLogic({
       init,
       odometer,
@@ -200,8 +200,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     setRepeatCount(5);
   };
 
-  const [showCursorStyle, setShowCursorStyle] = useState(false);
-
   return (
     <div
       ref={scrollWrapper}
@@ -211,7 +209,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           : "after:bg-[linear-gradient(to_right,#000_0%,transparent_10%,transparent_90%,#000_100%)] py-12"
       }`}
     >
-      {showCursorStyle && cursor}
+      {cursor}
       <Transition show={init && currentDirection === "x"}>
         <Tabs
           defaultValue="tab-1"
@@ -322,10 +320,10 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             }
           }}
           onMouseMove={() => {
-            setShowCursorStyle(true);
+            setCursorVisible(true);
           }}
           onMouseLeave={() => {
-            setShowCursorStyle(false);
+            setCursorVisible(false);
           }}
         >
           {Array.from({ length: repeatCount }, (_, i) => data)
@@ -404,10 +402,10 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         <div
           className="h-full w-fit flex flex-col gap-8 overflow-hidden m-12 rounded-lg"
           onMouseMove={() => {
-            setShowCursorStyle(true);
+            setCursorVisible(true);
           }}
           onMouseLeave={() => {
-            setShowCursorStyle(false);
+            setCursorVisible(false);
           }}
           ref={(el) => {
             if (currentReadPhotoId) {
