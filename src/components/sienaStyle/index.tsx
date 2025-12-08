@@ -124,19 +124,13 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                   : "gap-1"
               }`}
             >
-              <div
-                className="text-xs tracking-[4px]"
-                style={{
-                  fontFamily: "P22 Parrish Roman,Arial,sans-serif",
-                }}
-              >
+              <div className="text-xs tracking-[4px]">
                 {"Documentary".toUpperCase()}
               </div>
               <div
                 className={`photoTitle ${
                   currentDirection === "y" ? "text-6xl" : "text-3xl"
                 }`}
-                style={{ fontFamily: "Neue Brucke,Arial,sans-serif" }}
               >
                 {"My Project X".toUpperCase()}
               </div>
@@ -146,7 +140,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                 currentDirection === "y" ? "text-lg" : "text-base"
               } flex flex-col w-full justify-center items-center`}
               style={{
-                fontFamily: "Neue Brucke,Arial,sans-serif",
                 lineHeight:
                   currentDirection === "y"
                     ? "calc(var(--text-lg) - 4px)"
@@ -286,9 +279,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               "data-enter:data-closed:-translate-x-full",
               "data-leave:data-closed:-translate-x-full",
             ])}
-            style={{
-              fontFamily: "P22 Parrish Roman,Arial,sans-serif",
-            }}
             onClick={() => {
               setCurrentDirection(currentDirection === "y" ? "x" : "y");
             }}

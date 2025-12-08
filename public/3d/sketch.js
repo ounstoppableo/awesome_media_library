@@ -17,8 +17,9 @@ class Sketch {
     this.debug = opts.debug || false;
     this.easing = opts.easing || "easeInOut";
     this.noiseAngle = opts.noiseAngle || 0;
-
+    this.displacement = opts.displacement;
     this.container = document.getElementById(this.contentId);
+    this.direction = -1;
 
     this.slider = document.getElementById(this.sliderId);
     this.images = JSON.parse(this.slider.getAttribute("data-images"));
@@ -153,10 +154,15 @@ class Sketch {
         texture2: { type: "f", value: this.textures[1] },
         displacement: {
           type: "f",
-          value: new THREE.TextureLoader().load("/3d/disp1.jpg"),
+          value:
+            this.displacement &&
+            new THREE.TextureLoader().load(this.displacement),
         },
         angle: {
           value: this.noiseAngle,
+        },
+        direction: {
+          value: this.direction,
         },
         resolution: { type: "v4", value: new THREE.Vector4() },
       },
@@ -181,46 +187,55 @@ class Sketch {
   }
 
   prev() {
-    if (this.isRunning) return;
-    this.material.uniforms.progress.value = 1;
-    this.isRunning = true;
+    if (this.isRunning) return null;
     const len = this.textures.length;
     const nextIndex = (this.current - 1 + len) % len;
+    this.material.uniforms.direction.value = 1;
     const nextTexture = this.textures[nextIndex];
-    this.material.uniforms.texture1.value = nextTexture;
-    let tl = new TimelineMax();
-    tl.to(this.material.uniforms.progress, this.duration, {
-      value: 0,
+    this.material.uniforms.texture2.value = nextTexture;
+
+    const onComplete = () => {
+      this.current = nextIndex;
+      this.material.uniforms.texture1.value = nextTexture;
+      this.material.uniforms.progress.value = 0;
+      this.isRunning = null;
+    };
+
+    this.isRunning = gsap.to(this.material.uniforms.progress, {
+      overwrite: true,
+      value: 1,
       ease: Power2[this.easing],
-      onComplete: () => {
-        this.current = nextIndex;
-        this.material.uniforms.texture2.value = nextTexture;
-        this.material.uniforms.progress.value = 0;
-        this.isRunning = false;
-      },
+      duration: this.duration,
+      onComplete: onComplete,
     });
+    return this.isRunning;
   }
 
   next() {
-    if (this.isRunning) return;
-    this.material.uniforms.progress.value = 0;
-    this.isRunning = true;
+    if (this.isRunning) return null;
     const len = this.textures.length;
+    this.material.uniforms.direction.value = -1;
     const nextIndex = (this.current + 1) % len;
     const nextTexture = this.textures[nextIndex];
     this.material.uniforms.texture2.value = nextTexture;
-    let tl = new TimelineMax();
-    tl.to(this.material.uniforms.progress, this.duration, {
+
+    const onComplete = () => {
+      this.current = nextIndex;
+      this.material.uniforms.texture1.value = nextTexture;
+      this.material.uniforms.progress.value = 0;
+      this.isRunning = null;
+    };
+
+    this.isRunning = gsap.to(this.material.uniforms.progress, {
+      overwrite: true,
       value: 1,
       ease: Power2[this.easing],
-      onComplete: () => {
-        this.current = nextIndex;
-        this.material.uniforms.texture1.value = nextTexture;
-        this.material.uniforms.progress.value = 0;
-        this.isRunning = false;
-      },
+      duration: this.duration,
+      onComplete: onComplete,
     });
+    return this.isRunning;
   }
+
   render() {
     if (this.paused) return;
     this.time += 0.05;

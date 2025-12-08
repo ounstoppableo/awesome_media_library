@@ -168,3 +168,7 @@
   }
   --animate-glow-flow: glow-flow 6s linear infinite;
 }
+
+* {
+  font-family: YunDuoAiChiMianHuaTang;
+}
