@@ -6,6 +6,7 @@ export default function useSoftTextLogic(props: any) {
   const { resizeObserverCb, data } = props;
   const softText = useRef<any>(null);
   const engine = useRef<any>(null);
+  const softTextInst = useRef<any>([]);
   const generateSoftText = useRef<any>(() => {});
   const currentSoftTextInst = useRef<any>(null);
   // 文字飘动
@@ -32,19 +33,17 @@ export default function useSoftTextLogic(props: any) {
       );
       engine.current.camera.position.x = centerToLeftEdge;
 
-      let pageCount: any;
-      let title: any;
-      let content: any;
-
       return (generateSoftText.current = (
         pageCountText: string,
         titleText: string,
         contentText: string,
         direction: "next" | "prev" = "next"
       ) => {
-        engine.current.remove(pageCount);
-        engine.current.remove(title);
-        engine.current.remove(content);
+        engine.current.clear();
+        softTextInst.current.forEach((item: any) => {
+          item?.destroy?.();
+        });
+
         const gap = remToWorld(1, engine.current.camera, softText.current);
         const pageCountY = _xl + _xl / 2;
         const titleY = pageCountY + _6xl + _6xl / 2 + gap;
@@ -58,19 +57,20 @@ export default function useSoftTextLogic(props: any) {
                 x: pxToWorld(-100, engine.current.camera, softText.current),
                 y: pxToWorld(100, engine.current.camera, softText.current),
               };
-        pageCount = new AnimatedText3D(pageCountText, {
+
+        const pageCount = new AnimatedText3D(pageCountText, {
           color: "#ffffff",
           size: _xl,
           basicY: centerToTopEdge - pageCountY,
           enterOffset,
         });
-        title = new AnimatedText3D(titleText, {
+        const title = new AnimatedText3D(titleText, {
           color: "#ffffff",
           size: _6xl,
           basicY: centerToTopEdge - titleY,
           enterOffset,
         });
-        content = new AnimatedText3D(contentText, {
+        const content = new AnimatedText3D(contentText, {
           color: "#ffffff",
           size: _base,
           xEdge: pxToWorld(
@@ -91,7 +91,7 @@ export default function useSoftTextLogic(props: any) {
           basicY: centerToTopEdge - titleY - _base * 2.5 - gap,
           enterOffset,
         });
-
+        softTextInst.current = [pageCount, title, content];
         engine.current.scene.add(pageCount);
         engine.current.scene.add(title);
         engine.current.scene.add(content);

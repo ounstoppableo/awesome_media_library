@@ -161,6 +161,12 @@ export class AnimatedText3D extends Object3D {
   hide() {
     this.tm.reverse();
   }
+  destroy() {
+    this.children.forEach((letter) => {
+      this.remove(letter);
+    });
+    this.tm.kill();
+  }
 }
 
 export { remToWorld, pxToWorld, AnimatedText3D };

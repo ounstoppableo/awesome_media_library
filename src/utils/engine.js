@@ -49,6 +49,14 @@ class Engine {
     if (index > -1) this.meshListeners.splice(index, 1);
     this.meshCount--;
   }
+  clear() {
+    this.destroyFlag = true;
+    this.scene.clear();
+    requestAnimationFrame(() => {
+      this.destroyFlag = false;
+      this.start();
+    });
+  }
 
   start() {
     this.update();
