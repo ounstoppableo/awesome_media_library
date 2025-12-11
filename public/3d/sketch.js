@@ -190,7 +190,7 @@ class Sketch {
     if (this.isRunning) return null;
     const len = this.textures.length;
     const nextIndex = (this.current - 1 + len) % len;
-    this.material.uniforms.direction.value = 1;
+    this.material.uniforms.direction.value = -1;
     const nextTexture = this.textures[nextIndex];
     this.material.uniforms.texture2.value = nextTexture;
 
@@ -199,8 +199,12 @@ class Sketch {
       this.material.uniforms.texture1.value = nextTexture;
       this.material.uniforms.progress.value = 0;
       this.isRunning = null;
+      _resolve(this.current);
     };
-
+    let _resolve;
+    const promise = new Promise((resolve) => {
+      _resolve = resolve;
+    });
     this.isRunning = gsap.to(this.material.uniforms.progress, {
       overwrite: true,
       value: 1,
@@ -208,13 +212,13 @@ class Sketch {
       duration: this.duration,
       onComplete: onComplete,
     });
-    return this.isRunning;
+    return promise;
   }
 
   next() {
     if (this.isRunning) return null;
     const len = this.textures.length;
-    this.material.uniforms.direction.value = -1;
+    this.material.uniforms.direction.value = 1;
     const nextIndex = (this.current + 1) % len;
     const nextTexture = this.textures[nextIndex];
     this.material.uniforms.texture2.value = nextTexture;
@@ -224,8 +228,13 @@ class Sketch {
       this.material.uniforms.texture1.value = nextTexture;
       this.material.uniforms.progress.value = 0;
       this.isRunning = null;
+      _resolve(this.current);
     };
 
+    let _resolve;
+    const promise = new Promise((resolve) => {
+      _resolve = resolve;
+    });
     this.isRunning = gsap.to(this.material.uniforms.progress, {
       overwrite: true,
       value: 1,
@@ -233,7 +242,7 @@ class Sketch {
       duration: this.duration,
       onComplete: onComplete,
     });
-    return this.isRunning;
+    return promise;
   }
 
   render() {

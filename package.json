@@ -24,6 +24,7 @@
     "@types/fluent-ffmpeg": "^2.1.27",
     "@types/lodash": "^4.17.20",
     "@types/react-transition-group": "^4.4.12",
+    "@types/three": "^0.181.0",
     "@types/ws": "^8.18.1",
     "animejs": "^4.2.2",
     "antd": "^5.27.3",

@@ -1,10 +1,23 @@
 "use client";
-import React, { Ref, RefObject, useEffect, useRef, useState } from "react";
+import React, {
+  Children,
+  Ref,
+  RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Instagram, Play, Twitter, X } from "lucide-react";
 import { InteractiveHoverButton } from "../ui/interactive-hover-button";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { splitText, animate as animejsAnimate, stagger } from "animejs";
+
+import { AnimatedText3D, pxToWorld, remToWorld } from "@/utils/AnimatedText3D";
+import { Engine } from "@/utils/engine";
+import useSoftTextLogic from "./hooks/useSoftTextLogic";
+import useResizeLogic from "./hooks/useResizeLogic";
+import usePhotoChangeLogic from "./hooks/usePhotoChangeLogic";
+import useOtherAnimateLogic from "./hooks/useOtherAnimateLogic";
 
 /**
  * 操作量：图片尺寸、canvas尺寸(坐标轴尺度)、缩放比例
@@ -20,165 +33,84 @@ import { splitText, animate as animejsAnimate, stagger } from "animejs";
  */
 
 export default function Taotajima() {
-  const leftBtnRef = useRef<HTMLDivElement>(null);
-  const rightBtnRef = useRef<HTMLDivElement>(null);
   const backBtnRef = useRef<HTMLDivElement>(null);
+  const [current, setCurrent] = useState(0);
   const twitterBtnRef = useRef<any>(null);
   const instagramBtnRef = useRef<any>(null);
+  const [data, setData] = useState({
+    id: "taotajima",
+    title: "taotajima",
+    children: [
+      {
+        id: "1",
+        img: "/Magic.jpg",
+        title: "Magic",
+        content:
+          "Planned and produced a short video that was exhibited in NHK (Japan Broadcasting Corporation)'s TECHNE. This experimental video captures nothing but the movements of the line of sight of living creatures. It explored the idea that each individual creature's characteristic might remain, even in a video with just these movements and sound effects.",
+      },
+      {
+        id: "2",
+        img: "/img21.jpg",
+        title: "MN concept movie",
+        content:
+          "Directed and produced a concept movie for the MN cosmetic brand.Instead of giving many instructions to the female models, the autonomy of each of the three models was respected and enhanced.",
+      },
+      {
+        id: "3",
+        img: "/img33.jpg",
+        title: "TELE-PLAY - prism",
+        content:
+          "Directed and produced the music video “prism” for TELE-PLAY.The new song by TELE-PLAY, a music unit that explores how music can be performed in a pandemic environment. It expresses the importance of connecting with others and the tranquility of gazing into one's inner world",
+      },
+    ],
+  });
 
-  useEffect(() => {
-    const sketch = new (window as any).Sketch({
-      contentId: "taotajimaSliderContent",
-      sliderId: "taotajimaSlider",
-      duration: 0.8,
-      debug: false,
-      easing: "easeOut",
-      uniforms: {},
-      // displacement: "/3d/disp1.jpg",
-      fragment: `
-            uniform float time;
-            uniform float progress;
-            uniform float width;
-            uniform float scaleX;
-            uniform float scaleY;
-            uniform float transition;
-            uniform float radius;
-            uniform float swipe;
-            uniform sampler2D texture1;
-            uniform sampler2D texture2;
-            uniform sampler2D displacement;
-            uniform vec4 resolution;
-            uniform float angle;
-            uniform float direction;
-    
-            varying vec2 vUv;
-            varying vec4 vPosition;
-            vec2 mirrored(vec2 v) {
-                vec2 m = mod(v,2.);
-                return mix(m,2.0 - m, step(1.0 ,m));
-            }
-    
-            void main()	{
-              vec2 newUV = (vUv - vec2(0.5))*resolution.zw + vec2(0.5);
-              vec4 noise = texture2D(displacement, mirrored(newUV+time*0.04));
-              // float prog = 0.6*progress + 0.2 + noise.g * 0.06;
-              float prog = progress*0.8 -0.05 + noise.g * 0.06;
+  const { resizeObserverCb } = useResizeLogic();
+  const { currentSoftTextInst, generateSoftText, softText } = useSoftTextLogic({
+    resizeObserverCb,
+    data,
+  });
+  const {
+    animateOpacity,
+    animatePageToggleBtn,
+    animateBtn,
+    splitRef,
+    shareRef,
+    playRef,
+    leftBtnRef,
+    rightBtnRef,
+  } = useOtherAnimateLogic();
 
-              // 控制噪音角度
-              vec2 dir = vec2(cos(angle), sin(angle));
-              float proj = dot(vUv - 0.5, dir);
-              proj = (proj + 0.70710678) * 0.70710678;
-              float intpl = pow(abs(smoothstep(0., 1., (prog * 2.0 + direction * (proj - 0.5)))), 10.);
-              
-              vec4 t1 = texture2D( texture1, (newUV - 0.5) * (1.0 - intpl) + 0.5 ) ;
-              vec4 t2 = texture2D( texture2, (newUV - 0.5) * intpl + 0.5 );
-              gl_FragColor = mix( t1, t2, intpl );
-    
-            }
-    
-        `,
-      eventRigisters: [
-        {
-          event: "wheel",
-          cb: (e: any, prev: any, next: any) => {
-            if (e.deltaY > 0) {
-              prev();
-            } else {
-              next();
-            }
-          },
-        },
-      ],
-      noiseAngle: Math.PI * 0.75,
-    });
-    const clears = sketch.eventRigister();
-
-    return () => {
-      clears.forEach((clear: any) => clear());
-    };
-  }, []);
-
-  const animeObj = useRef<any>({});
-  const animatePageToggleBtn = (
-    container: RefObject<HTMLDivElement | null>,
-    direction: "left" | "right",
-    animate: "enter" | "leave"
-  ) => {
-    if (!container.current) return;
-    const arrow = container.current.querySelector<SVGElement>(".arrow")!;
-    const title = container.current.querySelector<HTMLDivElement>(".title")!;
-    const pageCount =
-      container.current.querySelector<HTMLDivElement>(".pageCount")!;
-
-    if (direction === "left") {
-      if (animate === "leave") {
-      } else {
-        gsap.fromTo(
-          arrow,
-          {
-            scaleX: 0,
-          },
-          {
-            scaleX: 1,
-            duration: 0.3,
-            ease: "linear",
-          }
-        );
-      }
-    } else {
-      if (animate === "leave") {
-      } else {
-        gsap.fromTo(
-          arrow,
-          {
-            scaleX: 0,
-          },
-          {
-            scaleX: 1,
-            duration: 0.3,
-            ease: "linear",
-          }
-        );
-      }
-    }
-    if (animate === "leave") {
-      animeObj.current.titleChars?.revert?.();
-      animeObj.current.pageCountChars?.revert?.();
-    } else {
-      title &&
-        (animeObj.current.titleChars = splitText(title, {
-          chars: { class: "page-btn-title-split-char" },
-        }));
-      pageCount &&
-        (animeObj.current.pageCountChars = splitText(pageCount, {
-          chars: { class: "page-btn-pageCount-split-char" },
-        }));
-      animejsAnimate(".page-btn-title-split-char", {
-        y: ["0rem", "-.5rem", "0rem"],
-        duration: 300,
-        delay: stagger(30),
-      });
-      animejsAnimate(".page-btn-pageCount-split-char", {
-        y: ["0rem", "-.5rem", "0rem"],
-        duration: 300,
-        delay: stagger(30),
-      });
-    }
-  };
-
-  const animateBtn = (btnRef: RefObject<any>) => {
-    if (!btnRef.current) return;
-    if (animeObj.current.btnTwine) return;
-    animeObj.current.btnTwine = gsap
-      .fromTo(
-        btnRef.current,
-        { scale: 0.5 },
-        { scale: 1, ease: "power2.inOut", duration: 0.3 }
-      )
-      .then(() => {
-        animeObj.current.btnTwine = null;
-      });
-  };
+  usePhotoChangeLogic({
+    clearCb: () => {
+      animateOpacity.current.reverse();
+      currentSoftTextInst.current?.toHidden();
+    },
+    prevCb: (current: number) => {
+      setCurrent(current);
+      animateOpacity.current.play();
+      generateSoftText
+        .current(
+          `#${(current + 1).toString().padStart(3, "0")}      ${"Tag Tag Tag"}`,
+          data.children[current].title,
+          data.children[current].content,
+          "prev"
+        )
+        .toShow();
+    },
+    nextCb: (current: number) => {
+      setCurrent(current);
+      animateOpacity.current.play();
+      generateSoftText
+        .current(
+          `#${(current + 1).toString().padStart(3, "0")}      ${"Tag Tag Tag"}`,
+          data.children[current].title,
+          data.children[current].content,
+          "next"
+        )
+        .toShow();
+    },
+  });
 
   return (
     <>
@@ -189,37 +121,41 @@ export default function Taotajima() {
         <div
           className="w-full h-full relative after:absolute after:inset-0 after:bg-black/40"
           id="taotajimaSlider"
-          data-images='["/Magic.jpg","/img21.jpg","/img33.jpg"]'
+          data-images={JSON.stringify(data.children.map((item) => item.img))}
         ></div>
         <div className="absolute inset-0 flex justify-center items-center flex-col p-16 pt-8 cursor-default">
           <div className="flex text-xl text-white justify-between w-full">
-            <div
-              ref={backBtnRef}
-              className="cursor-pointer flex gap-2"
-              onMouseEnter={animatePageToggleBtn.bind(
-                null,
-                backBtnRef,
-                "left",
-                "enter"
-              )}
-              onMouseLeave={animatePageToggleBtn.bind(
-                null,
-                backBtnRef,
-                "left",
-                "leave"
-              )}
-            >
-              <svg
-                viewBox="0 0 35 7"
-                className="w-12 fill-white arrow origin-right"
+            <div className=" flex gap-4">
+              <div
+                className="flex cursor-pointer"
+                ref={backBtnRef}
+                onMouseEnter={animatePageToggleBtn.bind(
+                  null,
+                  backBtnRef,
+                  "left",
+                  "enter"
+                )}
+                onMouseLeave={animatePageToggleBtn.bind(
+                  null,
+                  backBtnRef,
+                  "left",
+                  "leave"
+                )}
               >
-                <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
-              </svg>
-              <div className="text-end title">BACK</div>
+                <svg
+                  viewBox="0 0 35 7"
+                  className="w-12 fill-white arrow origin-right"
+                >
+                  <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
+                </svg>
+                <div className="text-end title">BACK</div>
+              </div>
+              <div className="w-[.0625rem] h-9 bg-white/80 rotate-20"></div>
+              <div className="select-none">MTV ULTRAHITS</div>
             </div>
             <div className="flex text-2xl gap-4 h-fit">
               <div className="select-none">Blog</div>
-              <div className="w-[1px] h-9 bg-white/80 rotate-20"></div>
+              <div className="w-[.0625rem] h-9 bg-white/80 rotate-20"></div>
               <div className="cursor-pointer relative after:bottom-0 after:left-0 after:absolute after:border-b-2 after:border-white hover:after:w-full after:transition-all after:w-0">
                 Unstoppable840
               </div>
@@ -228,21 +164,27 @@ export default function Taotajima() {
           <div className="flex-1"></div>
           <div className="relative flex gap-8 items-center max-w-[50dvw]">
             <div className=" text-white gap-4 flex flex-col items-start">
-              <div className="flex text-2xl gap-4 h-fit">
-                <div>#010</div>
-                <div className="w-[1px] h-9 bg-white/80 rotate-20"></div>
-                <div className="">taotajima</div>
+              <div className=" gap-4 flex flex-col items-start relative">
+                <div className="flex text-2xl gap-4 h-fit ">
+                  <div className="opacity-0">#010</div>
+                  <div
+                    className="w-[.0625rem] h-9 bg-white/80 rotate-20"
+                    ref={splitRef}
+                  ></div>
+                  <div className="opacity-0">taotajima</div>
+                </div>
+                <div className="text-6xl opacity-0">MTV ULTRAHITS</div>
+                <div className="line-clamp-4 leading-8 opacity-0">
+                  Planned and produced a short video that was exhibited in NHK
+                  (Japan Broadcasting Corporation)'s TECHNE. This experimental
+                  video captures nothing but the movements of the line of sight
+                  of living creatures. It explored the idea that each individual
+                  creature's characteristic might remain, even in a video with
+                  just these movements and sound effects.
+                </div>
+                <div className="absolute w-full h-full" ref={softText}></div>
               </div>
-              <div className="text-6xl">MTV ULTRAHITS</div>
-              <div className="line-clamp-4 leading-8">
-                Planned and produced a short video that was exhibited in NHK
-                (Japan Broadcasting Corporation)'s TECHNE. This experimental
-                video captures nothing but the movements of the line of sight of
-                living creatures. It explored the idea that each individual
-                creature's characteristic might remain, even in a video with
-                just these movements and sound effects.
-              </div>
-              <div className="text-xl flex gap-4 items-center">
+              <div className="text-xl flex gap-4 items-center" ref={shareRef}>
                 <div>Share:</div>
                 <div className="flex gap-4">
                   <Twitter
@@ -258,7 +200,8 @@ export default function Taotajima() {
                 </div>
               </div>
             </div>
-            <div className="dark">
+
+            <div className="dark" ref={playRef}>
               <InteractiveHoverButton
                 className="text-xl w-40 aspect-1/1 z-20 opacity-80"
                 text="play"
@@ -271,58 +214,77 @@ export default function Taotajima() {
           </div>
           <div className="flex-1"></div>
           <div className="relative text-white text-xl flex gap-[10dvw] max-w-[50dvw]">
-            <div
-              className="relative flex flex-col items-end w-[20dvw] cursor-pointer"
-              ref={leftBtnRef}
-              onMouseEnter={animatePageToggleBtn.bind(
-                null,
-                leftBtnRef,
-                "left",
-                "enter"
-              )}
-              onMouseLeave={animatePageToggleBtn.bind(
-                null,
-                leftBtnRef,
-                "left",
-                "leave"
-              )}
-            >
-              <div className="pageCount">#009</div>
-              <div className="truncate w-[80%] title text-right">
-                Xperia Ear Open-style Concept
+            {
+              <div
+                className="relative flex flex-col items-end w-[20dvw] cursor-pointer"
+                ref={leftBtnRef}
+                onMouseEnter={animatePageToggleBtn.bind(
+                  null,
+                  leftBtnRef,
+                  "left",
+                  "enter"
+                )}
+                onMouseLeave={animatePageToggleBtn.bind(
+                  null,
+                  leftBtnRef,
+                  "left",
+                  "leave"
+                )}
+              >
+                {current !== 0 && (
+                  <>
+                    <div className="pageCount">
+                      #{current.toString().padStart(3, "0")}
+                    </div>
+                    <div className="truncate w-[80%] title text-right">
+                      {data.children[current - 1].title}
+                    </div>
+                    <svg
+                      viewBox="0 0 360 7"
+                      className="fill-white absolute bottom-2 arrow origin-right"
+                    >
+                      <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
+                    </svg>
+                  </>
+                )}
               </div>
-              <svg
-                viewBox="0 0 360 7"
-                className="fill-white absolute bottom-2 arrow origin-right"
+            }
+            {
+              <div
+                className="relative flex flex-col items-start w-[20dvw] cursor-pointer"
+                ref={rightBtnRef}
+                onMouseEnter={animatePageToggleBtn.bind(
+                  null,
+                  rightBtnRef,
+                  "right",
+                  "enter"
+                )}
+                onMouseLeave={animatePageToggleBtn.bind(
+                  null,
+                  rightBtnRef,
+                  "right",
+                  "leave"
+                )}
               >
-                <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
-              </svg>
-            </div>
-            <div
-              className="relative flex flex-col items-start w-[20dvw] cursor-pointer"
-              ref={rightBtnRef}
-              onMouseEnter={animatePageToggleBtn.bind(
-                null,
-                rightBtnRef,
-                "right",
-                "enter"
-              )}
-              onMouseLeave={animatePageToggleBtn.bind(
-                null,
-                rightBtnRef,
-                "right",
-                "leave"
-              )}
-            >
-              <div className="pageCount">#011</div>
-              <div className="truncate w-[80%] title">TECHNE</div>
-              <svg
-                viewBox="0 0 360 7"
-                className="fill-white absolute bottom-2 arrow origin-left"
-              >
-                <polyline points="0,7 360,7 339,0 339,6 0,6"></polyline>
-              </svg>
-            </div>
+                {current !== data.children.length - 1 && (
+                  <>
+                    <div className="pageCount">
+                      {" "}
+                      #{(current + 2).toString().padStart(3, "0")}
+                    </div>
+                    <div className="truncate w-[80%] title">
+                      {data.children[current + 1].title}
+                    </div>
+                    <svg
+                      viewBox="0 0 360 7"
+                      className="fill-white absolute bottom-2 arrow origin-left"
+                    >
+                      <polyline points="0,7 360,7 339,0 339,6 0,6"></polyline>
+                    </svg>
+                  </>
+                )}
+              </div>
+            }
           </div>
         </div>
       </div>
