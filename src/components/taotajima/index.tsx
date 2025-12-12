@@ -45,6 +45,7 @@ export default function Taotajima() {
         id: "1",
         img: "/Magic.jpg",
         title: "Magic",
+        tag: "client work",
         content:
           "Planned and produced a short video that was exhibited in NHK (Japan Broadcasting Corporation)'s TECHNE. This experimental video captures nothing but the movements of the line of sight of living creatures. It explored the idea that each individual creature's characteristic might remain, even in a video with just these movements and sound effects.",
       },
@@ -52,6 +53,7 @@ export default function Taotajima() {
         id: "2",
         img: "/img21.jpg",
         title: "MN concept movie",
+        tag: "private work",
         content:
           "Directed and produced a concept movie for the MN cosmetic brand.Instead of giving many instructions to the female models, the autonomy of each of the three models was respected and enhanced.",
       },
@@ -59,6 +61,7 @@ export default function Taotajima() {
         id: "3",
         img: "/img33.jpg",
         title: "TELE-PLAY - prism",
+        tag: "client work",
         content:
           "Directed and produced the music video “prism” for TELE-PLAY.The new song by TELE-PLAY, a music unit that explores how music can be performed in a pandemic environment. It expresses the importance of connecting with others and the tranquility of gazing into one's inner world",
       },
@@ -81,35 +84,66 @@ export default function Taotajima() {
     rightBtnRef,
   } = useOtherAnimateLogic();
 
-  usePhotoChangeLogic({
-    clearCb: () => {
-      animateOpacity.current.reverse();
-      currentSoftTextInst.current?.toHidden();
-    },
-    prevCb: (current: number) => {
-      setCurrent(current);
+  const togglePageControl = useRef<boolean>(false);
+  const hadClearText = useRef<boolean>(false);
+  const clearCb = (nextOperate: "next" | "prev") => {
+    animateOpacity.current.reverse();
+    return currentSoftTextInst.current?.toHidden?.(nextOperate);
+  };
+  const prevCb = (current: number) => {
+    let _resolve: any;
+    const promise = new Promise((resolve) => {
+      _resolve = resolve;
+    });
+    setCurrent(current);
+    requestAnimationFrame(() => {
       animateOpacity.current.play();
       generateSoftText
         .current(
-          `#${(current + 1).toString().padStart(3, "0")}      ${"Tag Tag Tag"}`,
+          `#${(current + 1).toString().padStart(3, "0")}      ${
+            data.children[current].tag
+          }`,
           data.children[current].title,
           data.children[current].content,
           "prev"
         )
-        .toShow();
-    },
-    nextCb: (current: number) => {
-      setCurrent(current);
+        .toShow()
+        .then(() => {
+          _resolve(1);
+        });
+    });
+    return promise;
+  };
+  const nextCb = (current: number) => {
+    let _resolve: any;
+    const promise = new Promise((resolve) => {
+      _resolve = resolve;
+    });
+    setCurrent(current);
+    requestAnimationFrame(() => {
       animateOpacity.current.play();
       generateSoftText
         .current(
-          `#${(current + 1).toString().padStart(3, "0")}      ${"Tag Tag Tag"}`,
+          `#${(current + 1).toString().padStart(3, "0")}      ${
+            data.children[current].tag
+          }`,
           data.children[current].title,
           data.children[current].content,
           "next"
         )
-        .toShow();
-    },
+        .toShow()
+        .then(() => {
+          _resolve(1);
+        });
+    });
+    return promise;
+  };
+
+  const { sketch } = usePhotoChangeLogic({
+    data,
+    clearCb: clearCb,
+    prevCb: prevCb,
+    nextCb: nextCb,
   });
 
   return (
@@ -121,7 +155,6 @@ export default function Taotajima() {
         <div
           className="w-full h-full relative after:absolute after:inset-0 after:bg-black/40"
           id="taotajimaSlider"
-          data-images={JSON.stringify(data.children.map((item) => item.img))}
         ></div>
         <div className="absolute inset-0 flex justify-center items-center flex-col p-16 pt-8 cursor-default">
           <div className="flex text-xl text-white justify-between w-full">
@@ -151,7 +184,7 @@ export default function Taotajima() {
                 <div className="text-end title">BACK</div>
               </div>
               <div className="w-[.0625rem] h-9 bg-white/80 rotate-20"></div>
-              <div className="select-none">MTV ULTRAHITS</div>
+              <div className="select-none">{data.title.toUpperCase()}</div>
             </div>
             <div className="flex text-2xl gap-4 h-fit">
               <div className="select-none">Blog</div>
@@ -166,21 +199,20 @@ export default function Taotajima() {
             <div className=" text-white gap-4 flex flex-col items-start">
               <div className=" gap-4 flex flex-col items-start relative">
                 <div className="flex text-2xl gap-4 h-fit ">
-                  <div className="opacity-0">#010</div>
+                  <div className="opacity-0">
+                    #{(current + 1).toString().padStart(3, "0")}
+                  </div>
                   <div
                     className="w-[.0625rem] h-9 bg-white/80 rotate-20"
                     ref={splitRef}
                   ></div>
-                  <div className="opacity-0">taotajima</div>
+                  <div className="opacity-0">{data.children[current].tag}</div>
                 </div>
-                <div className="text-6xl opacity-0">MTV ULTRAHITS</div>
+                <div className="text-6xl opacity-0">
+                  {data.children[current].title}
+                </div>
                 <div className="line-clamp-4 leading-8 opacity-0">
-                  Planned and produced a short video that was exhibited in NHK
-                  (Japan Broadcasting Corporation)'s TECHNE. This experimental
-                  video captures nothing but the movements of the line of sight
-                  of living creatures. It explored the idea that each individual
-                  creature's characteristic might remain, even in a video with
-                  just these movements and sound effects.
+                  {data.children[current].content}
                 </div>
                 <div className="absolute w-full h-full" ref={softText}></div>
               </div>
@@ -213,7 +245,7 @@ export default function Taotajima() {
             </div>
           </div>
           <div className="flex-1"></div>
-          <div className="relative text-white text-xl flex gap-[10dvw] max-w-[50dvw]">
+          <div className="relative text-white text-xl flex gap-[10dvw] max-w-[50dvw] select-none">
             {
               <div
                 className="relative flex flex-col items-end w-[20dvw] cursor-pointer"
@@ -230,14 +262,35 @@ export default function Taotajima() {
                   "left",
                   "leave"
                 )}
+                onClick={async () => {
+                  if (togglePageControl.current) return;
+                  togglePageControl.current = true;
+                  !hadClearText.current && (await clearCb("prev"));
+                  hadClearText.current = true;
+                  sketch.current.prev().then(async (current: number) => {
+                    await prevCb(current);
+                    hadClearText.current = false;
+                    togglePageControl.current = false;
+                  });
+                }}
               >
-                {current !== 0 && (
+                {
                   <>
-                    <div className="pageCount">
-                      #{current.toString().padStart(3, "0")}
+                    <div
+                      className="pageCount"
+                      key={current === 0 ? data.children.length : current}
+                    >
+                      #
+                      {(current === 0 ? data.children.length : current)
+                        .toString()
+                        .padStart(3, "0")}
                     </div>
                     <div className="truncate w-[80%] title text-right">
-                      {data.children[current - 1].title}
+                      {
+                        data.children[
+                          current === 0 ? data.children.length - 1 : current - 1
+                        ].title
+                      }
                     </div>
                     <svg
                       viewBox="0 0 360 7"
@@ -246,7 +299,7 @@ export default function Taotajima() {
                       <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
                     </svg>
                   </>
-                )}
+                }
               </div>
             }
             {
@@ -265,15 +318,37 @@ export default function Taotajima() {
                   "right",
                   "leave"
                 )}
+                onClick={async () => {
+                  if (togglePageControl.current) return;
+                  togglePageControl.current = true;
+                  !hadClearText.current && (await clearCb("next"));
+                  hadClearText.current = true;
+                  sketch.current.next().then(async () => {
+                    await nextCb(current);
+                    hadClearText.current = false;
+                    togglePageControl.current = false;
+                  });
+                }}
               >
-                {current !== data.children.length - 1 && (
+                {
                   <>
-                    <div className="pageCount">
-                      {" "}
-                      #{(current + 2).toString().padStart(3, "0")}
+                    <div
+                      className="pageCount"
+                      key={current + 2 > data.children.length ? 1 : current + 2}
+                    >
+                      #
+                      {(current + 2 > data.children.length ? 1 : current + 2)
+                        .toString()
+                        .padStart(3, "0")}
                     </div>
                     <div className="truncate w-[80%] title">
-                      {data.children[current + 1].title}
+                      {
+                        data.children[
+                          current + 1 > data.children.length - 1
+                            ? 1
+                            : current + 1
+                        ].title
+                      }
                     </div>
                     <svg
                       viewBox="0 0 360 7"
@@ -282,7 +357,7 @@ export default function Taotajima() {
                       <polyline points="0,7 360,7 339,0 339,6 0,6"></polyline>
                     </svg>
                   </>
-                )}
+                }
               </div>
             }
           </div>

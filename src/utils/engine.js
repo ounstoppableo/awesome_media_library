@@ -36,6 +36,12 @@ class Engine {
    * * SCENE MANAGMENT
    * * *******************
    */
+
+  updateSize(width, height) {
+    this.renderer.setSize(width, height);
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
+  }
   add(mesh) {
     this.scene.add(mesh);
     if (!mesh.update) return;

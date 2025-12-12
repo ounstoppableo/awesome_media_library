@@ -22,7 +22,7 @@ class Sketch {
     this.direction = -1;
 
     this.slider = document.getElementById(this.sliderId);
-    this.images = JSON.parse(this.slider.getAttribute("data-images"));
+    this.images = opts.images;
     this.width = this.slider.offsetWidth;
     this.height = this.slider.offsetHeight;
     this.slider.appendChild(this.renderer.domElement);
@@ -187,7 +187,7 @@ class Sketch {
   }
 
   prev() {
-    if (this.isRunning) return null;
+    if (this.isRunning) return this.isRunning;
     const len = this.textures.length;
     const nextIndex = (this.current - 1 + len) % len;
     this.material.uniforms.direction.value = -1;
@@ -202,21 +202,21 @@ class Sketch {
       _resolve(this.current);
     };
     let _resolve;
-    const promise = new Promise((resolve) => {
+    this.isRunning = new Promise((resolve) => {
       _resolve = resolve;
     });
-    this.isRunning = gsap.to(this.material.uniforms.progress, {
+    gsap.to(this.material.uniforms.progress, {
       overwrite: true,
       value: 1,
       ease: Power2[this.easing],
       duration: this.duration,
       onComplete: onComplete,
     });
-    return promise;
+    return this.isRunning;
   }
 
   next() {
-    if (this.isRunning) return null;
+    if (this.isRunning) return this.isRunning;
     const len = this.textures.length;
     this.material.uniforms.direction.value = 1;
     const nextIndex = (this.current + 1) % len;
@@ -232,17 +232,17 @@ class Sketch {
     };
 
     let _resolve;
-    const promise = new Promise((resolve) => {
+    this.isRunning = new Promise((resolve) => {
       _resolve = resolve;
     });
-    this.isRunning = gsap.to(this.material.uniforms.progress, {
+    gsap.to(this.material.uniforms.progress, {
       overwrite: true,
       value: 1,
       ease: Power2[this.easing],
       duration: this.duration,
       onComplete: onComplete,
     });
-    return promise;
+    return this.isRunning;
   }
 
   render() {

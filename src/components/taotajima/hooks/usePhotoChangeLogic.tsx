@@ -1,10 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function usePhotoChangeLogic(props: any) {
-  const { nextCb, prevCb, clearCb } = props;
+  const { nextCb, prevCb, clearCb, data } = props;
+  const sketch = useRef<any>(null);
+  const togglePageControl = useRef<any>(null);
+  const hadClearText = useRef<boolean>(false);
   // 照片翻页
   useEffect(() => {
-    const sketch = new (window as any).Sketch({
+    sketch.current = new (window as any).Sketch({
       contentId: "taotajimaSliderContent",
       sliderId: "taotajimaSlider",
       duration: 0.8,
@@ -12,6 +15,7 @@ export default function usePhotoChangeLogic(props: any) {
       easing: "easeOut",
       uniforms: {},
       displacement: "/3d/disp1.jpg",
+      images: data.children.map((item: any) => item.img),
       fragment: `
             uniform float time;
             uniform float progress;
@@ -57,26 +61,40 @@ export default function usePhotoChangeLogic(props: any) {
       eventRigisters: [
         {
           event: "wheel",
-          cb: (e: any, prev: any, next: any) => {
-            clearCb?.();
+          cb: async (e: any, prev: any, next: any) => {
+            if (togglePageControl.current)
+              clearTimeout(togglePageControl.current);
             if (e.deltaY < 0) {
-              prev()?.then((current: number) => {
-                prevCb?.(current);
-              });
+              !hadClearText.current && (await clearCb?.("prev"));
+              hadClearText.current = true;
+              const promise = prev();
+              togglePageControl.current = setTimeout(() => {
+                promise?.then(async (current: number) => {
+                  await prevCb?.(current);
+                  hadClearText.current = false;
+                });
+              }, 500);
             } else {
-              next()?.then((current: number) => {
-                nextCb?.(current);
-              });
+              !hadClearText.current && (await clearCb?.("next"));
+              hadClearText.current = true;
+              const promise = next();
+              togglePageControl.current = setTimeout(() => {
+                promise?.then(async (current: number) => {
+                  hadClearText.current = false;
+                  nextCb?.(current);
+                });
+              }, 500);
             }
           },
         },
       ],
       noiseAngle: Math.PI * 0.75,
     });
-    const clears = sketch.eventRigister();
+    const clears = sketch.current.eventRigister();
 
     return () => {
-      clears.forEach((clear: any) => clear());
+      clears?.forEach((clear: any) => clear?.());
     };
   }, []);
+  return { sketch };
 }

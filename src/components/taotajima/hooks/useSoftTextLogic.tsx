@@ -17,21 +17,6 @@ export default function useSoftTextLogic(props: any) {
         softText.current.offsetWidth,
         softText.current.offsetHeight
       );
-      const _base = remToWorld(1, engine.current.camera, softText.current);
-      const _xl = remToWorld(1.25, engine.current.camera, softText.current);
-      const _6xl = remToWorld(3.75, engine.current.camera, softText.current);
-
-      const centerToLeftEdge = pxToWorld(
-        softText.current.offsetWidth / 2,
-        engine.current.camera,
-        softText.current
-      );
-      const centerToTopEdge = pxToWorld(
-        softText.current.offsetHeight / 2,
-        engine.current.camera,
-        softText.current
-      );
-      engine.current.camera.position.x = centerToLeftEdge;
 
       return (generateSoftText.current = (
         pageCountText: string,
@@ -40,6 +25,25 @@ export default function useSoftTextLogic(props: any) {
         direction: "next" | "prev" = "next"
       ) => {
         engine.current.clear();
+        engine.current.updateSize(
+          softText.current.clientWidth,
+          softText.current.clientHeight
+        );
+        const _base = remToWorld(1, engine.current.camera, softText.current);
+        const _xl = remToWorld(1.25, engine.current.camera, softText.current);
+        const _6xl = remToWorld(3.75, engine.current.camera, softText.current);
+
+        const centerToLeftEdge = pxToWorld(
+          softText.current.offsetWidth / 2,
+          engine.current.camera,
+          softText.current
+        );
+        const centerToTopEdge = pxToWorld(
+          softText.current.offsetHeight / 2,
+          engine.current.camera,
+          softText.current
+        );
+        engine.current.camera.position.x = centerToLeftEdge;
         softTextInst.current.forEach((item: any) => {
           item?.destroy?.();
         });
@@ -98,15 +102,48 @@ export default function useSoftTextLogic(props: any) {
         softText.current.appendChild(engine.current.renderer.domElement);
         engine.current.start();
         const inst = {
-          toShow: () => {
-            pageCount.show();
-            title.show();
-            content.show();
+          toShow: (_direction: "next" | "prev") => {
+            return Promise.all([
+              pageCount.show(),
+              title.show(),
+              content.show(),
+            ]);
           },
-          toHidden: () => {
-            pageCount.hide();
-            title.hide();
-            content.hide();
+          toHidden: (_direction: "next" | "prev") => {
+            let enterOffset;
+            if (_direction !== direction) {
+              enterOffset =
+                _direction === "next"
+                  ? {
+                      x: pxToWorld(
+                        100,
+                        engine.current.camera,
+                        softText.current
+                      ),
+                      y: pxToWorld(
+                        -100,
+                        engine.current.camera,
+                        softText.current
+                      ),
+                    }
+                  : {
+                      x: pxToWorld(
+                        -100,
+                        engine.current.camera,
+                        softText.current
+                      ),
+                      y: pxToWorld(
+                        100,
+                        engine.current.camera,
+                        softText.current
+                      ),
+                    };
+            }
+            return Promise.all([
+              pageCount.hide(enterOffset),
+              title.hide(enterOffset),
+              content.hide(enterOffset),
+            ]);
           },
         };
         currentSoftTextInst.current = inst;
@@ -118,7 +155,7 @@ export default function useSoftTextLogic(props: any) {
         `#${(1).toString().padStart(3, "0")}      ${"Tag Tag Tag"}`,
         data.children[0].title,
         data.children[0].content
-      ).toShow();
+      ).toShow("next");
     };
     resizeObserverCb.current.push(cb);
 

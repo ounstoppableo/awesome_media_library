@@ -95,6 +95,7 @@ export default function useOtherAnimateLogic() {
       if (!ref.current) return;
       animateOpacity.current.fromTo(
         ref.current,
+        0.3,
         { opacity: 0 },
         { opacity: 1 },
         0

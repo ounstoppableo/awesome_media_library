@@ -27,6 +27,43 @@ function remToWorld(rem, camera, container) {
   return pxToWorld(px / FIX, camera, container);
 }
 
+const createNewTimelineAnimation = function (tm, enterOffset) {
+  this.tm.fromTo(
+    this.position,
+    { x: enterOffset.x || 0, y: this.position.y + (enterOffset.y || 0) },
+    { x: 0, y: this.position.y },
+    0
+  );
+  this.children.forEach((letter, index) => {
+    if (typeof this.overflow === "number" && this.overflow <= index) return;
+    this.tm.fromTo(
+      letter.position,
+      {
+        y:
+          letter.userData.baseY +
+          Math.sin(index / 8 + (Math.PI * letter.userData.baseY) / 2),
+      },
+      { y: letter.userData.baseY },
+      0
+    );
+    this.tm.fromTo(
+      letter.material,
+      {
+        opacity: 0,
+      },
+      {
+        opacity: 1,
+      },
+      0
+    );
+    this.tm.fromTo(
+      letter.rotation,
+      { x: (index / 5) % (Math.PI / 2) },
+      { x: 0 },
+      0
+    );
+  });
+};
 export class AnimatedText3D extends Object3D {
   constructor(
     text,
@@ -51,7 +88,7 @@ export class AnimatedText3D extends Object3D {
     this.size = size;
 
     const letters = [...text];
-    let overflow = null;
+    this.overflow = null;
     let spaceCount = 0;
     const createMesh = (letter) => {
       const geom = new ShapeGeometry(font.generateShapes(letter, size, 1));
@@ -88,19 +125,19 @@ export class AnimatedText3D extends Object3D {
           this.basePositionX = 0;
           if (
             this.basePositionY - size <= -yEdge &&
-            typeof overflow !== "number"
+            typeof this.overflow !== "number"
           ) {
-            overflow = index - spaceCount;
-            this.children[overflow - 1].geometry.dispose();
-            this.children[overflow - 1].geometry = new ShapeGeometry(
+            this.overflow = index - spaceCount;
+            this.children[this.overflow - 1].geometry.dispose();
+            this.children[this.overflow - 1].geometry = new ShapeGeometry(
               font.generateShapes(".", size, 1)
             );
-            this.children[overflow - 2].geometry.dispose();
-            this.children[overflow - 2].geometry = new ShapeGeometry(
+            this.children[this.overflow - 2].geometry.dispose();
+            this.children[this.overflow - 2].geometry = new ShapeGeometry(
               font.generateShapes(".", size, 1)
             );
-            this.children[overflow - 3].geometry.dispose();
-            this.children[overflow - 3].geometry = new ShapeGeometry(
+            this.children[this.overflow - 3].geometry.dispose();
+            this.children[this.overflow - 3].geometry = new ShapeGeometry(
               font.generateShapes(".", size, 1)
             );
           }
@@ -113,53 +150,25 @@ export class AnimatedText3D extends Object3D {
 
     // Timeline
     this.tm = new TimelineLite({ paused: true });
-    this.tm.fromTo(
-      this.position,
-      { x: enterOffset.x || 0, y: this.position.y + (enterOffset.y || 0) },
-      { x: 0, y: this.position.y },
-      0
-    );
-    this.children.forEach((letter, index) => {
-      if (typeof overflow === "number" && overflow <= index) return;
-      this.tm.fromTo(
-        letter.position,
-        {
-          y:
-            letter.userData.baseY +
-            Math.sin(index / 8 + (Math.PI * letter.userData.baseY) / 2),
-        },
-        { y: letter.userData.baseY },
-        0
-      );
-      this.tm.fromTo(
-        letter.material,
-        {
-          opacity: 0,
-        },
-        {
-          opacity: 1,
-        },
-        0
-      );
-      this.tm.fromTo(
-        letter.rotation,
-        { x: (index / 5) % (Math.PI / 2) },
-        { x: 0 },
-        0
-      );
-    });
+    createNewTimelineAnimation.call(this, this.tm, enterOffset);
 
     // Bind
     this.show = this.show.bind(this);
     this.hide = this.hide.bind(this);
   }
 
-  show() {
-    this.tm.play();
+  show(enterOffset) {
+    return this.tm.play();
   }
 
-  hide() {
-    this.tm.reverse();
+  hide(enterOffset) {
+    if (enterOffset) {
+      this.tm.clear();
+      createNewTimelineAnimation.call(this, this.tm, enterOffset);
+      return this.tm.progress(1).then(() => this.tm.reverse());
+    }
+
+    return this.tm.reverse();
   }
   destroy() {
     this.children.forEach((letter) => {
