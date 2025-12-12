@@ -323,7 +323,7 @@ export default function Taotajima() {
                   togglePageControl.current = true;
                   !hadClearText.current && (await clearCb("next"));
                   hadClearText.current = true;
-                  sketch.current.next().then(async () => {
+                  sketch.current.next().then(async (current: number) => {
                     await nextCb(current);
                     hadClearText.current = false;
                     togglePageControl.current = false;

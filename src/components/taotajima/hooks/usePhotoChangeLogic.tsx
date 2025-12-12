@@ -70,8 +70,8 @@ export default function usePhotoChangeLogic(props: any) {
               const promise = prev();
               togglePageControl.current = setTimeout(() => {
                 promise?.then(async (current: number) => {
-                  await prevCb?.(current);
                   hadClearText.current = false;
+                  await prevCb?.(current);
                 });
               }, 500);
             } else {
@@ -81,7 +81,7 @@ export default function usePhotoChangeLogic(props: any) {
               togglePageControl.current = setTimeout(() => {
                 promise?.then(async (current: number) => {
                   hadClearText.current = false;
-                  nextCb?.(current);
+                  await nextCb?.(current);
                 });
               }, 500);
             }

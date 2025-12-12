@@ -54,14 +54,13 @@ export default function useSoftTextLogic(props: any) {
         const enterOffset =
           direction === "next"
             ? {
-                x: pxToWorld(100, engine.current.camera, softText.current),
-                y: pxToWorld(-100, engine.current.camera, softText.current),
-              }
-            : {
                 x: pxToWorld(-100, engine.current.camera, softText.current),
                 y: pxToWorld(100, engine.current.camera, softText.current),
+              }
+            : {
+                x: pxToWorld(100, engine.current.camera, softText.current),
+                y: pxToWorld(-100, engine.current.camera, softText.current),
               };
-
         const pageCount = new AnimatedText3D(pageCountText, {
           color: "#ffffff",
           size: _xl,
@@ -116,24 +115,24 @@ export default function useSoftTextLogic(props: any) {
                 _direction === "next"
                   ? {
                       x: pxToWorld(
-                        100,
+                        -100,
                         engine.current.camera,
                         softText.current
                       ),
                       y: pxToWorld(
-                        -100,
+                        100,
                         engine.current.camera,
                         softText.current
                       ),
                     }
                   : {
                       x: pxToWorld(
-                        -100,
+                        100,
                         engine.current.camera,
                         softText.current
                       ),
                       y: pxToWorld(
-                        100,
+                        -100,
                         engine.current.camera,
                         softText.current
                       ),

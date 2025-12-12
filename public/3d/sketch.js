@@ -190,7 +190,7 @@ class Sketch {
     if (this.isRunning) return this.isRunning;
     const len = this.textures.length;
     const nextIndex = (this.current - 1 + len) % len;
-    this.material.uniforms.direction.value = -1;
+    this.material.uniforms.direction.value = 1;
     const nextTexture = this.textures[nextIndex];
     this.material.uniforms.texture2.value = nextTexture;
 
@@ -218,7 +218,7 @@ class Sketch {
   next() {
     if (this.isRunning) return this.isRunning;
     const len = this.textures.length;
-    this.material.uniforms.direction.value = 1;
+    this.material.uniforms.direction.value = -1;
     const nextIndex = (this.current + 1) % len;
     const nextTexture = this.textures[nextIndex];
     this.material.uniforms.texture2.value = nextTexture;
