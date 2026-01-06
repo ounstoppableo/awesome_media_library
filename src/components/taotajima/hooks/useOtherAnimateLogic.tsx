@@ -1,7 +1,8 @@
 import { RefObject, useEffect, useRef } from "react";
 import { splitText, animate as animejsAnimate, stagger } from "animejs";
 
-export default function useOtherAnimateLogic() {
+export default function useOtherAnimateLogic(props: any) {
+  const { hadClearText } = props;
   const leftBtnRef = useRef<HTMLDivElement>(null);
   const rightBtnRef = useRef<HTMLDivElement>(null);
   const animeObj = useRef<any>({});
@@ -11,6 +12,7 @@ export default function useOtherAnimateLogic() {
     animate: "enter" | "leave"
   ) => {
     if (!container.current) return;
+    if (hadClearText.current) return;
     const arrow = container.current.querySelector<SVGElement>(".arrow")!;
     const title = container.current.querySelector<HTMLDivElement>(".title")!;
     const pageCount =
@@ -76,16 +78,17 @@ export default function useOtherAnimateLogic() {
 
   const animateBtn = (btnRef: RefObject<any>) => {
     if (!btnRef.current) return;
-    if (animeObj.current.btnTwine) return;
-    animeObj.current.btnTwine = gsap
-      .fromTo(
-        btnRef.current,
-        { scale: 0.5 },
-        { scale: 1, ease: "power2.inOut", duration: 0.3 }
-      )
-      .then(() => {
-        animeObj.current.btnTwine = null;
-      });
+    gsap.fromTo(
+      btnRef.current,
+      { scale: 0.5, rotate: "0deg", opacity: 0.6 },
+      {
+        scale: 1,
+        rotate: "360deg",
+        opacity: 1,
+        ease: "power2.inOut",
+        duration: 0.3,
+      }
+    );
   };
 
   const animateOpacity = useRef<any>({});

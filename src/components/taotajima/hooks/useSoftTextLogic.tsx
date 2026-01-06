@@ -3,7 +3,7 @@ import { Engine } from "@/utils/engine";
 import { useEffect, useRef } from "react";
 
 export default function useSoftTextLogic(props: any) {
-  const { resizeObserverCb, data } = props;
+  const { resizeObserverCb, data, contentRef } = props;
   const softText = useRef<any>(null);
   const engine = useRef<any>(null);
   const softTextInst = useRef<any>([]);
@@ -33,13 +33,14 @@ export default function useSoftTextLogic(props: any) {
         const _xl = remToWorld(1.25, engine.current.camera, softText.current);
         const _6xl = remToWorld(3.75, engine.current.camera, softText.current);
 
+        const contentRect = contentRef.current.getBoundingClientRect();
         const centerToLeftEdge = pxToWorld(
-          softText.current.offsetWidth / 2,
+          contentRect.x,
           engine.current.camera,
           softText.current
         );
         const centerToTopEdge = pxToWorld(
-          softText.current.offsetHeight / 2,
+          contentRect.height / 2 + 28 + 16,
           engine.current.camera,
           softText.current
         );
@@ -77,13 +78,13 @@ export default function useSoftTextLogic(props: any) {
           color: "#ffffff",
           size: _base,
           xEdge: pxToWorld(
-            softText.current.offsetWidth,
+            contentRect.width,
             engine.current.camera,
             softText.current
           ),
           yEdge:
             pxToWorld(
-              softText.current.offsetHeight,
+              contentRect.height,
               engine.current.camera,
               softText.current
             ) -

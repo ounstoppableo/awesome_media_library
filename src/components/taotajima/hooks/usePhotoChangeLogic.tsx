@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
 
 export default function usePhotoChangeLogic(props: any) {
-  const { nextCb, prevCb, clearCb, data } = props;
+  const { nextCb, prevCb, clearCb, data, hadClearText } = props;
   const sketch = useRef<any>(null);
   const togglePageControl = useRef<any>(null);
-  const hadClearText = useRef<boolean>(false);
   // 照片翻页
   useEffect(() => {
     sketch.current = new (window as any).Sketch({
@@ -90,10 +89,9 @@ export default function usePhotoChangeLogic(props: any) {
       ],
       noiseAngle: Math.PI * 0.75,
     });
-    const clears = sketch.current.eventRigister();
 
     return () => {
-      clears?.forEach((clear: any) => clear?.());
+      sketch.current.destroy();
     };
   }, []);
   return { sketch };

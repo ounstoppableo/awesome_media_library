@@ -37,13 +37,14 @@ export default function Taotajima() {
   const [current, setCurrent] = useState(0);
   const twitterBtnRef = useRef<any>(null);
   const instagramBtnRef = useRef<any>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState({
     id: "taotajima",
     title: "taotajima",
     children: [
       {
         id: "1",
-        img: "/Magic.jpg",
+        img: `/video.mp4`,
         title: "Magic",
         tag: "client work",
         content:
@@ -51,7 +52,7 @@ export default function Taotajima() {
       },
       {
         id: "2",
-        img: "/img21.jpg",
+        img: `/magic.jpg`,
         title: "MN concept movie",
         tag: "private work",
         content:
@@ -59,7 +60,7 @@ export default function Taotajima() {
       },
       {
         id: "3",
-        img: "/img33.jpg",
+        img: `/video.mp4`,
         title: "TELE-PLAY - prism",
         tag: "client work",
         content:
@@ -67,11 +68,12 @@ export default function Taotajima() {
       },
     ],
   });
-
+  const hadClearText = useRef<boolean>(false);
   const { resizeObserverCb } = useResizeLogic();
   const { currentSoftTextInst, generateSoftText, softText } = useSoftTextLogic({
     resizeObserverCb,
     data,
+    contentRef,
   });
   const {
     animateOpacity,
@@ -82,10 +84,10 @@ export default function Taotajima() {
     playRef,
     leftBtnRef,
     rightBtnRef,
-  } = useOtherAnimateLogic();
+  } = useOtherAnimateLogic({ hadClearText });
 
   const togglePageControl = useRef<boolean>(false);
-  const hadClearText = useRef<boolean>(false);
+
   const clearCb = (nextOperate: "next" | "prev") => {
     animateOpacity.current.reverse();
     return currentSoftTextInst.current?.toHidden?.(nextOperate);
@@ -144,6 +146,7 @@ export default function Taotajima() {
     clearCb: clearCb,
     prevCb: prevCb,
     nextCb: nextCb,
+    hadClearText,
   });
 
   return (
@@ -156,7 +159,7 @@ export default function Taotajima() {
           className="w-full h-full relative after:absolute after:inset-0 after:bg-black/40"
           id="taotajimaSlider"
         ></div>
-        <div className="absolute inset-0 flex justify-center items-center flex-col p-16 pt-8 cursor-default">
+        <div className="absolute inset-0 z-1 flex justify-center items-center flex-col p-16 pt-8 cursor-default">
           <div className="flex text-xl text-white justify-between w-full">
             <div className=" flex gap-4">
               <div
@@ -197,7 +200,10 @@ export default function Taotajima() {
           <div className="flex-1"></div>
           <div className="relative flex gap-8 items-center max-w-[50dvw]">
             <div className=" text-white gap-4 flex flex-col items-start">
-              <div className=" gap-4 flex flex-col items-start relative">
+              <div
+                className=" gap-4 flex flex-col items-start relative"
+                ref={contentRef}
+              >
                 <div className="flex text-2xl gap-4 h-fit ">
                   <div className="opacity-0">
                     #{(current + 1).toString().padStart(3, "0")}
@@ -214,7 +220,6 @@ export default function Taotajima() {
                 <div className="line-clamp-4 leading-8 opacity-0">
                   {data.children[current].content}
                 </div>
-                <div className="absolute w-full h-full" ref={softText}></div>
               </div>
               <div className="text-xl flex gap-4 items-center" ref={shareRef}>
                 <div>Share:</div>
@@ -244,6 +249,7 @@ export default function Taotajima() {
               />
             </div>
           </div>
+
           <div className="flex-1"></div>
           <div className="relative text-white text-xl flex gap-[10dvw] max-w-[50dvw] select-none">
             {
@@ -362,6 +368,7 @@ export default function Taotajima() {
             }
           </div>
         </div>
+        <div className="absolute inset-0 z-0" ref={softText}></div>
       </div>
     </>
   );

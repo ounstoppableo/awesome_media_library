@@ -28,10 +28,11 @@ function remToWorld(rem, camera, container) {
 }
 
 const createNewTimelineAnimation = function (tm, enterOffset) {
+  this.tm.clear();
   this.tm.fromTo(
     this.position,
     { x: enterOffset.x || 0, y: this.position.y + (enterOffset.y || 0) },
-    { x: 0, y: this.position.y },
+    { x: 0, y: this.containerBasicY },
     0
   );
   this.children.forEach((letter, index) => {
@@ -41,7 +42,9 @@ const createNewTimelineAnimation = function (tm, enterOffset) {
       {
         y:
           letter.userData.baseY +
-          Math.sin(index / 8 + (Math.PI * letter.userData.baseY) / 2),
+          Math.sin(
+            index * 0.1 + ((Math.PI * letter.userData.baseY) % (Math.PI / 4))
+          ),
       },
       { y: letter.userData.baseY },
       0
@@ -58,7 +61,7 @@ const createNewTimelineAnimation = function (tm, enterOffset) {
     );
     this.tm.fromTo(
       letter.rotation,
-      { x: (index / 5) % (Math.PI / 2) },
+      { x: (index * 0.1 * Math.PI) % (Math.PI / 2) },
       { x: 0 },
       0
     );
@@ -83,6 +86,7 @@ export class AnimatedText3D extends Object3D {
   ) {
     super();
     this.position.y = basicY;
+    this.containerBasicY = basicY;
     this.basePositionX = 0;
     this.basePositionY = 0;
     this.size = size;
@@ -160,14 +164,7 @@ export class AnimatedText3D extends Object3D {
   show(enterOffset) {
     return this.tm.play();
   }
-
   hide(enterOffset) {
-    if (enterOffset) {
-      this.tm.clear();
-      createNewTimelineAnimation.call(this, this.tm, enterOffset);
-      return this.tm.progress(1).then(() => this.tm.reverse());
-    }
-
     return this.tm.reverse();
   }
   destroy() {

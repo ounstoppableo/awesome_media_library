@@ -1,3 +1,7 @@
+function isVideo(url = "") {
+  return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
+}
+
 class Sketch {
   constructor(opts) {
     this.contentId = opts.contentId;
@@ -49,17 +53,82 @@ class Sketch {
     });
   }
 
-  initiate(cb) {
-    const promises = [];
-    let that = this;
-    this.images.forEach((url, i) => {
-      let promise = new Promise((resolve) => {
-        that.textures[i] = new THREE.TextureLoader().load(url, resolve);
-      });
-      promises.push(promise);
+  canvasDom = [];
+  videoDoms = [];
+  eventClear = [];
+  videoPlay() {
+    this.videoDoms.forEach((video, index) => {
+      video?.pause();
     });
+    const absUrl = new URL(this.images[this.current], location.href).href;
+    this.videoDoms.find((v) => v?.src === absUrl)?.play();
+  }
+  loadVideoTexture(url, textureIndex) {
+    return new Promise(async (resolve, reject) => {
+      const absUrl = new URL(url, location.href).href;
+      let video = this.videoDoms.find((v) => v?.src === absUrl);
+      if (!video) {
+        video = document.createElement("video");
+        video.src = absUrl;
+        video.crossOrigin = "anonymous";
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        this.videoDoms[textureIndex] = video;
+      }
 
-    Promise.all(promises).then(() => {
+      const onReady = () => {
+        const canvas = document.createElement("canvas");
+        this.canvasDom.push(canvas);
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext("2d");
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.minFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        texture.flipY = true;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        const update = () => {
+          if (video.readyState >= video.HAVE_CURRENT_DATA) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            texture.needsUpdate = true;
+          }
+        };
+        this.videoUpdaters ??= [];
+        this.videoUpdaters.push(update);
+
+        this.textures[textureIndex] = texture;
+        resolve(texture);
+      };
+
+      if (video.readyState >= video.HAVE_METADATA) {
+        onReady();
+      } else {
+        video.addEventListener("loadedmetadata", onReady, { once: true });
+      }
+
+      video.play().catch(() => {});
+    });
+  }
+
+  async updateImages() {
+    for (let i = 0; i < this.images.length; i++) {
+      const url = this.images[i];
+      await new Promise(async (resolve) => {
+        if (isVideo(url)) {
+          await this.loadVideoTexture(url, i);
+          resolve(1);
+        } else {
+          this.textures[i] = new THREE.TextureLoader().load(url, resolve);
+        }
+      });
+    }
+  }
+
+  initiate(cb) {
+    Promise.all([this.updateImages()]).then(() => {
+      this.videoPlay();
+      this.eventRigister();
       cb();
     });
   }
@@ -70,6 +139,9 @@ class Sketch {
         const _cb = (e) =>
           eventRigister.cb(e, this.prev.bind(this), this.next.bind(this));
         this.container.addEventListener(eventRigister.event, _cb);
+        this.eventClear.push(() => {
+          this.container.removeEventListener(eventRigister.event, _cb);
+        });
         return () => {
           this.container.removeEventListener(eventRigister.event, _cb);
         };
@@ -199,6 +271,7 @@ class Sketch {
       this.material.uniforms.texture1.value = nextTexture;
       this.material.uniforms.progress.value = 0;
       this.isRunning = null;
+      this.videoPlay();
       _resolve(this.current);
     };
     let _resolve;
@@ -228,6 +301,7 @@ class Sketch {
       this.material.uniforms.texture1.value = nextTexture;
       this.material.uniforms.progress.value = 0;
       this.isRunning = null;
+      this.videoPlay();
       _resolve(this.current);
     };
 
@@ -254,13 +328,23 @@ class Sketch {
     Object.keys(this.uniforms).forEach((item) => {
       this.material.uniforms[item].value = this.settings[item];
     });
-
     // this.camera.position.z = 3;
     // this.plane.rotation.y = 0.4*Math.sin(this.time)
     // this.plane.rotation.x = 0.5*Math.sin(0.4*this.time)
-
+    this.videoUpdaters.forEach((fn) => fn());
     requestAnimationFrame(this.render.bind(this));
     this.renderer.render(this.scene, this.camera);
+  }
+
+  destroy() {
+    this.eventClear.forEach((cb) => cb());
+    this.videoDoms.forEach((video) => {
+      video.remove();
+    });
+    this.canvasDom.forEach((canvas) => {
+      canvas.remove();
+    });
+    this.renderer.dispose();
   }
 }
 
