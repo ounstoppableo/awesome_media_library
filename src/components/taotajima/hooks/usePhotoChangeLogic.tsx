@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 
 export default function usePhotoChangeLogic(props: any) {
-  const { nextCb, prevCb, clearCb, data, hadClearText } = props;
+  const { nextCb, prevCb, clearCb, data, togglePageControl } = props;
   const sketch = useRef<any>(null);
-  const togglePageControl = useRef<any>(null);
+
   // 照片翻页
   useEffect(() => {
     sketch.current = new (window as any).Sketch({
@@ -16,7 +16,7 @@ export default function usePhotoChangeLogic(props: any) {
       displacement: "/3d/disp1.jpg",
       images: data.children.map((item: any) => item.img),
       fragment: `
-            uniform float time;
+   uniform float time;
             uniform float progress;
             uniform float width;
             uniform float scaleX;
@@ -53,36 +53,29 @@ export default function usePhotoChangeLogic(props: any) {
               vec4 t1 = texture2D( texture1, (newUV - 0.5) * (1.0 - intpl) + 0.5 ) ;
               vec4 t2 = texture2D( texture2, (newUV - 0.5) * intpl + 0.5 );
               gl_FragColor = mix( t1, t2, intpl );
-    
-            }
-    
+}
+
         `,
       eventRigisters: [
         {
           event: "wheel",
           cb: async (e: any, prev: any, next: any) => {
-            if (togglePageControl.current)
-              clearTimeout(togglePageControl.current);
             if (e.deltaY < 0) {
-              !hadClearText.current && (await clearCb?.("prev"));
-              hadClearText.current = true;
-              const promise = prev();
-              togglePageControl.current = setTimeout(() => {
-                promise?.then(async (current: number) => {
-                  hadClearText.current = false;
-                  await prevCb?.(current);
-                });
-              }, 500);
+              if (togglePageControl.current) return;
+              await clearCb?.("prev");
+              togglePageControl.current = prev();
+              togglePageControl.current.then(async (current: number) => {
+                await prevCb?.(current);
+                togglePageControl.current = null;
+              });
             } else {
-              !hadClearText.current && (await clearCb?.("next"));
-              hadClearText.current = true;
-              const promise = next();
-              togglePageControl.current = setTimeout(() => {
-                promise?.then(async (current: number) => {
-                  hadClearText.current = false;
-                  await nextCb?.(current);
-                });
-              }, 500);
+              if (togglePageControl.current) return;
+              await clearCb?.("next");
+              togglePageControl.current = next();
+              togglePageControl.current.then(async (current: number) => {
+                await nextCb?.(current);
+                togglePageControl.current = null;
+              });
             }
           },
         },

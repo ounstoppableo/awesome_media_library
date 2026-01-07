@@ -27,46 +27,6 @@ function remToWorld(rem, camera, container) {
   return pxToWorld(px / FIX, camera, container);
 }
 
-const createNewTimelineAnimation = function (tm, enterOffset) {
-  this.tm.clear();
-  this.tm.fromTo(
-    this.position,
-    { x: enterOffset.x || 0, y: this.position.y + (enterOffset.y || 0) },
-    { x: 0, y: this.containerBasicY },
-    0
-  );
-  this.children.forEach((letter, index) => {
-    if (typeof this.overflow === "number" && this.overflow <= index) return;
-    this.tm.fromTo(
-      letter.position,
-      {
-        y:
-          letter.userData.baseY +
-          Math.sin(
-            index * 0.1 + ((Math.PI * letter.userData.baseY) % (Math.PI / 4))
-          ),
-      },
-      { y: letter.userData.baseY },
-      0
-    );
-    this.tm.fromTo(
-      letter.material,
-      {
-        opacity: 0,
-      },
-      {
-        opacity: 1,
-      },
-      0
-    );
-    this.tm.fromTo(
-      letter.rotation,
-      { x: (index * 0.1 * Math.PI) % (Math.PI / 2) },
-      { x: 0 },
-      0
-    );
-  });
-};
 export class AnimatedText3D extends Object3D {
   constructor(
     text,
@@ -81,7 +41,6 @@ export class AnimatedText3D extends Object3D {
       xEdge = 9999,
       yEdge = 9999,
       basicY = 0,
-      enterOffset,
     } = {}
   ) {
     super();
@@ -152,26 +111,113 @@ export class AnimatedText3D extends Object3D {
       }
     });
 
-    // Timeline
-    this.tm = new TimelineLite({ paused: true });
-    createNewTimelineAnimation.call(this, this.tm, enterOffset);
-
     // Bind
     this.show = this.show.bind(this);
     this.hide = this.hide.bind(this);
   }
 
-  show(enterOffset) {
-    return this.tm.play();
+  showing = false;
+  async show(enterOffset) {
+    if (this.showing) return;
+    this.showing = true;
+    const tm = new TimelineLite({ paused: true });
+    tm.fromTo(
+      this.position,
+      { x: enterOffset.x || 0, y: this.position.y + (enterOffset.y || 0) },
+      { x: 0, y: this.containerBasicY },
+      0
+    );
+    this.children.forEach((letter, index) => {
+      if (typeof this.overflow === "number" && this.overflow <= index) return;
+      tm.fromTo(
+        letter.position,
+        {
+          y:
+            letter.userData.baseY +
+            Math.sin(
+              index * 0.1 + ((Math.PI * letter.userData.baseY) % (Math.PI / 4))
+            ),
+        },
+        { y: letter.userData.baseY },
+        0
+      );
+      tm.fromTo(
+        letter.material,
+        {
+          opacity: 0,
+        },
+        {
+          opacity: 1,
+        },
+        0
+      );
+      tm.fromTo(
+        letter.rotation,
+        { x: (index * 0.1 * Math.PI) % (Math.PI / 2) },
+        { x: 0 },
+        0
+      );
+    });
+    await tm.play();
+    await tm.kill();
+    this.showing = false;
+    return;
   }
-  hide(enterOffset) {
-    return this.tm.reverse();
+  hidding = false;
+  async hide(enterOffset) {
+    if (this.hidding) return;
+    this.hidding = true;
+    const tm = new TimelineLite({ paused: true });
+    tm.fromTo(
+      this.position,
+      { x: 0, y: this.containerBasicY },
+      { x: enterOffset.x || 0, y: this.position.y + (enterOffset.y || 0) },
+
+      0
+    );
+    this.children.forEach((letter, index) => {
+      if (typeof this.overflow === "number" && this.overflow <= index) return;
+      tm.fromTo(
+        letter.position,
+        { y: letter.userData.baseY },
+        {
+          y:
+            letter.userData.baseY +
+            Math.sin(
+              index * 0.1 + ((Math.PI * letter.userData.baseY) % (Math.PI / 4))
+            ),
+        },
+
+        0
+      );
+      tm.fromTo(
+        letter.material,
+        {
+          opacity: 1,
+        },
+        {
+          opacity: 0,
+        },
+
+        0
+      );
+      tm.fromTo(
+        letter.rotation,
+        { x: 0 },
+        { x: (index * 0.1 * Math.PI) % (Math.PI / 2) },
+
+        0
+      );
+    });
+    await tm.play();
+    await tm.kill();
+    this.hidding = false;
+    return;
   }
   destroy() {
     this.children.forEach((letter) => {
       this.remove(letter);
     });
-    this.tm.kill();
   }
 }
 

@@ -68,7 +68,6 @@ export default function Taotajima() {
       },
     ],
   });
-  const hadClearText = useRef<boolean>(false);
   const { resizeObserverCb } = useResizeLogic();
   const { currentSoftTextInst, generateSoftText, softText } = useSoftTextLogic({
     resizeObserverCb,
@@ -84,11 +83,11 @@ export default function Taotajima() {
     playRef,
     leftBtnRef,
     rightBtnRef,
-  } = useOtherAnimateLogic({ hadClearText });
+  } = useOtherAnimateLogic({});
 
-  const togglePageControl = useRef<boolean>(false);
+  const togglePageControl = useRef<any>(null);
 
-  const clearCb = (nextOperate: "next" | "prev") => {
+  const clearCb = async (nextOperate: "next" | "prev") => {
     animateOpacity.current.reverse();
     return currentSoftTextInst.current?.toHidden?.(nextOperate);
   };
@@ -109,7 +108,7 @@ export default function Taotajima() {
           data.children[current].content,
           "prev"
         )
-        .toShow()
+        .toShow("prev")
         .then(() => {
           _resolve(1);
         });
@@ -133,7 +132,7 @@ export default function Taotajima() {
           data.children[current].content,
           "next"
         )
-        .toShow()
+        .toShow("next")
         .then(() => {
           _resolve(1);
         });
@@ -146,7 +145,7 @@ export default function Taotajima() {
     clearCb: clearCb,
     prevCb: prevCb,
     nextCb: nextCb,
-    hadClearText,
+    togglePageControl,
   });
 
   return (
@@ -249,34 +248,27 @@ export default function Taotajima() {
               />
             </div>
           </div>
-
           <div className="flex-1"></div>
           <div className="relative text-white text-xl flex gap-[10dvw] max-w-[50dvw] select-none">
             {
               <div
                 className="relative flex flex-col items-end w-[20dvw] cursor-pointer"
                 ref={leftBtnRef}
-                onMouseEnter={animatePageToggleBtn.bind(
-                  null,
-                  leftBtnRef,
-                  "left",
-                  "enter"
-                )}
-                onMouseLeave={animatePageToggleBtn.bind(
-                  null,
-                  leftBtnRef,
-                  "left",
-                  "leave"
-                )}
+                onMouseEnter={() => {
+                  if (togglePageControl.current) return;
+                  animatePageToggleBtn(leftBtnRef, "left", "enter");
+                }}
+                onMouseLeave={() => {
+                  if (togglePageControl.current) return;
+                  animatePageToggleBtn(leftBtnRef, "left", "leave");
+                }}
                 onClick={async () => {
                   if (togglePageControl.current) return;
-                  togglePageControl.current = true;
-                  !hadClearText.current && (await clearCb("prev"));
-                  hadClearText.current = true;
-                  sketch.current.prev().then(async (current: number) => {
+                  await clearCb("prev");
+                  togglePageControl.current = sketch.current.prev();
+                  togglePageControl.current.then(async (current: number) => {
                     await prevCb(current);
-                    hadClearText.current = false;
-                    togglePageControl.current = false;
+                    togglePageControl.current = null;
                   });
                 }}
               >
@@ -312,27 +304,21 @@ export default function Taotajima() {
               <div
                 className="relative flex flex-col items-start w-[20dvw] cursor-pointer"
                 ref={rightBtnRef}
-                onMouseEnter={animatePageToggleBtn.bind(
-                  null,
-                  rightBtnRef,
-                  "right",
-                  "enter"
-                )}
-                onMouseLeave={animatePageToggleBtn.bind(
-                  null,
-                  rightBtnRef,
-                  "right",
-                  "leave"
-                )}
+                onMouseEnter={() => {
+                  if (togglePageControl.current) return;
+                  animatePageToggleBtn(rightBtnRef, "right", "enter");
+                }}
+                onMouseLeave={() => {
+                  if (togglePageControl.current) return;
+                  animatePageToggleBtn(rightBtnRef, "right", "leave");
+                }}
                 onClick={async () => {
                   if (togglePageControl.current) return;
-                  togglePageControl.current = true;
-                  !hadClearText.current && (await clearCb("next"));
-                  hadClearText.current = true;
-                  sketch.current.next().then(async (current: number) => {
+                  await clearCb("next");
+                  togglePageControl.current = sketch.current.next();
+                  togglePageControl.current.then(async (current: number) => {
                     await nextCb(current);
-                    hadClearText.current = false;
-                    togglePageControl.current = false;
+                    togglePageControl.current = null;
                   });
                 }}
               >

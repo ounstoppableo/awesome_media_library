@@ -52,27 +52,16 @@ export default function useSoftTextLogic(props: any) {
         const gap = remToWorld(1, engine.current.camera, softText.current);
         const pageCountY = _xl + _xl / 2;
         const titleY = pageCountY + _6xl + _6xl / 2 + gap;
-        const enterOffset =
-          direction === "next"
-            ? {
-                x: pxToWorld(-100, engine.current.camera, softText.current),
-                y: pxToWorld(100, engine.current.camera, softText.current),
-              }
-            : {
-                x: pxToWorld(100, engine.current.camera, softText.current),
-                y: pxToWorld(-100, engine.current.camera, softText.current),
-              };
+
         const pageCount = new AnimatedText3D(pageCountText, {
           color: "#ffffff",
           size: _xl,
           basicY: centerToTopEdge - pageCountY,
-          enterOffset,
         });
         const title = new AnimatedText3D(titleText, {
           color: "#ffffff",
           size: _6xl,
           basicY: centerToTopEdge - titleY,
-          enterOffset,
         });
         const content = new AnimatedText3D(contentText, {
           color: "#ffffff",
@@ -93,7 +82,6 @@ export default function useSoftTextLogic(props: any) {
             gap,
           lineHeight: _base * 2.5,
           basicY: centerToTopEdge - titleY - _base * 2.5 - gap,
-          enterOffset,
         });
         softTextInst.current = [pageCount, title, content];
         engine.current.scene.add(pageCount);
@@ -102,48 +90,43 @@ export default function useSoftTextLogic(props: any) {
         softText.current.appendChild(engine.current.renderer.domElement);
         engine.current.start();
         const inst = {
-          toShow: (_direction: "next" | "prev") => {
-            return Promise.all([
-              pageCount.show(),
-              title.show(),
-              content.show(),
+          toShow: async (_direction: "next" | "prev") => {
+            const enterOffset =
+              _direction === "next"
+                ? {
+                    x: pxToWorld(-100, engine.current.camera, softText.current),
+                    y: pxToWorld(100, engine.current.camera, softText.current),
+                  }
+                : {
+                    x: pxToWorld(100, engine.current.camera, softText.current),
+                    y: pxToWorld(-100, engine.current.camera, softText.current),
+                  };
+
+            const promise = Promise.all([
+              pageCount.show(enterOffset),
+              title.show(enterOffset),
+              content.show(enterOffset),
             ]);
+
+            return promise;
           },
-          toHidden: (_direction: "next" | "prev") => {
-            let enterOffset;
-            if (_direction !== direction) {
-              enterOffset =
-                _direction === "next"
-                  ? {
-                      x: pxToWorld(
-                        -100,
-                        engine.current.camera,
-                        softText.current
-                      ),
-                      y: pxToWorld(
-                        100,
-                        engine.current.camera,
-                        softText.current
-                      ),
-                    }
-                  : {
-                      x: pxToWorld(
-                        100,
-                        engine.current.camera,
-                        softText.current
-                      ),
-                      y: pxToWorld(
-                        -100,
-                        engine.current.camera,
-                        softText.current
-                      ),
-                    };
-            }
-            return Promise.all([
+          toHidden: async (_direction: "next" | "prev") => {
+            const enterOffset =
+              _direction === "next"
+                ? {
+                    x: pxToWorld(-100, engine.current.camera, softText.current),
+                    y: pxToWorld(100, engine.current.camera, softText.current),
+                  }
+                : {
+                    x: pxToWorld(100, engine.current.camera, softText.current),
+                    y: pxToWorld(-100, engine.current.camera, softText.current),
+                  };
+            const promise = Promise.all([
               pageCount.hide(enterOffset),
               title.hide(enterOffset),
               content.hide(enterOffset),
             ]);
+            return promise;
           },
         };
         currentSoftTextInst.current = inst;

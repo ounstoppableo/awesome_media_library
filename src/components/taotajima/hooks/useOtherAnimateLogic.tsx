@@ -2,7 +2,6 @@ import { RefObject, useEffect, useRef } from "react";
 import { splitText, animate as animejsAnimate, stagger } from "animejs";
 
 export default function useOtherAnimateLogic(props: any) {
-  const { hadClearText } = props;
   const leftBtnRef = useRef<HTMLDivElement>(null);
   const rightBtnRef = useRef<HTMLDivElement>(null);
   const animeObj = useRef<any>({});
@@ -12,7 +11,6 @@ export default function useOtherAnimateLogic(props: any) {
     animate: "enter" | "leave"
   ) => {
     if (!container.current) return;
-    if (hadClearText.current) return;
     const arrow = container.current.querySelector<SVGElement>(".arrow")!;
     const title = container.current.querySelector<HTMLDivElement>(".title")!;
     const pageCount =
