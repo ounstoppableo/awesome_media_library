@@ -358,6 +358,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                       text="Explore"
                       defaultColor="bg-transparent"
                       hoverColor="white"
+                      dotPosition={"45%"}
                     />
                   </div>
                 )}

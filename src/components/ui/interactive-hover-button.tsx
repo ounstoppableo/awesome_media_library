@@ -51,9 +51,10 @@ const InteractiveHoverButton = React.forwardRef<
           <ArrowRight />
         </div>
         <div
-          className={`absolute left-[20%] top-[${dotPosition}] h-2 w-2 scale-[1] rounded-lg transition-all duration-300 group-hover:left-[0%] group-hover:top-[0%] group-hover:h-full group-hover:w-full group-hover:scale-[1.8] ${`group-hover:${
+          style={{ "--top": `${dotPosition}` } as any}
+          className={`absolute left-[20%] top-[var(--top)] h-2 w-2 scale-[1] rounded-lg transition-all duration-300 group-hover:left-[0%] group-hover:top-[0%] group-hover:h-full group-hover:w-full group-hover:scale-[1.8] ${`group-hover:${
             "bg-" + hoverColor
-          } bg-${hoverColor}`}`}
+          } bg-${hoverColor}`} `}
         ></div>
       </button>
     );

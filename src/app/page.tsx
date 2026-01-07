@@ -10,5 +10,5 @@ import Taotajima from "@/components/taotajima";
 export default function Home() {
   const router = useRouter();
 
-  return <Taotajima></Taotajima>;
+  return <SienaStyle></SienaStyle>;
 }
