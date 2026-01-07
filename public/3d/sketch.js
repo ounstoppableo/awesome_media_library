@@ -58,10 +58,17 @@ class Sketch {
   eventClear = [];
   videoPlay() {
     this.videoDoms.forEach((video, index) => {
-      video?.pause();
+      if (
+        index === this.current ||
+        index === (this.current + 1) % this.textures.length ||
+        index ===
+          (this.current - 1 + this.textures.length) % this.textures.length
+      ) {
+        video?.play();
+      } else {
+        video?.pause();
+      }
     });
-    const absUrl = new URL(this.images[this.current], location.href).href;
-    this.videoDoms.find((v) => v?.src === absUrl)?.play();
   }
   loadVideoTexture(url, textureIndex) {
     return new Promise(async (resolve, reject) => {
@@ -74,8 +81,8 @@ class Sketch {
         video.loop = true;
         video.muted = true;
         video.playsInline = true;
-        this.videoDoms[textureIndex] = video;
       }
+      this.videoDoms[textureIndex] = video;
 
       const onReady = () => {
         const canvas = document.createElement("canvas");

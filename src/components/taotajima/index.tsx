@@ -264,7 +264,7 @@ export default function Taotajima() {
                 }}
                 onClick={async () => {
                   if (togglePageControl.current) return;
-                  await clearCb("prev");
+                  clearCb("prev");
                   togglePageControl.current = sketch.current.prev();
                   togglePageControl.current.then(async (current: number) => {
                     await prevCb(current);
@@ -314,7 +314,7 @@ export default function Taotajima() {
                 }}
                 onClick={async () => {
                   if (togglePageControl.current) return;
-                  await clearCb("next");
+                  clearCb("next");
                   togglePageControl.current = sketch.current.next();
                   togglePageControl.current.then(async (current: number) => {
                     await nextCb(current);

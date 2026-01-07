@@ -16,7 +16,7 @@ export default function usePhotoChangeLogic(props: any) {
       displacement: "/3d/disp1.jpg",
       images: data.children.map((item: any) => item.img),
       fragment: `
-   uniform float time;
+            uniform float time;
             uniform float progress;
             uniform float width;
             uniform float scaleX;
@@ -41,8 +41,7 @@ export default function usePhotoChangeLogic(props: any) {
             void main()	{
               vec2 newUV = (vUv - vec2(0.5))*resolution.zw + vec2(0.5);
               vec4 noise = texture2D(displacement, mirrored(newUV+time*0.04));
-              // float prog = 0.6*progress + 0.2 + noise.g * 0.06;
-              float prog = progress*0.8 -0.05 + noise.g * 0.06;
+              float prog = progress*0.8 - 0.05 + noise.g * 0.06;
 
               // 控制噪音角度
               vec2 dir = vec2(cos(angle), sin(angle));
@@ -53,7 +52,7 @@ export default function usePhotoChangeLogic(props: any) {
               vec4 t1 = texture2D( texture1, (newUV - 0.5) * (1.0 - intpl) + 0.5 ) ;
               vec4 t2 = texture2D( texture2, (newUV - 0.5) * intpl + 0.5 );
               gl_FragColor = mix( t1, t2, intpl );
-}
+          }
 
         `,
       eventRigisters: [
@@ -62,7 +61,7 @@ export default function usePhotoChangeLogic(props: any) {
           cb: async (e: any, prev: any, next: any) => {
             if (e.deltaY < 0) {
               if (togglePageControl.current) return;
-              await clearCb?.("prev");
+              clearCb?.("prev");
               togglePageControl.current = prev();
               togglePageControl.current.then(async (current: number) => {
                 await prevCb?.(current);
@@ -70,7 +69,7 @@ export default function usePhotoChangeLogic(props: any) {
               });
             } else {
               if (togglePageControl.current) return;
-              await clearCb?.("next");
+              clearCb?.("next");
               togglePageControl.current = next();
               togglePageControl.current.then(async (current: number) => {
                 await nextCb?.(current);
