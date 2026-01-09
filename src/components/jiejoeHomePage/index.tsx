@@ -211,18 +211,18 @@ export default function JiejoeHomePage() {
         </div>
       </div>
       <div className="w-full h-[100dvh] p-4">
-        {/* <MouseImageTrail
+        <MouseImageTrail
           renderImageBuffer={50}
           rotationRange={25}
           images={data.map((item) => item.img)}
         >
-          <section className="grid h-[100dvh] w-full place-content-center bg-black">
+          <section className="grid h-full w-full place-content-center bg-black">
             <p className="flex items-center gap-2 text-3xl font-bold uppercase text-white">
               <FiMousePointer />
               <span>Hover me</span>
             </p>
           </section>
-        </MouseImageTrail> */}
+        </MouseImageTrail>
       </div>
       <div className="absolute z-0">{/* <RainbowCursor /> */}</div>
     </div>

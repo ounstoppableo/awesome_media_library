@@ -17,7 +17,7 @@ const MouseImageTrail = ({
   const lastRenderPosition = useRef({ x: 0, y: 0 });
   const imageRenderCount = useRef(0);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: any) => {
     const { clientX, clientY } = e;
 
     const distance = calculateDistance(
@@ -35,7 +35,7 @@ const MouseImageTrail = ({
     }
   };
 
-  const calculateDistance = (x1, y1, x2, y2) => {
+  const calculateDistance = (x1: any, y1: any, x2: any, y2: any) => {
     const deltaX = x2 - x1;
     const deltaY = y2 - y1;
 
@@ -49,8 +49,8 @@ const MouseImageTrail = ({
     const imageIndex = imageRenderCount.current % images.length;
     const selector = `[data-mouse-move-index="${imageIndex}"]`;
 
-    const el = document.querySelector(selector);
-
+    const el = document.querySelector(selector) as HTMLElement;
+    if (!el) return;
     el.style.top = `${lastRenderPosition.current.y}px`;
     el.style.left = `${lastRenderPosition.current.x}px`;
     el.style.zIndex = imageRenderCount.current.toString();
@@ -91,12 +91,12 @@ const MouseImageTrail = ({
   return (
     <div
       ref={scope}
-      className="relative overflow-hidden"
+      className="relative overflow-hidden w-full h-full"
       onMouseMove={handleMouseMove}
     >
       {children}
 
-      {images.map((img, index) => (
+      {images.map((img: any, index: number) => (
         <img
           className="pointer-events-none absolute left-0 top-0 h-48 w-auto rounded-xl border-4 border-white bg-neutral-900 object-cover opacity-0"
           src={img}
