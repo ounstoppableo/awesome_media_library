@@ -6,9 +6,10 @@ import { useEffect } from "react";
 import "@ant-design/v5-patch-for-react-19";
 import SienaStyle from "@/components/sienaStyle";
 import Taotajima from "@/components/taotajima";
+import JiejoeHomePage from "@/components/jiejoeHomePage";
 
 export default function Home() {
   const router = useRouter();
 
-  return <SienaStyle></SienaStyle>;
+  return <JiejoeHomePage></JiejoeHomePage>;
 }

@@ -14,12 +14,18 @@ importers:
       '@ant-design/v5-patch-for-react-19':
         specifier: ^1.0.3
         version: 1.0.3(antd@5.27.3(date-fns@2.30.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@fireworks-js/react':
+        specifier: ^2.10.8
+        version: 2.10.8(@types/react@19.1.12)(react@19.1.0)
       '@gsap/react':
         specifier: ^2.1.2
         version: 2.1.2(gsap@3.13.0)(react@19.1.0)
       '@headlessui/react':
         specifier: ^2.2.9
         version: 2.2.9(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@lottiefiles/dotlottie-web':
+        specifier: ^0.60.0
+        version: 0.60.0
       '@msgpack/msgpack':
         specifier: ^3.1.2
         version: 3.1.2
@@ -83,6 +89,12 @@ importers:
       fluent-ffmpeg:
         specifier: ^2.1.3
         version: 2.1.3
+      framer-motion:
+        specifier: ^12.24.12
+        version: 12.24.12(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      fscreen:
+        specifier: ^1.2.0
+        version: 1.2.0
       generic-pool:
         specifier: ^3.9.0
         version: 3.9.0
@@ -92,6 +104,9 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      lottie-web:
+        specifier: ^5.13.0
+        version: 5.13.0
       lucide-react:
         specifier: ^0.542.0
         version: 0.542.0(react@19.1.0)
@@ -101,6 +116,9 @@ importers:
       next:
         specifier: 15.5.2
         version: 15.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.92.1)
+      ogl:
+        specifier: ^1.0.11
+        version: 1.0.11
       pino:
         specifier: ^9.9.5
         version: 9.9.5
@@ -116,6 +134,9 @@ importers:
       react-dom:
         specifier: 19.1.0
         version: 19.1.0(react@19.1.0)
+      react-icons:
+        specifier: ^5.5.0
+        version: 5.5.0(react@19.1.0)
       react-transition-group:
         specifier: ^4.4.5
         version: 4.4.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -257,6 +278,12 @@ packages:
 
   '@epic-web/invariant@1.0.0':
     resolution: {integrity: sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA==}
+
+  '@fireworks-js/react@2.10.8':
+    resolution: {integrity: sha512-Qy/HSiTnph2IT2LHVzo9Ov+zifGQboTICjVLyrp/sWMHZoaodZiW0xrFxN1RfYI3R7j5bNZmf6S9EzqOWPfFWA==}
+    peerDependencies:
+      '@types/react': '>=16.8.0'
+      react: '>=16.8.0'
 
   '@floating-ui/core@1.7.3':
     resolution: {integrity: sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==}
@@ -440,6 +467,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@lottiefiles/dotlottie-web@0.60.0':
+    resolution: {integrity: sha512-AbQYmyZ8ZihCGPwjdN0e7bJ7W7yVmHG24IXn8kxyFJJNJmSJEaarpOSivu/1KoFGiw86OMmiWcLXrPs1XjT6Qw==}
 
   '@msgpack/msgpack@3.1.2':
     resolution: {integrity: sha512-JEW4DEtBzfe8HvUYecLU9e6+XJnKDlUAIve8FvPzF3Kzs6Xo/KuZkZJsDH0wJXl/qEZbeeE7edxDNY3kMs39hQ==}
@@ -1791,6 +1821,9 @@ packages:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
     engines: {node: '>=8'}
 
+  fireworks-js@2.10.8:
+    resolution: {integrity: sha512-UZNxeJvRmQzLisN4iriWXqKojG9TDJqc0dPmkUw0/+AEQQ3w8z1Jx2YdFSiBGSVb/u4dPTQXU109GMVblzhfpg==}
+
   fluent-ffmpeg@2.1.3:
     resolution: {integrity: sha512-Be3narBNt2s6bsaqP6Jzq91heDgOEaDCJAXcE3qcma/EJBSy5FB4cvO31XBInuAuKBx8Kptf8dkhjK0IOru39Q==}
     engines: {node: '>=18'}
@@ -1799,8 +1832,25 @@ packages:
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
+  framer-motion@12.24.12:
+    resolution: {integrity: sha512-W+tBOI1SDGNMH4D4mADY95qYd16Drke2Tj9zlGlwTGSCi6yy8wbMmPY1mvirfcTK8HBeuuCd2PflHdN/zbL4ew==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
+
+  fscreen@1.2.0:
+    resolution: {integrity: sha512-hlq4+BU0hlPmwsFjwGGzZ+OZ9N/wq9Ljg/sq3pX+2CD7hrJsX9tJgWWK/wiNTFM212CLHWhicOoqwXyZGGetJg==}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -1987,6 +2037,9 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
+  lottie-web@5.13.0:
+    resolution: {integrity: sha512-+gfBXl6sxXMPe8tKQm7qzLnUy5DUPJPKIyRHwtpCpyUEYjHYRJC/5gjUvdkuO2c3JllrPtHXH5UJJK8LRYl5yQ==}
+
   lru-cache@7.18.3:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
@@ -2036,6 +2089,12 @@ packages:
     resolution: {integrity: sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==}
     engines: {node: '>=10'}
     hasBin: true
+
+  motion-dom@12.24.11:
+    resolution: {integrity: sha512-DlWOmsXMJrV8lzZyd+LKjG2CXULUs++bkq8GZ2Sr0R0RRhs30K2wtY+LKiTjhmJU3W61HK+rB0GLz6XmPvTA1A==}
+
+  motion-utils@12.24.10:
+    resolution: {integrity: sha512-x5TFgkCIP4pPsRLpKoI86jv/q8t8FQOiM/0E8QKBzfMozWHfkKap2gA1hOki+B5g3IsBNpxbUnfOum1+dgvYww==}
 
   mysql2@3.14.5:
     resolution: {integrity: sha512-40hDf8LPUsuuJ2hFq+UgOuPwt2IFLIRDvMv6ez9hKbXeYuZPxDDwiJW7KdknvOsQqKznaKczOT1kELgFkhDvFg==}
@@ -2088,6 +2147,9 @@ packages:
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
+
+  ogl@1.0.11:
+    resolution: {integrity: sha512-kUpC154AFfxi16pmZUK4jk3J+8zxwTWGPo03EoYA8QPbzikHoaC82n6pNTbd+oEaJonaE8aPWBlX7ad9zrqLsA==}
 
   on-exit-leak-free@2.1.2:
     resolution: {integrity: sha512-0eJJY6hXLGf1udHwfNftBqH+g73EU4B504nZeKpz1sYRKafAghwxEJunB2O7rDZkL4PGfsMVnTXZ2EjibbqcsA==}
@@ -2396,6 +2458,11 @@ packages:
     resolution: {integrity: sha512-Xs1hdnE+DyKgeHJeJznQmYMIBG3TKIHJJT95Q58nHLSrElKlGQqDTR2HQ9fx5CN/Gk6Vh/kupBTDLU11/nDk/g==}
     peerDependencies:
       react: ^19.1.0
+
+  react-icons@5.5.0:
+    resolution: {integrity: sha512-MEFcXdkP3dLo8uumGI5xN3lDFNsRtrjbOEKDLD7yv76v4wpnEq2Lt2qeHaQOr34I/wPN3s3+N08WkQ+CW37Xiw==}
+    peerDependencies:
+      react: '*'
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -2852,6 +2919,12 @@ snapshots:
 
   '@epic-web/invariant@1.0.0': {}
 
+  '@fireworks-js/react@2.10.8(@types/react@19.1.12)(react@19.1.0)':
+    dependencies:
+      '@types/react': 19.1.12
+      fireworks-js: 2.10.8
+      react: 19.1.0
+
   '@floating-ui/core@1.7.3':
     dependencies:
       '@floating-ui/utils': 0.2.10
@@ -3008,6 +3081,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@lottiefiles/dotlottie-web@0.60.0': {}
 
   '@msgpack/msgpack@3.1.2': {}
 
@@ -4404,6 +4479,8 @@ snapshots:
     dependencies:
       to-regex-range: 5.0.1
 
+  fireworks-js@2.10.8: {}
+
   fluent-ffmpeg@2.1.3:
     dependencies:
       async: 0.2.10
@@ -4411,7 +4488,18 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
+  framer-motion@12.24.12(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      motion-dom: 12.24.11
+      motion-utils: 12.24.10
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+
   fs.realpath@1.0.0: {}
+
+  fscreen@1.2.0: {}
 
   fsevents@2.3.3:
     optional: true
@@ -4553,6 +4641,8 @@ snapshots:
     dependencies:
       js-tokens: 4.0.0
 
+  lottie-web@5.13.0: {}
+
   lru-cache@7.18.3: {}
 
   lru.min@1.1.2: {}
@@ -4590,6 +4680,12 @@ snapshots:
   mkdirp@1.0.4: {}
 
   mkdirp@3.0.1: {}
+
+  motion-dom@12.24.11:
+    dependencies:
+      motion-utils: 12.24.10
+
+  motion-utils@12.24.10: {}
 
   mysql2@3.14.5:
     dependencies:
@@ -4643,6 +4739,8 @@ snapshots:
   normalize-range@0.1.2: {}
 
   object-assign@4.1.1: {}
+
+  ogl@1.0.11: {}
 
   on-exit-leak-free@2.1.2: {}
 
@@ -5112,6 +5210,10 @@ snapshots:
     dependencies:
       react: 19.1.0
       scheduler: 0.26.0
+
+  react-icons@5.5.0(react@19.1.0):
+    dependencies:
+      react: 19.1.0
 
   react-is@16.13.1: {}
 

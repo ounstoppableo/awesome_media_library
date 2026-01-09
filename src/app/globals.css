@@ -54,6 +54,7 @@
 }
 
 :root {
+  --themeColor: #928cee;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -167,6 +168,18 @@
     }
   }
   --animate-glow-flow: glow-flow 6s linear infinite;
+}
+
+.noScrollBar ::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  height: 0px;
+}
+
+::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  height: 0px;
 }
 
 * {
