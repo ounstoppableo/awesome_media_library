@@ -1,6 +1,7 @@
 import { checkIsNone } from "@/utils/convention";
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
+import gsap from "gsap";
 import {
   ChevronDown,
   ChevronLeft,
@@ -11,18 +12,44 @@ import { useEffect, useRef, useState } from "react";
 
 export default function useMoveCursor(props: { currentDirection: "x" | "y" }) {
   const { currentDirection } = props;
-  const [point, setPoint] = useState<any>({ x: null, y: null });
   const cursorRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState<"default" | "mousedown" | "up" | "down">(
     "default"
   );
 
   const [cursorVisible, setCursorVisible] = useState(false);
+  const xTo = useRef<any>(null);
+  const yTo = useRef<any>(null);
+  const cursorRefRect = useRef<any>({});
+  useEffect(() => {
+    xTo.current = gsap.quickTo(cursorRef.current, "x", {
+      duration: 0.2,
+      ease: "power3.out",
+    });
+    yTo.current = gsap.quickTo(cursorRef.current, "y", {
+      duration: 0.2,
+      ease: "power3.out",
+    });
+    cursorRefRect.current = cursorRef.current!.getBoundingClientRect();
+  }, []);
+  useEffect(() => {
+    if (cursorVisible) {
+      gsap.to(cursorRef.current, { opacity: 0.6, duration: 0.3 });
+    } else {
+      gsap.to(cursorRef.current, { opacity: 0, duration: 0.3 });
+    }
+  }, [cursorVisible]);
+  const mouseInfoRef = useRef({ x: 0, y: 0 });
+  const setPoint = (info: any) => {
+    mouseInfoRef.current = { x: info.x, y: info.y };
+    if (xTo.current && yTo.current) {
+      xTo.current(mouseInfoRef.current.x - cursorRefRect.current.width / 2);
+      yTo.current(mouseInfoRef.current.y - cursorRefRect.current.width / 2);
+    }
+  };
   useEffect(() => {
     const mousemoveCb = (e: any) => {
-      requestAnimationFrame(() => {
-        setPoint({ x: e.clientX, y: e.clientY });
-      });
+      setPoint({ x: e.clientX, y: e.clientY });
     };
     const mousedownCb = (e: any) => {
       form === "default" && setForm("mousedown");
@@ -43,15 +70,8 @@ export default function useMoveCursor(props: { currentDirection: "x" | "y" }) {
     <div
       ref={cursorRef}
       className={clsx(
-        "absolute w-24 h-24 z-[9999] flex justify-center items-center text-white select-none pointer-events-none opacity-60 origin-[0%_0%] transition-[opacity,transform] ",
-        cursorVisible && !checkIsNone(point.x) && !checkIsNone(point.y)
-          ? "transform-[scale(1,1)_translate(-50%,-50%)]"
-          : " transform-[scale(0,0)_translate(-50%,-50%)]"
+        "absolute w-24 h-24 z-[9999] flex justify-center items-center text-white select-none pointer-events-none opacity-0 origin-[0%_0%]"
       )}
-      style={{
-        top: point.y,
-        left: point.x,
-      }}
     >
       <div
         className={`${
