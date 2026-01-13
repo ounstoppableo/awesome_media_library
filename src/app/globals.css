@@ -89,6 +89,9 @@
   --sidebar-ring: oklch(0.708 0 0);
   --destructive-foreground: oklch(1 0 0);
 }
+body {
+  overflow: hidden;
+}
 
 .dark {
   --background: oklch(0.145 0 0);
@@ -194,4 +197,23 @@
 
 * {
   font-family: YunDuoAiChiMianHuaTang;
+}
+@keyframes bubble-size {
+  0%,
+  75% {
+    width: var(--size, 4rem);
+    height: var(--size, 4rem);
+  }
+  100% {
+    width: 0rem;
+    height: 0rem;
+  }
+}
+@keyframes bubble-move {
+  0% {
+    bottom: -4rem;
+  }
+  100% {
+    bottom: var(--distance, 10rem);
+  }
 }

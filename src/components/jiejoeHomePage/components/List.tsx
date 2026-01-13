@@ -3,8 +3,8 @@ import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-export default function useListLogic(props: any) {
-  const { data } = props;
+export default function List(props: any) {
+  const { data, windowTrackRef } = props;
   const container = useRef<any>(null);
   const [currentMouseHoverIndex, setCurrentMouseHoverIndex] = useState(-1);
   const imageRef = useRef<any>(null);
@@ -83,97 +83,73 @@ export default function useListLogic(props: any) {
     };
   }, []);
 
-  const previousMouseHoverIndex = useRef(-1);
+  const tms = useRef<any[]>([]);
   useEffect(() => {
-    const _twines: any[] = [];
     const duration = 0.3;
-    const restoration = (dom: any) => {
-      if (!dom) return;
-      _twines.push(
-        gsap.to(dom.querySelector(".background"), {
-          scaleY: 0,
-          duration,
-        })
-      );
-      _twines.push(
-        gsap.to(dom.querySelector(".sequenceNumber"), {
-          textShadow: `  
-      2px 0 0 white,
-     -2px 0 0 white,
-      0 2px 0 white,
-      0 -2px 0 white`,
-          color: "black",
-          duration,
-        })
-      );
-      _twines.push(
-        gsap.to(dom.querySelector(".otherText"), {
-          color: "white",
-          duration,
-        })
-      );
-      _twines.push(
-        gsap.to(dom.querySelector(".date"), {
-          color: "white",
-          duration,
-        })
-      );
-    };
-    const goAhead = (dom: any) => {
-      if (!dom) return;
-      _twines.push(
-        gsap.to(dom.querySelector(".background"), {
+    items.current.forEach((item, index) => {
+      const tm = gsap.timeline();
+      tms.current[index] = tm;
+      tm.to(
+        item.querySelector(".background"),
+        {
           scaleY: 1,
           duration,
-        })
+        },
+        0
       );
-      _twines.push(
-        gsap.to(dom.querySelector(".sequenceNumber"), {
+      tm.to(
+        item.querySelector(".sequenceNumber"),
+        {
           textShadow: `  
-  2px 0 0 var(--themeColor),
- -2px 0 0 var(--themeColor),
-  0 2px 0 var(--themeColor),
-  0 -2px 0 var(--themeColor)`,
+2px 0 0 var(--themeColor),
+-2px 0 0 var(--themeColor),
+0 2px 0 var(--themeColor),
+0 -2px 0 var(--themeColor)`,
           color: "var(--themeColor)",
           duration,
-        })
+        },
+        0
       );
-      _twines.push(
-        gsap.to(dom.querySelector(".otherText"), {
+      tm.to(
+        item.querySelector(".otherText"),
+        {
           color: "black",
           duration,
-        })
+        },
+        0
       );
-      _twines.push(
-        gsap.to(dom.querySelector(".date"), {
+      tm.to(
+        item.querySelector(".date"),
+        {
           color: "black",
           duration,
-        })
+        },
+        0
       );
-    };
-    if (
-      previousMouseHoverIndex.current !== -1 &&
-      previousMouseHoverIndex.current !== currentMouseHoverIndex
-    ) {
-      restoration(items.current[previousMouseHoverIndex.current]);
-    }
-    if (currentMouseHoverIndex !== -1) {
-      goAhead(items.current[currentMouseHoverIndex]);
-    }
-    if (!showPhotoContainer) {
-      items.current.forEach((item) => {
-        restoration(item);
+    });
+    return () => {
+      tms.current.forEach((tm) => {
+        tm.kill();
       });
+    };
+  }, []);
+  const previousMouseHoverIndex = useRef(-1);
+  useEffect(() => {
+    if (!showPhotoContainer) {
+      tms.current.forEach((tm) => {
+        tm.reverse();
+      });
+    } else {
+      currentMouseHoverIndex !== -1 &&
+        tms.current[currentMouseHoverIndex].play();
+      previousMouseHoverIndex.current !== -1 &&
+        previousMouseHoverIndex.current !== currentMouseHoverIndex &&
+        tms.current[previousMouseHoverIndex.current].reverse();
     }
     previousMouseHoverIndex.current = currentMouseHoverIndex;
-    return () => {
-      _twines.forEach(async (t) => {
-        await t;
-        t.kill();
-      });
-    };
   }, [currentMouseHoverIndex, showPhotoContainer]);
-  const listJsx = (
+
+  return (
     <div className="w-full flex-1 p-[12vmin] pt-0">
       <div
         className="w-full h-full relative flex flex-col"
@@ -227,7 +203,7 @@ export default function useListLogic(props: any) {
             <div className="absolute inset-0 bg-white scale-y-0 origin-center z-0 background"></div>
           </div>
         ))}
-        <ClientPortal>
+        <ClientPortal target={windowTrackRef}>
           {showPhotoContainer && (
             <div
               ref={imageRef}
@@ -245,5 +221,4 @@ export default function useListLogic(props: any) {
       </div>
     </div>
   );
-  return { listJsx };
 }

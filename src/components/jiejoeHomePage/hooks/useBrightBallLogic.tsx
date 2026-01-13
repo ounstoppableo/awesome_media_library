@@ -27,13 +27,13 @@ export default function useBrightBallLogic() {
   const brightBallJsx = (
     <div className="w-full h-full" ref={container}>
       <div
-        className="h-[100vmin] aspect-square rounded-full blur-3xl absolute left-0 top-0 -translate-1/4"
+        className="h-[min(50vw,100vh)] aspect-square rounded-full blur-3xl absolute left-0 top-0 -translate-1/4"
         style={{
           background: "radial-gradient(var(--themeColor), transparent)",
         }}
       ></div>
       <div
-        className="h-[100vmin] aspect-square rounded-full blur-3xl absolute right-0 bottom-0 translate-1/4"
+        className="h-[min(50vw,100vh)] aspect-square rounded-full blur-3xl absolute right-0 bottom-0 translate-1/4"
         style={{
           background: "radial-gradient(var(--themeColor), transparent)",
         }}
