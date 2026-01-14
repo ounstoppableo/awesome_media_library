@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -10,7 +11,8 @@ import {
   BsYoutube,
 } from "react-icons/bs";
 
-export const BrandScroller = () => {
+export const BrandScroller = (props: any) => {
+  const { className } = props;
   const [repeatCount, setRepeatCount] = useState(4);
   const container = useRef<any>(null);
   useEffect(() => {
@@ -50,8 +52,14 @@ export const BrandScroller = () => {
   return (
     <>
       <div
-        ref={container}
-        className="border-4 border-black bg-white group flex overflow-hidden py-2 [--gap:2rem] flex-row max-w-full [mask-image:linear-gradient(to_right,_rgba(0,_0,_0,_0),rgba(0,_0,_0,_1)_10%,rgba(0,_0,_0,_1)_90%,rgba(0,_0,_0,_0))]"
+        ref={(el) => {
+          container.current = el;
+          props.ref.current = el;
+        }}
+        className={cn(
+          "border-4 border-black bg-white group flex overflow-hidden py-2 [--gap:2rem] flex-row max-w-full [mask-image:linear-gradient(to_right,_rgba(0,_0,_0,_0),rgba(0,_0,_0,_1)_10%,rgba(0,_0,_0,_1)_90%,rgba(0,_0,_0,_0))]",
+          className
+        )}
       >
         {Array(repeatCount)
           .fill(0)
@@ -86,7 +94,8 @@ export const BrandScroller = () => {
   );
 };
 
-export const BrandScrollerReverse = () => {
+export const BrandScrollerReverse = (props: any) => {
+  const { className } = props;
   const [repeatCount, setRepeatCount] = useState(4);
   const container = useRef<any>(null);
   useEffect(() => {
@@ -126,8 +135,14 @@ export const BrandScrollerReverse = () => {
   return (
     <>
       <div
-        ref={container}
-        className="border-4 border-black bg-white group flex overflow-hidden py-2 [--gap:2rem] flex-row max-w-full [--duration:40s] [mask-image:linear-gradient(to_right,_rgba(0,_0,_0,_0),rgba(0,_0,_0,_1)_10%,rgba(0,_0,_0,_1)_90%,rgba(0,_0,_0,_0))]"
+        ref={(el) => {
+          container.current = el;
+          props.ref.current = el;
+        }}
+        className={cn(
+          "border-4 border-black bg-white group flex overflow-hidden py-2 [--gap:2rem] flex-row max-w-full [--duration:40s] [mask-image:linear-gradient(to_right,_rgba(0,_0,_0,_0),rgba(0,_0,_0,_1)_10%,rgba(0,_0,_0,_1)_90%,rgba(0,_0,_0,_0))]",
+          className
+        )}
       >
         {Array(repeatCount)
           .fill(0)

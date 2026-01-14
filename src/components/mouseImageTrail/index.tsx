@@ -1,5 +1,5 @@
 import { useAnimate } from "framer-motion";
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { FiMousePointer } from "react-icons/fi";
 
 const MouseImageTrail = ({

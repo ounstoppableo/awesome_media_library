@@ -1,15 +1,18 @@
+import gsap from "gsap";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 
 interface ImageSwiperProps {
   images: string[];
   className?: string;
   container?: any;
+  getCurrentIndex?: any;
 }
 
 export const ImageSwiper: React.FC<ImageSwiperProps> = ({
   images,
   container,
   className = "",
+  getCurrentIndex = () => {},
 }) => {
   const cardStackRef = useRef<HTMLDivElement>(null);
   const [cardSize, setCardSize] = useState({
@@ -183,6 +186,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
 
   useEffect(() => {
     updatePositions();
+    getCurrentIndex(cardOrder[0]);
   }, [cardOrder, updatePositions]);
 
   const [containerSize, setContainerSize] = useState({
@@ -242,6 +246,46 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
       ? -multipy * (index - mid) + original
       : (type === "mid" ? -1 : 1) * multipy * index + original;
   };
+
+  const cardsRef = useRef<any>([]);
+  useEffect(() => {
+    const tw = gsap.timeline({
+      scrollTrigger: {
+        trigger: cardsRef.current![0],
+        start: "top 80%",
+        end: "bottom bottom",
+        scrub: true,
+      },
+    });
+
+    cardOrder.forEach((originalIndex, displayIndex) => {
+      let card = cardsRef.current[originalIndex];
+
+      tw.fromTo(
+        card,
+        {
+          "--rotateZ": "0deg",
+          "--translateX": "0px",
+        },
+        {
+          "--rotateZ": `${binaryControl(displayIndex, imageList.length, 8)}deg`,
+          "--translateX": `${binaryControl(
+            displayIndex,
+            imageList.length,
+            (Math.min(containerSize.width, containerSize.height) /
+              cardOrder.length) *
+              (Math.min(containerSize.width, containerSize.height) /
+                Math.max(containerSize.width, containerSize.height))
+          )}px`,
+        },
+        0
+      );
+    });
+    return () => {
+      tw.kill();
+    };
+  }, [containerSize, cardOrder]);
+
   return (
     <section
       className={`relative grid place-content-center select-none ${className}`}
@@ -266,9 +310,25 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
           className="image-card absolute cursor-grab active:cursor-grabbing
                      place-self-center border-4 border-white rounded-xl
                      shadow-md overflow-hidden will-change-transform"
+          ref={(el) => {
+            cardsRef.current[originalIndex] = el;
+          }}
           style={
             {
               "--i": (displayIndex + 1).toString(),
+              "--rotateZ": `${binaryControl(
+                displayIndex,
+                imageList.length,
+                8
+              )}deg`,
+              "--translateX": `${binaryControl(
+                displayIndex,
+                imageList.length,
+                (Math.min(containerSize.width, containerSize.height) /
+                  cardOrder.length) *
+                  (Math.min(containerSize.width, containerSize.height) /
+                    Math.max(containerSize.width, containerSize.height))
+              )}px`,
               zIndex: imageList.length - displayIndex,
               width: cardSize.width,
               height: cardSize.height,
@@ -279,26 +339,9 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
                          50,
                          "mid"
                        )}px)
-                       ${`translateX(calc(var(--swipe-x, 0px) + ${binaryControl(
-                         displayIndex,
-                         imageList.length,
-                         (Math.min(containerSize.width, containerSize.height) /
-                           cardOrder.length) *
-                           (Math.min(
-                             containerSize.width,
-                             containerSize.height
-                           ) /
-                             Math.max(
-                               containerSize.width,
-                               containerSize.height
-                             ))
-                       )}px))`}
+                       ${`translateX(calc(var(--swipe-x, 0px) + var(--translateX)))`}
                        rotateY(var(--swipe-rotate, 0deg)) 
-                        ${`rotateZ(${binaryControl(
-                          displayIndex,
-                          imageList.length,
-                          8
-                        )}deg)`}
+                        ${`rotateZ(var(--rotateZ))`}
                         `,
             } as React.CSSProperties
           }

@@ -9,7 +9,7 @@ import useFireWorksLogic from "./hooks/useFireWorksLogic";
 import useFunBoardLogic from "./hooks/useFunBoardLogic";
 import useResizeLogic from "./hooks/useResizeLogic";
 import { ImageSwiper } from "../image-swiper";
-import { use, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { InteractiveHoverButton } from "../ui/interactive-hover-button";
 import useListLogic from "./components/List";
 import { BrandScroller, BrandScrollerReverse } from "../ui/brand-scoller";
@@ -18,6 +18,8 @@ import Title from "./components/Title";
 import List from "./components/List";
 import useMouseImageTrailLogis from "./hooks/useMouseImageTrailLogis";
 import useSmoothScrollerLogic from "./hooks/useSmoothScrollerLogic";
+import usePortfolioLogic from "./hooks/usePortfolioLogic";
+import RandomContent from "./components/RandomContent";
 
 export default function JiejoeHomePage() {
   const { resizeObserver, resizeObserverCb } = useResizeLogic();
@@ -30,89 +32,153 @@ export default function JiejoeHomePage() {
     {
       id: 1,
       img: "/img21.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup1",
+      chineseTitle: "死神千年血战宣传片1",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+          quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+          eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+          consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+          suscipit fugiat distinctio officia earum eius quae officiis quis harum
+          animi.`,
     },
     {
       id: 2,
       img: "/img33.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup2",
+      chineseTitle: "死神千年血战宣传片2",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+      suscipit fugiat distinctio officia earum eius quae officiis quis harum
+      animi.`,
     },
     {
       id: 3,
       img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup3",
+      chineseTitle: "死神千年血战宣传片3",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+      suscipit fugiat distinctio officia earum eius quae officiis quis harum
+      animi.`,
     },
     {
       id: 4,
       img: "/img33.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup4",
+      chineseTitle: "死神千年血战宣传片4",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+      suscipit fugiat distinctio officia earum eius quae officiis quis harum
+      animi.`,
     },
     {
       id: 5,
       img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup5",
+      chineseTitle: "死神千年血战宣传片5",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+      suscipit fugiat distinctio officia earum eius quae officiis quis harum
+      animi.`,
     },
     {
       id: 6,
       img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup6",
+      chineseTitle: "死神千年血战宣传片6",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+      suscipit fugiat distinctio officia earum eius quae officiis quis harum
+      animi.`,
     },
     {
       id: 7,
       img: "/img33.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup7",
+      chineseTitle: "死神千年血战宣传片7",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+      suscipit fugiat distinctio officia earum eius quae officiis quis harum
+      animi.`,
     },
     {
       id: 8,
       img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup8",
+      chineseTitle: "死神千年血战宣传片8",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+      suscipit fugiat distinctio officia earum eius quae officiis quis harum
+      animi.`,
     },
     {
       id: 9,
       img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup9",
+      chineseTitle: "死神千年血战宣传片9",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+      suscipit fugiat distinctio officia earum eius quae officiis quis harum
+      animi.`,
     },
     {
       id: 10,
       img: "/img33.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup10",
+      chineseTitle: "死神千年血战宣传片10",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+      suscipit fugiat distinctio officia earum eius quae officiis quis harum
+      animi.`,
     },
     {
       id: 11,
       img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup",
-      chineseTitle: "死神千年血战宣传片",
+      englishTitle: "Blench Bankai Mashup11",
+      chineseTitle: "死神千年血战宣传片11",
       date: "2026.1.9",
+      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
+      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
+      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
+      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
+      suscipit fugiat distinctio officia earum eius quae officiis quis harum
+      animi.`,
     },
   ]);
-  const imageSwiperContainer = useRef<any>(null);
-
   const { footerJsx } = useFooterLogic();
-
   const { mouseImageTrailJsx } = useMouseImageTrailLogis({
     data,
     resizeObserverCb,
   });
+  const { portfolioJsx } = usePortfolioLogic();
 
   return (
     <div className="w-[100dvw] h-[100dvh]">
@@ -190,21 +256,11 @@ export default function JiejoeHomePage() {
               </div>
             </div>
             <div className="w-full h-[100dvh] flex flex-col justify-center items-center relative">
-              <div className="text-[16vmin] leading-[16vmin] font-extrabold text-white mb-[4vmin]">
-                {"portfolio".toUpperCase()}
-              </div>
-              <div className="text-white text-center mb-[3vmin]">
-                <div className="text-[3vmin] leading-[3vmin]">
-                  Unstoppable840的摄影作品集
-                </div>
-                <div className="text-[2vmin] leading-[3vmin]">
-                  Unstoppable840's photography collection
-                </div>
-              </div>
-              <div className="h-1/3 w-[2px] absolute bottom-0 bg-linear-to-b from-[var(--themeColor)] to-transparent"></div>
+              {portfolioJsx}
             </div>
             <Title
               title={"NEWEST"}
+              useScrollAnimation={true}
               textStyle={{
                 textShadow: `
                 2px 0 0 var(--themeColor),
@@ -219,6 +275,7 @@ export default function JiejoeHomePage() {
             </div>
             <Title
               title={"RANDOM"}
+              useScrollAnimation={true}
               textStyle={{
                 textShadow: `
                   2px 0 0 #fff,
@@ -228,45 +285,7 @@ export default function JiejoeHomePage() {
               }}
             ></Title>
             <div className="w-full h-[100dvh] flex items-center relative">
-              <div className="h-full w-2/5 flex flex-col justify-center gap-[10%] py-[10%] pl-[10%] brightness-120">
-                <div
-                  className="text-[8vmin] leading-[8vmin] font-extrabold"
-                  style={{
-                    textShadow: ` 
-            2px 0 0 var(--themeColor),
-           -2px 0 0 var(--themeColor),
-            0 2px 0 var(--themeColor),
-            0 -2px 0 var(--themeColor)`,
-                  }}
-                >
-                  Let's party
-                </div>
-                <div className="text-[2.5vmin] text-white">
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                  Dolor iusto quaerat qui, illo incidunt suscipit fugiat
-                  distinctio officia earum eius quae officiis quis harum animi.
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                  Dolor iusto quaerat qui, illo incidunt suscipit fugiat
-                  distinctio officia earum eius quae officiis quis harum animi.
-                </div>
-                <InteractiveHoverButton
-                  className="text-xl w-48 min-h-12 z-20"
-                  text="Explore"
-                  defaultColor="bg-transparent"
-                  hoverColor="white"
-                  dotPosition={"45%"}
-                />
-              </div>
-              <div
-                className="h-full w-3/5 flex justify-center items-center"
-                ref={imageSwiperContainer}
-              >
-                <ImageSwiper
-                  className="flex-1"
-                  images={data.map((item) => item.img)}
-                  container={imageSwiperContainer}
-                />
-              </div>
+              <RandomContent data={data}></RandomContent>
             </div>
             <div className="w-full h-[100dvh]">{mouseImageTrailJsx}</div>
             <div className="w-full">{footerJsx}</div>
