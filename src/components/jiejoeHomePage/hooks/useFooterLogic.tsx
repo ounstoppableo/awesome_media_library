@@ -29,7 +29,7 @@ export default function useFooterLogic() {
           </filter>
         </defs>
       </svg>
-      <div className="relative min-h-120">
+      <div className="relative h-[60dvh]">
         <div
           className=" [--footer-background:#fff] w-full absolute top-1/2 left-0"
           style={{

@@ -38,6 +38,7 @@ export default function Taotajima() {
   const twitterBtnRef = useRef<any>(null);
   const instagramBtnRef = useRef<any>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const introduceRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState({
     id: "taotajima",
     title: "taotajima",
@@ -69,11 +70,7 @@ export default function Taotajima() {
     ],
   });
   const { resizeObserverCb } = useResizeLogic();
-  const { currentSoftTextInst, generateSoftText, softText } = useSoftTextLogic({
-    resizeObserverCb,
-    data,
-    contentRef,
-  });
+
   const {
     animateOpacity,
     animatePageToggleBtn,
@@ -84,6 +81,13 @@ export default function Taotajima() {
     leftBtnRef,
     rightBtnRef,
   } = useOtherAnimateLogic({});
+  const { currentSoftTextInst, generateSoftText, softText } = useSoftTextLogic({
+    resizeObserverCb,
+    data,
+    contentRef,
+    shareRef,
+    introduceRef,
+  });
 
   const togglePageControl = useRef<any>(null);
 
@@ -101,7 +105,7 @@ export default function Taotajima() {
       animateOpacity.current.play();
       generateSoftText
         .current(
-          `#${(current + 1).toString().padStart(3, "0")}      ${
+          `#${(current + 1).toString().padStart(3, "0")}  /  ${
             data.children[current].tag
           }`,
           data.children[current].title,
@@ -125,7 +129,7 @@ export default function Taotajima() {
       animateOpacity.current.play();
       generateSoftText
         .current(
-          `#${(current + 1).toString().padStart(3, "0")}      ${
+          `#${(current + 1).toString().padStart(3, "0")}  /  ${
             data.children[current].tag
           }`,
           data.children[current].title,
@@ -152,13 +156,13 @@ export default function Taotajima() {
     <>
       <div
         id="taotajimaSliderContent"
-        className="w-[100dvw] h-[100dvh] relative"
+        className="w-[100dvw] h-[100dvh] relative select-none"
       >
         <div
           className="w-full h-full relative after:absolute after:inset-0 after:bg-black/40"
           id="taotajimaSlider"
         ></div>
-        <div className="absolute inset-0 z-1 flex justify-center items-center flex-col p-16 pt-8 cursor-default">
+        <div className="absolute inset-0 z-1 flex justify-center items-center flex-col p-[6vmin] pt-[4vmin] cursor-default">
           <div className="flex text-xl text-white justify-between w-full">
             <div className=" flex gap-4">
               <div
@@ -183,55 +187,59 @@ export default function Taotajima() {
                 >
                   <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
                 </svg>
-                <div className="text-end title">BACK</div>
+                <div className="text-end title text-[2.5vmin]">BACK</div>
               </div>
-              <div className="w-[.0625rem] h-9 bg-white/80 rotate-20"></div>
-              <div className="select-none">{data.title.toUpperCase()}</div>
+              <div className="w-[.0625rem] h-[4vmin] bg-white/80 rotate-20"></div>
+              <div className="select-none text-[2.5vmin]">
+                {data.title.toUpperCase()}
+              </div>
             </div>
             <div className="flex text-2xl gap-4 h-fit">
-              <div className="select-none">Blog</div>
-              <div className="w-[.0625rem] h-9 bg-white/80 rotate-20"></div>
-              <div className="cursor-pointer relative after:bottom-0 after:left-0 after:absolute after:border-b-2 after:border-white hover:after:w-full after:transition-all after:w-0">
+              <div className="select-none text-[2.5vmin]">Blog</div>
+              <div className="w-[.0625rem] h-[4vmin] bg-white/80 rotate-20"></div>
+              <div className="text-[2.5vmin] cursor-pointer relative after:bottom-0 after:left-0 after:absolute after:border-b-2 after:border-white hover:after:w-full after:transition-all after:w-0">
                 Unstoppable840
               </div>
             </div>
           </div>
-          <div className="flex-1"></div>
-          <div className="relative flex gap-8 items-center max-w-[50dvw]">
-            <div className=" text-white gap-4 flex flex-col items-start">
+          <div className="absolute top-1/2 left-1/2 -translate-1/2 flex gap-[4vmin] items-center max-w-[50dvw]">
+            <div className=" text-white gap-[4vmin] flex flex-col items-start">
               <div
-                className=" gap-4 flex flex-col items-start relative"
+                className=" gap-[2vmin] flex flex-col items-start relative"
                 ref={contentRef}
               >
-                <div className="flex text-2xl gap-4 h-fit ">
+                <div className="flex text-[2vmin] gap-[2vmin] h-fit ">
                   <div className="opacity-0">
                     #{(current + 1).toString().padStart(3, "0")}
                   </div>
-                  <div
-                    className="w-[.0625rem] h-9 bg-white/80 rotate-20"
-                    ref={splitRef}
-                  ></div>
+                  <div className="w-[.0625rem] h-[4vmin] rotate-20 opacity-0"></div>
                   <div className="opacity-0">{data.children[current].tag}</div>
                 </div>
-                <div className="text-6xl opacity-0">
+                <div className="text-[4vmin] opacity-0">
                   {data.children[current].title}
                 </div>
-                <div className="line-clamp-4 leading-8 opacity-0">
+                <div
+                  className="line-clamp-4 opacity-0 text-[1.5vmin] leading-[3.75vmin]"
+                  ref={introduceRef}
+                >
                   {data.children[current].content}
                 </div>
               </div>
-              <div className="text-xl flex gap-4 items-center" ref={shareRef}>
+              <div
+                className="text-[2vmin] flex gap-[2vmin] items-center"
+                ref={shareRef}
+              >
                 <div>Share:</div>
-                <div className="flex gap-4">
+                <div className="flex gap-[2vmin]">
                   <Twitter
                     ref={twitterBtnRef}
                     onMouseEnter={animateBtn.bind(null, twitterBtnRef)}
-                    className="cursor-pointer"
+                    className="cursor-pointer w-[3vmin]"
                   />
                   <Instagram
                     ref={instagramBtnRef}
                     onMouseEnter={animateBtn.bind(null, instagramBtnRef)}
-                    className="cursor-pointer"
+                    className="cursor-pointer w-[3vmin]"
                   />
                 </div>
               </div>
@@ -239,7 +247,7 @@ export default function Taotajima() {
 
             <div className="dark" ref={playRef}>
               <InteractiveHoverButton
-                className="text-xl w-40 aspect-1/1 z-20 opacity-80"
+                className="text-xl w-[20vmin] h-[20vmin] aspect-1/1 z-20 opacity-80"
                 text="play"
                 defaultColor="white"
                 border={false}
@@ -275,7 +283,7 @@ export default function Taotajima() {
                 {
                   <>
                     <div
-                      className="pageCount"
+                      className="pageCount text-[2vmin]"
                       key={current === 0 ? data.children.length : current}
                     >
                       #
@@ -283,7 +291,7 @@ export default function Taotajima() {
                         .toString()
                         .padStart(3, "0")}
                     </div>
-                    <div className="truncate w-[80%] title text-right">
+                    <div className="truncate w-[80%] title text-right text-[2.5vmin]">
                       {
                         data.children[
                           current === 0 ? data.children.length - 1 : current - 1
@@ -292,7 +300,7 @@ export default function Taotajima() {
                     </div>
                     <svg
                       viewBox="0 0 360 7"
-                      className="fill-white absolute bottom-2 arrow origin-right"
+                      className="fill-white absolute bottom-[1vmin] arrow origin-right"
                     >
                       <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
                     </svg>
@@ -325,7 +333,7 @@ export default function Taotajima() {
                 {
                   <>
                     <div
-                      className="pageCount"
+                      className="pageCount text-[2vmin]"
                       key={current + 2 > data.children.length ? 1 : current + 2}
                     >
                       #
@@ -333,7 +341,7 @@ export default function Taotajima() {
                         .toString()
                         .padStart(3, "0")}
                     </div>
-                    <div className="truncate w-[80%] title">
+                    <div className="truncate w-[80%] title text-[2.5vmin]">
                       {
                         data.children[
                           current + 1 > data.children.length - 1
@@ -344,7 +352,7 @@ export default function Taotajima() {
                     </div>
                     <svg
                       viewBox="0 0 360 7"
-                      className="fill-white absolute bottom-2 arrow origin-left"
+                      className="fill-white absolute bottom-[1vmin] arrow origin-left"
                     >
                       <polyline points="0,7 360,7 339,0 339,6 0,6"></polyline>
                     </svg>

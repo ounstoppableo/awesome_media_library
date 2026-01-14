@@ -3,7 +3,7 @@ import { Engine } from "@/utils/engine";
 import { useEffect, useRef } from "react";
 
 export default function useSoftTextLogic(props: any) {
-  const { resizeObserverCb, data, contentRef } = props;
+  const { resizeObserverCb, data, contentRef, shareRef, introduceRef } = props;
   const softText = useRef<any>(null);
   const engine = useRef<any>(null);
   const softTextInst = useRef<any>([]);
@@ -29,18 +29,34 @@ export default function useSoftTextLogic(props: any) {
           softText.current.clientWidth,
           softText.current.clientHeight
         );
-        const _base = remToWorld(1, engine.current.camera, softText.current);
-        const _xl = remToWorld(1.25, engine.current.camera, softText.current);
-        const _6xl = remToWorld(3.75, engine.current.camera, softText.current);
+        const _base = pxToWorld(
+          (Math.min(innerHeight, innerWidth) / 100) * 1.5,
+          engine.current.camera,
+          softText.current
+        );
+        const _sequence = pxToWorld(
+          (Math.min(innerHeight, innerWidth) / 100) * 2,
+          engine.current.camera,
+          softText.current
+        );
+        const _title = pxToWorld(
+          (Math.min(innerHeight, innerWidth) / 100) * 4,
+          engine.current.camera,
+          softText.current
+        );
 
         const contentRect = contentRef.current.getBoundingClientRect();
+        const shareRect = shareRef.current.getBoundingClientRect();
+        const introduceRect = introduceRef.current.getBoundingClientRect();
         const centerToLeftEdge = pxToWorld(
           contentRect.x,
           engine.current.camera,
           softText.current
         );
+
+        const _gap = (Math.min(innerHeight, innerWidth) / 100) * 2;
         const centerToTopEdge = pxToWorld(
-          contentRect.height / 2 + 28 + 16,
+          (contentRect.height + _gap + shareRect.height) / 2,
           engine.current.camera,
           softText.current
         );
@@ -49,19 +65,21 @@ export default function useSoftTextLogic(props: any) {
           item?.destroy?.();
         });
 
-        const gap = remToWorld(1, engine.current.camera, softText.current);
-        const pageCountY = _xl + _xl / 2;
-        const titleY = pageCountY + _6xl + _6xl / 2 + gap;
+        const gap = pxToWorld(_gap, engine.current.camera, softText.current);
+        const pageCountY = _sequence + _sequence / 2;
+        const titleY = pageCountY + _title + _title / 2 + gap;
 
         const pageCount = new AnimatedText3D(pageCountText, {
           color: "#ffffff",
-          size: _xl,
+          size: _sequence,
           basicY: centerToTopEdge - pageCountY,
+          lineHeight: _sequence,
         });
         const title = new AnimatedText3D(titleText, {
           color: "#ffffff",
-          size: _6xl,
+          size: _title,
           basicY: centerToTopEdge - titleY,
+          lineHeight: _title,
         });
         const content = new AnimatedText3D(contentText, {
           color: "#ffffff",
@@ -71,17 +89,13 @@ export default function useSoftTextLogic(props: any) {
             engine.current.camera,
             softText.current
           ),
-          yEdge:
-            pxToWorld(
-              contentRect.height,
-              engine.current.camera,
-              softText.current
-            ) -
-            titleY -
-            _base * 2.5 -
-            gap,
+          yEdge: pxToWorld(
+            introduceRect.height,
+            engine.current.camera,
+            softText.current
+          ),
           lineHeight: _base * 2.5,
-          basicY: centerToTopEdge - titleY - _base * 2.5 - gap,
+          basicY: centerToTopEdge - titleY - _sequence - 2 * gap,
         });
         softTextInst.current = [pageCount, title, content];
         engine.current.scene.add(pageCount);
@@ -135,7 +149,7 @@ export default function useSoftTextLogic(props: any) {
     };
     const cb = () => {
       textGenerate()(
-        `#${(1).toString().padStart(3, "0")}      ${"Tag Tag Tag"}`,
+        `#${(1).toString().padStart(3, "0")}  /  ${data.children[0].tag}`,
         data.children[0].title,
         data.children[0].content
       ).toShow("next");

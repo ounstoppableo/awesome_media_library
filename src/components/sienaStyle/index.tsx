@@ -83,7 +83,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     return (
       <>
         <div
-          className={`h-full w-full overflow-hidden relative select-none   ${
+          className={`h-full w-full overflow-hidden relative select-none ${
             type === "small"
               ? "transition-all after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[linear-gradient(transparent_0%,transparent_50%,#000_100%)]"
               : currentDirection === "x"
@@ -95,9 +95,9 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             src={item.img}
             className={`${
               type === "small"
-                ? "w-16 h-20 rounded-lg transition-all"
+                ? "w-[8vmin] h-[10vmin] rounded-lg transition-all"
                 : currentDirection === "y"
-                ? "w-[100vw] h-fit top-1/2 left-1/2 -translate-1/2"
+                ? "w-full h-full top-1/2 left-1/2 -translate-1/2"
                 : "w-fit h-[100vh] top-1/2 left-1/2 -translate-1/2"
             } object-cover absolute  select-none`}
             ref={(el) => {
@@ -107,29 +107,31 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         </div>
         {init && (
           <div
-            className={`absolute z-10 w-fit  flex text-white gap-4   ${
+            className={`absolute z-10 w-fit flex text-white gap-[2vmin]   ${
               type === "small"
-                ? "left-22 h-full transition-all"
+                ? "left-[11vmin] bottom-[-2vmin] h-full transition-all"
                 : currentDirection === "y"
-                ? "h-fit left-8 flex-col justify-center items-center bottom-8"
-                : "h-fit flex-col justify-center items-center bottom-8"
+                ? "h-fit left-[4vmin] flex-col justify-center items-center bottom-[4vmin] [@media(max-aspect-ratio:1.4/1)]:top-1/2 [@media(max-aspect-ratio:1.4/1)]:left-1/2 [@media(max-aspect-ratio:1.4/1)]:-translate-1/2"
+                : "h-fit flex-col justify-center items-center bottom-[4vmin]"
             }`}
           >
             <div
               className={`flex flex-col justify-center items-center  ${
                 type === "small"
-                  ? "whitespace-nowrap scale-80 -translate-x-1/8 self-end transition-all"
+                  ? "whitespace-nowrap scale-80 -translate-x-1/24 transition-all"
                   : currentDirection === "y"
-                  ? "gap-4"
-                  : "gap-1"
+                  ? "gap-[2vmin]"
+                  : "gap-[.5vmin]"
               }`}
             >
-              <div className="text-xs tracking-[4px]">
+              <div className="text-[2vmin] tracking-[.5vmin]">
                 {"Documentary".toUpperCase()}
               </div>
               <div
                 className={`photoTitle ${
-                  currentDirection === "y" ? "text-6xl" : "text-3xl"
+                  currentDirection === "y"
+                    ? "text-[8vmin] leading-[8vmin] [@media(max-aspect-ratio:1.4/1)]:text-center"
+                    : "text-[4vmin] leading-[4vmin]"
                 }`}
               >
                 {"My Project X".toUpperCase()}
@@ -137,25 +139,29 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             </div>
             <div
               className={`${
-                currentDirection === "y" ? "text-lg" : "text-base"
-              } flex flex-col w-full justify-center items-center`}
+                type === "small"
+                  ? "hidden [@media(min-aspect-ratio:2/1)]:flex"
+                  : ""
+              } ${
+                currentDirection === "y" ? "text-[2.5vmin]" : "text-[2vmin]"
+              } flex-col w-full justify-center items-center`}
               style={{
                 lineHeight:
                   currentDirection === "y"
-                    ? "calc(var(--text-lg) - 4px)"
-                    : "calc(var(--text-base) - 4px)",
+                    ? "calc(2.5vmin - 4px)"
+                    : "calc(2vmin - 4px)",
                 verticalAlign: "center",
               }}
             >
-              <div className="flex border-t border-white items-center justify-center gap-16 px-4 w-full">
+              <div className="flex border-t border-white items-center justify-center gap-[8vmin] px-[2vmin] w-full">
                 <div>YEAR</div>
                 <div>2024</div>
               </div>
-              <div className="flex border-t border-white items-center justify-center  gap-8 px-6 w-full">
+              <div className="flex border-t border-white items-center justify-center  gap-[4vmin] px-[3vmin] w-full">
                 <div>LOCATION</div>
                 <div>TEL AVIV</div>
               </div>
-              <div className="flex border-t border-white border-b items-center justify-center gap-12 px-2 w-full">
+              <div className="flex border-t border-white border-b items-center justify-center gap-[6vmin] px-[1vmin] w-full">
                 <div>CATEGORY</div>
                 <div>DOCUMENTARY</div>
               </div>
@@ -196,10 +202,10 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
   return (
     <div
       ref={scrollWrapper}
-      className={`bg-black flex flex-col gap-8 select-none h-[100dvh] w-full overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10  ${
+      className={`bg-black flex flex-col gap-[4vmin] select-none h-[100dvh] w-full overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10  ${
         currentDirection === "y"
           ? "after:bg-[linear-gradient(#000_0%,transparent_10%,transparent_90%,#000_100%)]"
-          : "after:bg-[linear-gradient(to_right,#000_0%,transparent_10%,transparent_90%,#000_100%)] py-12"
+          : "after:bg-[linear-gradient(to_right,#000_0%,transparent_10%,transparent_90%,#000_100%)] py-[6vmin]"
       }`}
     >
       {cursor}
@@ -274,7 +280,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         {
           <div
             className={clsx([
-              "absolute top-12 left-16 text-white text-3xl font-semibold cursor-pointer z-20",
+              "absolute top-[6vmin] left-[8vmin] text-white text-[4vmin] font-semibold cursor-pointer z-20",
               "data-closed:opacity-0 data-enter:duration-300 data-leave:duration-300",
               "data-enter:data-closed:-translate-x-full",
               "data-leave:data-closed:-translate-x-full",
@@ -288,7 +294,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               : "horizontal"
             ).toUpperCase()}
             <div
-              className="text-xs font-thin w-full"
+              className="text-[2vmin] font-thin w-full"
               style={{ textAlign: "justify", textAlignLast: "justify" }}
             >
               C l i c k T o T o g g l e
@@ -352,13 +358,12 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               >
                 {photoItem(item, index, "default")}
                 {currentDirection === "y" && init && (
-                  <div className="absolute bottom-8 right-8">
+                  <div className="absolute bottom-[4vmin] [@media(min-aspect-ratio:1.4/1)]:right-[4vmin] [@media(max-aspect-ratio:1.4/1)]:left-1/2 [@media(max-aspect-ratio:1.4/1)]:transform-[translate(-50%,-50%)] z-20">
                     <InteractiveHoverButton
-                      className="text-xl w-48 z-20"
+                      className="text-xl w-[32vmin] h-[7vmin]"
                       text="Explore"
                       defaultColor="bg-transparent"
                       hoverColor="white"
-                      dotPosition={"45%"}
                     />
                   </div>
                 )}
@@ -370,7 +375,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         <Transition show={currentReadPhotoId as any}>
           <div
             className={clsx([
-              "absolute h-20 w-[50dvw] flex z-20 transition ease-in-out bottom-8 left-16 translate-0",
+              "absolute h-[10vmin] w-[50dvw] z-20 transition ease-in-out bottom-[6vmin] left-[8vmin] translate-0",
               "data-closed:opacity-0 data-enter:duration-300 data-leave:duration-300",
               "data-enter:data-closed:-translate-x-full",
               "data-leave:data-closed:-translate-x-full",
@@ -436,7 +441,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           <div className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-[1px] scale-x-20 bg-white z-10"></div>
           <div className="w-full px-16 flex justify-between items-center relative">
             <div className="flex:1"></div>
-            <div className="flex gap-2 items-end h-fit absolute top-1/2 left-1/2 -translate-1/2 z-20">
+            <div className=" gap-2 items-end h-fit absolute top-1/2 left-1/2 -translate-1/2 z-20 hidden [@media(min-aspect-ratio:2/1)]:flex">
               <div className="w-[1px] h-3 bg-white"></div>
               <div className="w-[1px] h-1.5 bg-gray-200"></div>
               <div className="w-[1px] h-1.5 bg-gray-200"></div>
@@ -468,7 +473,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               ></div>
             </div>
             <InteractiveHoverButton
-              className="text-xl w-48 z-20"
+              className="text-xl w-[24vmin] h-[6vmin] z-20"
               text="Explore"
               defaultColor="bg-transparent"
               hoverColor="white"

@@ -44,9 +44,9 @@ export default function RandomContent(props: any) {
   }, [currentIndex]);
   return (
     <>
-      <div className="h-full w-2/5 flex flex-col justify-center gap-[10%] py-[10%] pl-[10%] brightness-120">
+      <div className="h-full w-2/5 flex flex-col justify-center gap-[10%] py-[10%] pl-[10%]">
         <div
-          className="text-[8vmin] leading-[8vmin] font-extrabold"
+          className="w-full text-[8vmin] leading-[8vmin] font-extrabold"
           style={{
             textShadow: ` 
 2px 0 0 var(--themeColor),
@@ -55,18 +55,23 @@ export default function RandomContent(props: any) {
 0 -2px 0 var(--themeColor)`,
           }}
           ref={titleRef}
+          title={
+            data[currentIndex].chineseTitle || data[currentIndex].englishTitle
+          }
         >
           {data[currentIndex].chineseTitle || data[currentIndex].englishTitle}
         </div>
-        <div className="text-[2.5vmin] text-white" ref={introduceRef}>
+        <div
+          className="text-[2.5vmin] text-white line-clamp-8"
+          ref={introduceRef}
+        >
           {data[currentIndex].introduce}
         </div>
         <InteractiveHoverButton
-          className="text-xl w-48 min-h-12 z-20"
+          className="text-xl w-[24vmin] h-[6vmin] z-20"
           text="Explore"
           defaultColor="bg-transparent"
           hoverColor="white"
-          dotPosition={"45%"}
         />
       </div>
       <div

@@ -76,18 +76,21 @@ export class AnimatedText3D extends Object3D {
         this.basePositionX += size * 0.5;
         let nextSpace = 0;
         for (let i = index + 1; i < letters.length; i++) {
-          if (letters[i] === " ") {
+          if (letters[i] === " " || i === letters.length - 1) {
             nextSpace = i;
             break;
           }
         }
 
-        const paddingCount = nextSpace - index > 0 ? nextSpace - index - 1 : 1;
+        const wordCharCount = nextSpace - index > 0 ? nextSpace - index + 1 : 1;
 
-        if (this.basePositionX >= xEdge - paddingCount * size) {
+        if (this.basePositionX + wordCharCount * size >= xEdge) {
           this.basePositionX = 0;
+          // 查看下行的底部是否越线，一般越过一个size和一个lineHeight，但由于最顶部和最下部也有一半的lineHeight，所以总共减去两个lineHeight
           if (
-            this.basePositionY - size <= -yEdge &&
+            Math.abs(
+              this.basePositionY - lineHeight - lineHeight - size - basicY
+            ) >= yEdge &&
             typeof this.overflow !== "number"
           ) {
             this.overflow = index - spaceCount;
