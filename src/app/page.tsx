@@ -11,5 +11,5 @@ import JiejoeHomePage from "@/components/jiejoeHomePage";
 export default function Home() {
   const router = useRouter();
 
-  return <SienaStyle></SienaStyle>;
+  return <JiejoeHomePage></JiejoeHomePage>;
 }

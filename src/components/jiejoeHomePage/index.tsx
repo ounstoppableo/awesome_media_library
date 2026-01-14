@@ -20,6 +20,8 @@ import useMouseImageTrailLogis from "./hooks/useMouseImageTrailLogis";
 import useSmoothScrollerLogic from "./hooks/useSmoothScrollerLogic";
 import usePortfolioLogic from "./hooks/usePortfolioLogic";
 import RandomContent from "./components/RandomContent";
+import { selectValue } from "@/store/test/test-slice";
+import { useAppSelector } from "@/store/hooks";
 
 export default function JiejoeHomePage() {
   const { resizeObserver, resizeObserverCb } = useResizeLogic();
@@ -28,6 +30,10 @@ export default function JiejoeHomePage() {
   const { brightBallJsx } = useBrightBallLogic();
   const { avatarJsx } = useAvatarLogic({ resizeObserverCb });
   const { fireworksJsx } = useFireWorksLogic();
+  // const value = useAppSelector(selectValue);
+  // useEffect(() => {
+  //   console.log(value);
+  // }, []);
   const [data, setData] = useState([
     {
       id: 1,
