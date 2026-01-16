@@ -338,7 +338,7 @@ class Sketch {
     // this.camera.position.z = 3;
     // this.plane.rotation.y = 0.4*Math.sin(this.time)
     // this.plane.rotation.x = 0.5*Math.sin(0.4*this.time)
-    this.videoUpdaters.forEach((fn) => fn());
+    this.videoUpdaters?.forEach((fn) => fn());
     requestAnimationFrame(this.render.bind(this));
     this.renderer.render(this.scene, this.camera);
   }

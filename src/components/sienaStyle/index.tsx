@@ -9,6 +9,14 @@ import useBaseLogic from "./hooks/useBaseLogic";
 import useDraggableLogic from "./hooks/useDraggableLogic";
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setSienaLoading } from "@/store/loading/loading-slice";
+import {
+  selectTaojimaControlOpenStatus,
+  setOpen as setTaotajimaOpen,
+} from "@/store/taotajimaControl/taotajima-slice";
+import ContentInsufficient from "../contentInsufficient";
+import dayjs from "dayjs";
 
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
@@ -53,6 +61,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
     scrollContainer,
     init,
     scrollWrapper,
+    data,
   });
 
   const { cursor, handleChangeCurrent, handleControlCursor, setCursorVisible } =
@@ -72,7 +81,27 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
       setCurrentIndex,
       scrollContainerItems,
       gap,
+      data,
     });
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const cb = () => {
+      if (innerWidth / innerHeight < 1.4) {
+        currentDirection !== "x" && toggleToHorizontal();
+      }
+    };
+    window.addEventListener("resize", cb);
+    return () => {
+      window.removeEventListener("resize", cb);
+    };
+  }, [currentDirection]);
+
+  const taotajimaOpenStatus = useAppSelector(selectTaojimaControlOpenStatus);
+  const handleExplore = (info: any) => {
+    dispatch(setTaotajimaOpen({ open: !taotajimaOpenStatus, id: info.id }));
+  };
 
   const photoItem = (
     item: any,
@@ -97,7 +126,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               type === "small"
                 ? "w-[8vmin] h-[10vmin] rounded-lg transition-all"
                 : currentDirection === "y"
-                ? "w-full h-full top-1/2 left-1/2 -translate-1/2"
+                ? "w-[100dvw] h-[100dvh] top-1/2 left-1/2 -translate-1/2"
                 : "w-fit h-[100vh] top-1/2 left-1/2 -translate-1/2"
             } object-cover absolute  select-none`}
             ref={(el) => {
@@ -111,7 +140,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               type === "small"
                 ? "left-[11vmin] bottom-[-2vmin] h-full transition-all"
                 : currentDirection === "y"
-                ? "h-fit left-[4vmin] flex-col justify-center items-center bottom-[4vmin] [@media(max-aspect-ratio:1.4/1)]:top-1/2 [@media(max-aspect-ratio:1.4/1)]:left-1/2 [@media(max-aspect-ratio:1.4/1)]:-translate-1/2"
+                ? "h-fit left-[8vmin] flex-col justify-center items-center bottom-[6vmin]"
                 : "h-fit flex-col justify-center items-center bottom-[4vmin]"
             }`}
           >
@@ -125,16 +154,16 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               }`}
             >
               <div className="text-[2vmin] tracking-[.5vmin]">
-                {"Documentary".toUpperCase()}
+                {item.category.toUpperCase()}
               </div>
               <div
                 className={`photoTitle ${
                   currentDirection === "y"
-                    ? "text-[8vmin] leading-[8vmin] [@media(max-aspect-ratio:1.4/1)]:text-center"
+                    ? "text-[8vmin] leading-[8vmin]"
                     : "text-[4vmin] leading-[4vmin]"
                 }`}
               >
-                {"My Project X".toUpperCase()}
+                {(item.chineseTitle || item.englishTitle).toUpperCase()}
               </div>
             </div>
             <div
@@ -155,15 +184,15 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             >
               <div className="flex border-t border-white items-center justify-center gap-[8vmin] px-[2vmin] w-full">
                 <div>YEAR</div>
-                <div>2024</div>
+                <div>{dayjs(item.date).year()}</div>
               </div>
               <div className="flex border-t border-white items-center justify-center  gap-[4vmin] px-[3vmin] w-full">
                 <div>LOCATION</div>
-                <div>TEL AVIV</div>
+                <div>{item.location.toUpperCase()}</div>
               </div>
               <div className="flex border-t border-white border-b items-center justify-center gap-[6vmin] px-[1vmin] w-full">
                 <div>CATEGORY</div>
-                <div>DOCUMENTARY</div>
+                <div>{item.category.toUpperCase()}</div>
               </div>
             </div>
           </div>
@@ -178,7 +207,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         ref={(el: any) => {
           currentReadPhotoId && (scrollContainerItems.current[index] = el);
         }}
-        key={item.id + index}
+        key={generateKey(item.id, index)}
         className="h-full aspect-1/1 overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[radial-gradient(transparent_0%,#000_90%)]"
       >
         <img
@@ -280,7 +309,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         {
           <div
             className={clsx([
-              "absolute top-[6vmin] left-[8vmin] text-white text-[4vmin] font-semibold cursor-pointer z-20",
+              "absolute top-[6vmin] left-[8vmin] text-white text-[4vmin] font-semibold cursor-pointer z-20 [@media(min-aspect-ratio:1.4/1)]:block hidden",
               "data-closed:opacity-0 data-enter:duration-300 data-leave:duration-300",
               "data-enter:data-closed:-translate-x-full",
               "data-leave:data-closed:-translate-x-full",
@@ -303,73 +332,80 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         }
       </Transition>
 
-      {!currentReadPhotoId && (
-        <div
-          className={`flex ${
-            currentDirection === "y"
-              ? "h-fit w-full px-16 flex-col z-[0!important] items-center justify-center gap-8"
-              : "h-full w-fit z-[0!important] items-center justify-center gap-8"
-          } `}
-          ref={(el) => {
-            if (!currentReadPhotoId) {
-              scrollContainer.current = el;
-            }
-          }}
-          onMouseMove={() => {
-            setCursorVisible(true);
-          }}
-          onMouseLeave={() => {
-            setCursorVisible(false);
-          }}
-        >
-          {Array.from({ length: repeatCount }, (_, i) => data)
-            .flat()
-            .map((item, index) => (
-              <div
-                className={`
+      {data.length >= 3 ? (
+        !currentReadPhotoId && (
+          <div
+            className={`flex ${
+              currentDirection === "y"
+                ? "h-fit w-full px-16 flex-col z-[0!important] items-center justify-center gap-8"
+                : "h-full w-fit z-[0!important] items-center justify-center gap-8"
+            } `}
+            ref={(el) => {
+              if (!currentReadPhotoId) {
+                scrollContainer.current = el;
+              }
+            }}
+            onMouseMove={() => {
+              setCursorVisible(true);
+            }}
+            onMouseLeave={() => {
+              setCursorVisible(false);
+            }}
+          >
+            {Array.from({ length: repeatCount }, (_, i) => data)
+              .flat()
+              .map((item, index) => (
+                <div
+                  className={`
                     ${
                       currentDirection === "y"
                         ? "h-[70dvh] w-full justify-center items-center"
                         : "h-[60dvh] aspect-[4/5] justify-center items-center"
                     } flex text-4xl relative select-none `}
-                key={item.id + index}
-                ref={(el: any) => {
-                  !currentReadPhotoId &&
-                    (scrollContainerItems.current[index] = el);
-                }}
-                onMouseEnter={(e) => {
-                  handleControlCursor(index);
-                }}
-                onMouseLeave={(e) => {
-                  handleControlCursor(currentIndex);
-                }}
-                onMouseMove={(e) => {
-                  handleControlCursor(index);
-                }}
-                onClick={() =>
-                  handleChangeCurrent(
-                    currentIndex > index
-                      ? "down"
-                      : currentIndex < index
-                      ? "up"
-                      : ""
-                  )
-                }
-              >
-                {photoItem(item, index, "default")}
-                {currentDirection === "y" && init && (
-                  <div className="absolute bottom-[4vmin] [@media(min-aspect-ratio:1.4/1)]:right-[4vmin] [@media(max-aspect-ratio:1.4/1)]:left-1/2 [@media(max-aspect-ratio:1.4/1)]:transform-[translate(-50%,-50%)] z-20">
-                    <InteractiveHoverButton
-                      className="text-xl w-[32vmin] h-[7vmin]"
-                      text="Explore"
-                      defaultColor="bg-transparent"
-                      hoverColor="white"
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-        </div>
+                  key={generateKey(item.id, index)}
+                  ref={(el: any) => {
+                    !currentReadPhotoId &&
+                      (scrollContainerItems.current[index] = el);
+                  }}
+                  onMouseEnter={(e) => {
+                    handleControlCursor(index);
+                  }}
+                  onMouseLeave={(e) => {
+                    handleControlCursor(currentIndex);
+                  }}
+                  onMouseMove={(e) => {
+                    handleControlCursor(index);
+                  }}
+                  onClick={() =>
+                    handleChangeCurrent(
+                      currentIndex > index
+                        ? "down"
+                        : currentIndex < index
+                        ? "up"
+                        : ""
+                    )
+                  }
+                >
+                  {photoItem(item, index, "default")}
+                  {currentDirection === "y" && init && (
+                    <div className="absolute bottom-[6vmin] right-[8vmin] z-20">
+                      <InteractiveHoverButton
+                        className="text-xl w-[32vmin] h-[7vmin]"
+                        text="Explore"
+                        defaultColor="bg-transparent"
+                        hoverColor="white"
+                        onClick={() => {
+                          handleExplore(item);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+        )
+      ) : (
+        <ContentInsufficient count={3}></ContentInsufficient>
       )}
       {
         <Transition show={currentReadPhotoId as any}>
@@ -394,46 +430,56 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           </div>
         </Transition>
       }
-      {currentReadPhotoId && (
-        <div
-          className="h-full w-fit flex flex-col gap-8 overflow-hidden m-12 rounded-lg"
-          onMouseMove={() => {
-            setCursorVisible(true);
-          }}
-          onMouseLeave={() => {
-            setCursorVisible(false);
-          }}
-          ref={(el) => {
-            if (currentReadPhotoId) {
-              scrollContainer.current = el;
-            }
-          }}
-        >
+      {currentReadPhotoId ? (
+        data.find(
+          (item: any) => item.id + "" === getIdFromKey(currentReadPhotoId)
+        ).children?.length >= 3 ? (
           <div
-            ref={(el) => {
-              dualScrollRef.current[0] = el;
+            className="h-full w-fit flex flex-col gap-8 overflow-hidden m-12 rounded-lg"
+            onMouseMove={() => {
+              setCursorVisible(true);
             }}
-            className="w-fit flex-1 flex gap-8 overflow-hidden"
-          >
-            {Array.from({ length: repeatCount }, (_, i) =>
-              getCurrentReadPhotoChildren("front")
-            )
-              .flat()
-              .map((item: any, index) => daulScrollItem(item, index))}
-          </div>
-          <div
-            ref={(el) => {
-              dualScrollRef.current[1] = el;
+            onMouseLeave={() => {
+              setCursorVisible(false);
             }}
-            className="w-fit flex-1 flex gap-8 overflow-hidden"
+            ref={(el) => {
+              if (currentReadPhotoId) {
+                scrollContainer.current = el;
+              }
+            }}
           >
-            {Array.from({ length: repeatCount }, (_, i) =>
-              getCurrentReadPhotoChildren("back")
-            )
-              .flat()
-              .map((item: any, index) => daulScrollItem(item, index))}
+            <div
+              ref={(el) => {
+                dualScrollRef.current[0] = el;
+              }}
+              className="w-fit flex-1 flex gap-8 overflow-hidden"
+            >
+              {Array.from({ length: repeatCount }, (_, i) =>
+                getCurrentReadPhotoChildren("front")
+              )
+                .flat()
+                .map((item: any, index) => daulScrollItem(item, index))}
+            </div>
+            <div
+              ref={(el) => {
+                dualScrollRef.current[1] = el;
+              }}
+              className="w-fit flex-1 flex gap-8 overflow-hidden"
+            >
+              {Array.from({ length: repeatCount }, (_, i) =>
+                getCurrentReadPhotoChildren("back")
+              )
+                .flat()
+                .map((item: any, index) => daulScrollItem(item, index))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            <ContentInsufficient count={3}></ContentInsufficient>
+          </>
+        )
+      ) : (
+        <></>
       )}
 
       {currentDirection === "x" && init && (

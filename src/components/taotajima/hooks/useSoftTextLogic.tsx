@@ -11,6 +11,7 @@ export default function useSoftTextLogic(props: any) {
   const currentSoftTextInst = useRef<any>(null);
   // 文字飘动
   useEffect(() => {
+    if (!data || !data.children || data.children.length === 0) return;
     const textGenerate = () => {
       engine.current?.destroy();
       engine.current = new Engine(
@@ -150,8 +151,8 @@ export default function useSoftTextLogic(props: any) {
     const cb = () => {
       textGenerate()(
         `#${(1).toString().padStart(3, "0")}  /  ${data.children[0].tag}`,
-        data.children[0].title,
-        data.children[0].content
+        data.children[0].chineseTitle || data.children[0].englishTitle,
+        data.children[0].introduce
       ).toShow("next");
     };
     resizeObserverCb.current.push(cb);
@@ -161,7 +162,7 @@ export default function useSoftTextLogic(props: any) {
         (c: any) => c !== cb
       );
     };
-  }, []);
+  }, [data]);
   return {
     currentSoftTextInst,
     generateSoftText,

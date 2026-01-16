@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 
 export default function useWheelLogic(props: any) {
   const {
+    data,
     currentDirection,
     scrollContainerItems,
     currentReadPhotoId,
@@ -16,6 +17,8 @@ export default function useWheelLogic(props: any) {
   } = props;
   useGSAP(
     () => {
+      if (data.length < 3) return;
+      if (!scrollContainer.current) return;
       // 控制滚轮事件
       let wheelTimer: any = null;
       let offset = 0;

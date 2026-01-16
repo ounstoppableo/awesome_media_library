@@ -18,6 +18,14 @@ import useSoftTextLogic from "./hooks/useSoftTextLogic";
 import useResizeLogic from "./hooks/useResizeLogic";
 import usePhotoChangeLogic from "./hooks/usePhotoChangeLogic";
 import useOtherAnimateLogic from "./hooks/useOtherAnimateLogic";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setTaotajimaLoading } from "@/store/loading/loading-slice";
+import {
+  selectTaojimaCurrentId,
+  setOpen,
+} from "@/store/taotajimaControl/taotajima-slice";
+import request from "@/utils/fetch";
+import ContentInsufficient from "../contentInsufficient";
 
 /**
  * 操作量：图片尺寸、canvas尺寸(坐标轴尺度)、缩放比例
@@ -39,36 +47,7 @@ export default function Taotajima() {
   const instagramBtnRef = useRef<any>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const introduceRef = useRef<HTMLDivElement>(null);
-  const [data, setData] = useState({
-    id: "taotajima",
-    title: "taotajima",
-    children: [
-      {
-        id: "1",
-        img: `/video.mp4`,
-        title: "Magic",
-        tag: "client work",
-        content:
-          "Planned and produced a short video that was exhibited in NHK (Japan Broadcasting Corporation)'s TECHNE. This experimental video captures nothing but the movements of the line of sight of living creatures. It explored the idea that each individual creature's characteristic might remain, even in a video with just these movements and sound effects.",
-      },
-      {
-        id: "2",
-        img: `/magic.jpg`,
-        title: "MN concept movie",
-        tag: "private work",
-        content:
-          "Directed and produced a concept movie for the MN cosmetic brand.Instead of giving many instructions to the female models, the autonomy of each of the three models was respected and enhanced.",
-      },
-      {
-        id: "3",
-        img: `/video.mp4`,
-        title: "TELE-PLAY - prism",
-        tag: "client work",
-        content:
-          "Directed and produced the music video “prism” for TELE-PLAY.The new song by TELE-PLAY, a music unit that explores how music can be performed in a pandemic environment. It expresses the importance of connecting with others and the tranquility of gazing into one's inner world",
-      },
-    ],
-  });
+  const [data, setData] = useState<any>(null);
   const { resizeObserverCb } = useResizeLogic();
 
   const {
@@ -108,8 +87,9 @@ export default function Taotajima() {
           `#${(current + 1).toString().padStart(3, "0")}  /  ${
             data.children[current].tag
           }`,
-          data.children[current].title,
-          data.children[current].content,
+          data.children[current].chineseTitle ||
+            data.children[current].englishTitle,
+          data.children[current].introduce,
           "prev"
         )
         .toShow("prev")
@@ -132,8 +112,9 @@ export default function Taotajima() {
           `#${(current + 1).toString().padStart(3, "0")}  /  ${
             data.children[current].tag
           }`,
-          data.children[current].title,
-          data.children[current].content,
+          data.children[current].chineseTitle ||
+            data.children[current].englishTitle,
+          data.children[current].introduce,
           "next"
         )
         .toShow("next")
@@ -142,6 +123,21 @@ export default function Taotajima() {
         });
     });
     return promise;
+  };
+
+  const currentId = useAppSelector(selectTaojimaCurrentId);
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    request("/api/category/categoryDetail", {
+      method: "post",
+      body: { id: currentId },
+    }).then((res: any) => {
+      setData(res.data);
+      dispatch(setTaotajimaLoading({ taotajimaLoading: false }));
+    });
+  }, []);
+  const back = () => {
+    dispatch(setOpen({ open: false, id: "" }));
   };
 
   const { sketch } = usePhotoChangeLogic({
@@ -154,216 +150,237 @@ export default function Taotajima() {
 
   return (
     <>
-      <div
-        id="taotajimaSliderContent"
-        className="w-[100dvw] h-[100dvh] relative select-none"
-      >
+      {data ? (
         <div
-          className="w-full h-full relative after:absolute after:inset-0 after:bg-black/40"
-          id="taotajimaSlider"
-        ></div>
-        <div className="absolute inset-0 z-1 flex justify-center items-center flex-col p-[6vmin] pt-[4vmin] cursor-default">
-          <div className="flex text-xl text-white justify-between w-full">
-            <div className=" flex gap-4">
-              <div
-                className="flex cursor-pointer"
-                ref={backBtnRef}
-                onMouseEnter={animatePageToggleBtn.bind(
-                  null,
-                  backBtnRef,
-                  "left",
-                  "enter"
-                )}
-                onMouseLeave={animatePageToggleBtn.bind(
-                  null,
-                  backBtnRef,
-                  "left",
-                  "leave"
-                )}
-              >
-                <svg
-                  viewBox="0 0 35 7"
-                  className="w-12 fill-white arrow origin-right"
-                >
-                  <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
-                </svg>
-                <div className="text-end title text-[2.5vmin]">BACK</div>
-              </div>
-              <div className="w-[.0625rem] h-[4vmin] bg-white/80 rotate-20"></div>
-              <div className="select-none text-[2.5vmin]">
-                {data.title.toUpperCase()}
-              </div>
-            </div>
-            <div className="flex text-2xl gap-4 h-fit">
-              <div className="select-none text-[2.5vmin]">Blog</div>
-              <div className="w-[.0625rem] h-[4vmin] bg-white/80 rotate-20"></div>
-              <div className="text-[2.5vmin] cursor-pointer relative after:bottom-0 after:left-0 after:absolute after:border-b-2 after:border-white hover:after:w-full after:transition-all after:w-0">
-                Unstoppable840
-              </div>
-            </div>
-          </div>
-          <div className="absolute top-1/2 left-1/2 -translate-1/2 flex gap-[4vmin] items-center max-w-[50dvw]">
-            <div className=" text-white gap-[4vmin] flex flex-col items-start">
-              <div
-                className=" gap-[2vmin] flex flex-col items-start relative"
-                ref={contentRef}
-              >
-                <div className="flex text-[2vmin] gap-[2vmin] h-fit ">
-                  <div className="opacity-0">
-                    #{(current + 1).toString().padStart(3, "0")}
-                  </div>
-                  <div className="w-[.0625rem] h-[4vmin] rotate-20 opacity-0"></div>
-                  <div className="opacity-0">{data.children[current].tag}</div>
-                </div>
-                <div className="text-[4vmin] opacity-0">
-                  {data.children[current].title}
-                </div>
+          id="taotajimaSliderContent"
+          className="w-full h-full relative select-none"
+        >
+          <div
+            className="w-full h-full relative after:absolute after:inset-0 after:bg-black/40"
+            id="taotajimaSlider"
+          ></div>
+          <div className="absolute inset-0 z-1 flex justify-center items-center flex-col p-[6vmin] pt-[4vmin] cursor-default">
+            <div className="flex text-xl text-white justify-between w-full">
+              <div className=" flex gap-4">
                 <div
-                  className="line-clamp-4 opacity-0 text-[1.5vmin] leading-[3.75vmin]"
-                  ref={introduceRef}
+                  className="flex cursor-pointer"
+                  ref={backBtnRef}
+                  onMouseEnter={animatePageToggleBtn.bind(
+                    null,
+                    backBtnRef,
+                    "left",
+                    "enter"
+                  )}
+                  onMouseLeave={animatePageToggleBtn.bind(
+                    null,
+                    backBtnRef,
+                    "left",
+                    "leave"
+                  )}
                 >
-                  {data.children[current].content}
+                  <svg
+                    viewBox="0 0 35 7"
+                    className="w-12 fill-white arrow origin-right"
+                  >
+                    <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
+                  </svg>
+                  <div className="text-end title text-[2.5vmin]" onClick={back}>
+                    BACK
+                  </div>
+                </div>
+                <div className="w-[.0625rem] h-[4vmin] bg-white/80 rotate-20"></div>
+                <div className="select-none text-[2.5vmin]">
+                  {(data.chineseTitle || data.englishTitle).toUpperCase()}
                 </div>
               </div>
-              <div
-                className="text-[2vmin] flex gap-[2vmin] items-center"
-                ref={shareRef}
-              >
-                <div>Share:</div>
-                <div className="flex gap-[2vmin]">
-                  <Twitter
-                    ref={twitterBtnRef}
-                    onMouseEnter={animateBtn.bind(null, twitterBtnRef)}
-                    className="cursor-pointer w-[3vmin]"
-                  />
-                  <Instagram
-                    ref={instagramBtnRef}
-                    onMouseEnter={animateBtn.bind(null, instagramBtnRef)}
-                    className="cursor-pointer w-[3vmin]"
-                  />
+              <div className="flex text-2xl gap-4 h-fit">
+                <div className="select-none text-[2.5vmin]">Blog</div>
+                <div className="w-[.0625rem] h-[4vmin] bg-white/80 rotate-20"></div>
+                <div className="text-[2.5vmin] cursor-pointer relative after:bottom-0 after:left-0 after:absolute after:border-b-2 after:border-white hover:after:w-full after:transition-all after:w-0">
+                  Unstoppable840
                 </div>
               </div>
             </div>
+            {data.children.length >= 1 ? (
+              <div className="absolute top-1/2 left-1/2 -translate-1/2 flex gap-[4vmin] items-center max-w-[50dvw]">
+                <div className=" text-white gap-[4vmin] flex flex-col items-start">
+                  <div
+                    className=" gap-[2vmin] flex flex-col items-start relative"
+                    ref={contentRef}
+                  >
+                    <div className="flex text-[2vmin] gap-[2vmin] h-fit ">
+                      <div className="opacity-0">
+                        #{(current + 1).toString().padStart(3, "0")}
+                      </div>
+                      <div className="w-[.0625rem] h-[4vmin] rotate-20 opacity-0"></div>
+                      <div className="opacity-0">
+                        {data.children[current].tag}
+                      </div>
+                    </div>
+                    <div className="text-[4vmin] opacity-0">
+                      {data.children[current].chineseTitle ||
+                        data.children[current].englishTitle}
+                    </div>
+                    <div
+                      className="opacity-0 text-[1.5vmin] leading-[3.75vmin]"
+                      ref={introduceRef}
+                    >
+                      {data.children[current].introduce}
+                    </div>
+                  </div>
+                  <div
+                    className="text-[2vmin] flex gap-[2vmin] items-center"
+                    ref={shareRef}
+                  >
+                    <div>Share:</div>
+                    <div className="flex gap-[2vmin]">
+                      <Twitter
+                        ref={twitterBtnRef}
+                        onMouseEnter={animateBtn.bind(null, twitterBtnRef)}
+                        className="cursor-pointer w-[3vmin]"
+                      />
+                      <Instagram
+                        ref={instagramBtnRef}
+                        onMouseEnter={animateBtn.bind(null, instagramBtnRef)}
+                        className="cursor-pointer w-[3vmin]"
+                      />
+                    </div>
+                  </div>
+                </div>
 
-            <div className="dark" ref={playRef}>
-              <InteractiveHoverButton
-                className="text-xl w-[20vmin] h-[20vmin] aspect-1/1 z-20 opacity-80"
-                text="play"
-                defaultColor="white"
-                border={false}
-                hoverColor="black"
-                dotPosition={"50%"}
-              />
-            </div>
-          </div>
-          <div className="flex-1"></div>
-          <div className="relative text-white text-xl flex gap-[10dvw] max-w-[50dvw] select-none">
-            {
-              <div
-                className="relative flex flex-col items-end w-[20dvw] cursor-pointer"
-                ref={leftBtnRef}
-                onMouseEnter={() => {
-                  if (togglePageControl.current) return;
-                  animatePageToggleBtn(leftBtnRef, "left", "enter");
-                }}
-                onMouseLeave={() => {
-                  if (togglePageControl.current) return;
-                  animatePageToggleBtn(leftBtnRef, "left", "leave");
-                }}
-                onClick={async () => {
-                  if (togglePageControl.current) return;
-                  clearCb("prev");
-                  togglePageControl.current = sketch.current.prev();
-                  togglePageControl.current.then(async (current: number) => {
-                    await prevCb(current);
-                    togglePageControl.current = null;
-                  });
-                }}
-              >
-                {
-                  <>
-                    <div
-                      className="pageCount text-[2vmin]"
-                      key={current === 0 ? data.children.length : current}
-                    >
-                      #
-                      {(current === 0 ? data.children.length : current)
-                        .toString()
-                        .padStart(3, "0")}
-                    </div>
-                    <div className="truncate w-[80%] title text-right text-[2.5vmin]">
-                      {
-                        data.children[
-                          current === 0 ? data.children.length - 1 : current - 1
-                        ].title
-                      }
-                    </div>
-                    <svg
-                      viewBox="0 0 360 7"
-                      className="fill-white absolute bottom-[1vmin] arrow origin-right"
-                    >
-                      <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
-                    </svg>
-                  </>
-                }
+                <div className="dark" ref={playRef}>
+                  <InteractiveHoverButton
+                    className="text-xl w-[20vmin] h-[20vmin] aspect-1/1 z-20 opacity-80"
+                    text="play"
+                    defaultColor="white"
+                    border={false}
+                    hoverColor="black"
+                    dotPosition={"50%"}
+                  />
+                </div>
               </div>
-            }
-            {
-              <div
-                className="relative flex flex-col items-start w-[20dvw] cursor-pointer"
-                ref={rightBtnRef}
-                onMouseEnter={() => {
-                  if (togglePageControl.current) return;
-                  animatePageToggleBtn(rightBtnRef, "right", "enter");
-                }}
-                onMouseLeave={() => {
-                  if (togglePageControl.current) return;
-                  animatePageToggleBtn(rightBtnRef, "right", "leave");
-                }}
-                onClick={async () => {
-                  if (togglePageControl.current) return;
-                  clearCb("next");
-                  togglePageControl.current = sketch.current.next();
-                  togglePageControl.current.then(async (current: number) => {
-                    await nextCb(current);
-                    togglePageControl.current = null;
-                  });
-                }}
-              >
-                {
-                  <>
-                    <div
-                      className="pageCount text-[2vmin]"
-                      key={current + 2 > data.children.length ? 1 : current + 2}
-                    >
-                      #
-                      {(current + 2 > data.children.length ? 1 : current + 2)
-                        .toString()
-                        .padStart(3, "0")}
-                    </div>
-                    <div className="truncate w-[80%] title text-[2.5vmin]">
-                      {
-                        data.children[
+            ) : (
+              <ContentInsufficient count={1}></ContentInsufficient>
+            )}
+            <div className="flex-1"></div>
+            <div className="relative text-white text-xl flex gap-[10dvw] max-w-[50dvw] select-none">
+              {
+                <div
+                  className="relative flex flex-col items-end w-[20dvw] cursor-pointer"
+                  ref={leftBtnRef}
+                  onMouseEnter={() => {
+                    if (togglePageControl.current) return;
+                    animatePageToggleBtn(leftBtnRef, "left", "enter");
+                  }}
+                  onMouseLeave={() => {
+                    if (togglePageControl.current) return;
+                    animatePageToggleBtn(leftBtnRef, "left", "leave");
+                  }}
+                  onClick={async () => {
+                    if (togglePageControl.current) return;
+                    clearCb("prev");
+                    togglePageControl.current = sketch.current.prev();
+                    togglePageControl.current.then(async (current: number) => {
+                      await prevCb(current);
+                      togglePageControl.current = null;
+                    });
+                  }}
+                >
+                  {
+                    <>
+                      <div
+                        className="pageCount text-[2vmin]"
+                        key={current === 0 ? data.children.length : current}
+                      >
+                        #
+                        {(current === 0 ? data.children.length : current)
+                          .toString()
+                          .padStart(3, "0")}
+                      </div>
+                      <div className="truncate w-[80%] title text-right text-[2.5vmin]">
+                        {data.children[
+                          current === 0 ? data.children.length - 1 : current - 1
+                        ].chineseTitle ||
+                          data.children[
+                            current === 0
+                              ? data.children.length - 1
+                              : current - 1
+                          ].englishTitle}
+                      </div>
+                      <svg
+                        viewBox="0 0 360 7"
+                        className="fill-white absolute bottom-[1vmin] arrow origin-right"
+                      >
+                        <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
+                      </svg>
+                    </>
+                  }
+                </div>
+              }
+              {
+                <div
+                  className="relative flex flex-col items-start w-[20dvw] cursor-pointer"
+                  ref={rightBtnRef}
+                  onMouseEnter={() => {
+                    if (togglePageControl.current) return;
+                    animatePageToggleBtn(rightBtnRef, "right", "enter");
+                  }}
+                  onMouseLeave={() => {
+                    if (togglePageControl.current) return;
+                    animatePageToggleBtn(rightBtnRef, "right", "leave");
+                  }}
+                  onClick={async () => {
+                    if (togglePageControl.current) return;
+                    clearCb("next");
+                    togglePageControl.current = sketch.current.next();
+                    togglePageControl.current.then(async (current: number) => {
+                      await nextCb(current);
+                      togglePageControl.current = null;
+                    });
+                  }}
+                >
+                  {
+                    <>
+                      <div
+                        className="pageCount text-[2vmin]"
+                        key={
+                          current + 2 > data.children.length ? 1 : current + 2
+                        }
+                      >
+                        #
+                        {(current + 2 > data.children.length ? 1 : current + 2)
+                          .toString()
+                          .padStart(3, "0")}
+                      </div>
+                      <div className="truncate w-[80%] title text-[2.5vmin]">
+                        {data.children[
                           current + 1 > data.children.length - 1
                             ? 1
                             : current + 1
-                        ].title
-                      }
-                    </div>
-                    <svg
-                      viewBox="0 0 360 7"
-                      className="fill-white absolute bottom-[1vmin] arrow origin-left"
-                    >
-                      <polyline points="0,7 360,7 339,0 339,6 0,6"></polyline>
-                    </svg>
-                  </>
-                }
-              </div>
-            }
+                        ].chineseTitle ||
+                          data.children[
+                            current + 1 > data.children.length - 1
+                              ? 1
+                              : current + 1
+                          ].englishTitle}
+                      </div>
+                      <svg
+                        viewBox="0 0 360 7"
+                        className="fill-white absolute bottom-[1vmin] arrow origin-left"
+                      >
+                        <polyline points="0,7 360,7 339,0 339,6 0,6"></polyline>
+                      </svg>
+                    </>
+                  }
+                </div>
+              }
+            </div>
           </div>
+          <div className="absolute inset-0 z-0" ref={softText}></div>
         </div>
-        <div className="absolute inset-0 z-0" ref={softText}></div>
-      </div>
+      ) : (
+        <></>
+      )}
     </>
   );
 }

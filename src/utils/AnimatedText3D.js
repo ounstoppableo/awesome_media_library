@@ -83,7 +83,6 @@ export class AnimatedText3D extends Object3D {
         }
 
         const wordCharCount = nextSpace - index > 0 ? nextSpace - index + 1 : 1;
-
         if (this.basePositionX + wordCharCount * size >= xEdge) {
           this.basePositionX = 0;
           // 查看下行的底部是否越线，一般越过一个size和一个lineHeight，但由于最顶部和最下部也有一半的lineHeight，所以总共减去两个lineHeight

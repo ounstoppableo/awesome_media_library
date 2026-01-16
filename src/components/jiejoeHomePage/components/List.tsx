@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 export default function List(props: any) {
-  const { data, windowTrackRef } = props;
+  const { data, windowTrackRef, clickCb } = props;
   const container = useRef<any>(null);
   const [currentMouseHoverIndex, setCurrentMouseHoverIndex] = useState(-1);
   const imageRef = useRef<any>(null);
@@ -163,6 +163,7 @@ export default function List(props: any) {
             ref={(el) => {
               items.current[index] = el;
             }}
+            onClick={() => clickCb(item)}
             className={`border-1 ${
               index === 0 ? "border-t-2" : index === 5 ? "border-b-2" : ""
             } border-white flex-1 border-x-0  cursor-pointer relative`}

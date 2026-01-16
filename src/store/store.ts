@@ -1,12 +1,16 @@
 import { Action, ThunkAction, configureStore } from "@reduxjs/toolkit";
 
-import testReducer from "./test/test-slice";
+import loadingReducer from "./loading/loading-slice";
+import sienaControlReducer from "./sienaControl/sinaControl-slice";
+import taotajimaReducer from "./taotajimaControl/taotajima-slice";
 
 // ...
 export const makeStore = () => {
   return configureStore({
     reducer: {
-      test: testReducer,
+      loading: loadingReducer,
+      sienaControl: sienaControlReducer,
+      taotajimaControl: taotajimaReducer,
     },
   });
 };

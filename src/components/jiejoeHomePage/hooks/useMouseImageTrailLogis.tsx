@@ -124,7 +124,7 @@ export default function useMouseImageTrailLogis(props: any) {
               <animate
                 attributeName="dy"
                 values="700; 0"
-                dur="6s"
+                dur="12s"
                 repeatCount="indefinite"
                 calcMode="linear"
               />
@@ -141,7 +141,7 @@ export default function useMouseImageTrailLogis(props: any) {
               <animate
                 attributeName="dy"
                 values="0; -700"
-                dur="6s"
+                dur="12s"
                 repeatCount="indefinite"
                 calcMode="linear"
               />
@@ -158,7 +158,7 @@ export default function useMouseImageTrailLogis(props: any) {
               <animate
                 attributeName="dx"
                 values="490; 0"
-                dur="6s"
+                dur="12s"
                 repeatCount="indefinite"
                 calcMode="linear"
               />
@@ -175,7 +175,7 @@ export default function useMouseImageTrailLogis(props: any) {
               <animate
                 attributeName="dx"
                 values="0; -490"
-                dur="6s"
+                dur="12s"
                 repeatCount="indefinite"
                 calcMode="linear"
               />

@@ -5,18 +5,19 @@ import { SplitText } from "gsap/all";
 import { useEffect, useRef, useState } from "react";
 
 export default function RandomContent(props: any) {
-  const { data } = props;
+  const { data, clickCb } = props;
   const imageSwiperContainer = useRef<any>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const titleRef = useRef<any>(null);
   const introduceRef = useRef<any>(null);
+  const charsSplit = useRef<any>(null);
   useEffect(() => {}, []);
   useEffect(() => {
-    const split = SplitText.create(titleRef.current);
+    charsSplit.current = SplitText.create(titleRef.current);
     const tw = gsap.timeline();
     const tw2 = gsap.timeline();
 
-    split.chars.forEach((char) => {
+    charsSplit.current.chars.forEach((char: any) => {
       tw.fromTo(
         char,
         {
@@ -31,13 +32,12 @@ export default function RandomContent(props: any) {
       introduceRef.current,
       {
         opacity: 0,
-        x: "-100%",
       },
-      { opacity: 1, x: 0 }
+      { opacity: 1 }
     );
 
     return () => {
-      split.revert();
+      charsSplit.current?.revert();
       tw.kill();
       tw2.kill();
     };
@@ -72,6 +72,9 @@ export default function RandomContent(props: any) {
           text="Explore"
           defaultColor="bg-transparent"
           hoverColor="white"
+          onClick={() => {
+            clickCb(data[currentIndex]);
+          }}
         />
       </div>
       <div
@@ -82,7 +85,10 @@ export default function RandomContent(props: any) {
           className="flex-1"
           images={data.map((item: any) => item.img)}
           container={imageSwiperContainer}
-          getCurrentIndex={setCurrentIndex}
+          getCurrentIndex={(currentIndex: number) => {
+            charsSplit.current?.revert();
+            setCurrentIndex(currentIndex);
+          }}
         />
       </div>
     </>

@@ -20,165 +20,28 @@ import useMouseImageTrailLogis from "./hooks/useMouseImageTrailLogis";
 import useSmoothScrollerLogic from "./hooks/useSmoothScrollerLogic";
 import usePortfolioLogic from "./hooks/usePortfolioLogic";
 import RandomContent from "./components/RandomContent";
-import { selectValue } from "@/store/test/test-slice";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  selectTaojimaControlOpenStatus,
+  setOpen,
+} from "@/store/taotajimaControl/taotajima-slice";
+import ContentInsufficient from "../contentInsufficient";
+import useAccessData from "./hooks/useAccessData";
 
 export default function JiejoeHomePage() {
+  const dispatch = useAppDispatch();
+  const taojimaOpen = useAppSelector(selectTaojimaControlOpenStatus);
+  const handleExplore = (info: any) => {
+    dispatch(setOpen({ open: !taojimaOpen, id: info.id }));
+  };
   const { resizeObserver, resizeObserverCb } = useResizeLogic();
   const { smoothWrapper, smoothContent } = useSmoothScrollerLogic();
   const { funBoardJsx } = useFunBoardLogic();
   const { brightBallJsx } = useBrightBallLogic();
   const { avatarJsx } = useAvatarLogic({ resizeObserverCb });
   const { fireworksJsx } = useFireWorksLogic();
-  // const value = useAppSelector(selectValue);
-  // useEffect(() => {
-  //   console.log(value);
-  // }, []);
-  const [data, setData] = useState([
-    {
-      id: 1,
-      img: "/img21.jpg",
-      englishTitle: "Blench Bankai Mashup1",
-      chineseTitle: "死神千年血战宣传片1",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-          quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-          eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-          consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-          suscipit fugiat distinctio officia earum eius quae officiis quis harum
-          animi.`,
-    },
-    {
-      id: 2,
-      img: "/img33.jpg",
-      englishTitle: "Blench Bankai Mashup2",
-      chineseTitle: "死神千年血战宣传片2",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-      suscipit fugiat distinctio officia earum eius quae officiis quis harum
-      animi.`,
-    },
-    {
-      id: 3,
-      img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup3",
-      chineseTitle: "死神千年血战宣传片3",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-      suscipit fugiat distinctio officia earum eius quae officiis quis harum
-      animi.`,
-    },
-    {
-      id: 4,
-      img: "/img33.jpg",
-      englishTitle: "Blench Bankai Mashup4",
-      chineseTitle: "死神千年血战宣传片4",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-      suscipit fugiat distinctio officia earum eius quae officiis quis harum
-      animi.`,
-    },
-    {
-      id: 5,
-      img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup5",
-      chineseTitle: "死神千年血战宣传片5",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-      suscipit fugiat distinctio officia earum eius quae officiis quis harum
-      animi.`,
-    },
-    {
-      id: 6,
-      img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup6",
-      chineseTitle: "死神千年血战宣传片6",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-      suscipit fugiat distinctio officia earum eius quae officiis quis harum
-      animi.`,
-    },
-    {
-      id: 7,
-      img: "/img33.jpg",
-      englishTitle: "Blench Bankai Mashup7",
-      chineseTitle: "死神千年血战宣传片7",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-      suscipit fugiat distinctio officia earum eius quae officiis quis harum
-      animi.`,
-    },
-    {
-      id: 8,
-      img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup8",
-      chineseTitle: "死神千年血战宣传片8",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-      suscipit fugiat distinctio officia earum eius quae officiis quis harum
-      animi.`,
-    },
-    {
-      id: 9,
-      img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup9",
-      chineseTitle: "死神千年血战宣传片9",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-      suscipit fugiat distinctio officia earum eius quae officiis quis harum
-      animi.`,
-    },
-    {
-      id: 10,
-      img: "/img33.jpg",
-      englishTitle: "Blench Bankai Mashup10",
-      chineseTitle: "死神千年血战宣传片10",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-      suscipit fugiat distinctio officia earum eius quae officiis quis harum
-      animi.`,
-    },
-    {
-      id: 11,
-      img: "/Magic.jpg",
-      englishTitle: "Blench Bankai Mashup11",
-      chineseTitle: "死神千年血战宣传片11",
-      date: "2026.1.9",
-      introduce: ` Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto
-      quaerat qui, illo incidunt suscipit fugiat distinctio officia earum
-      eius quae officiis quis harum animi. Lorem, ipsum dolor sit amet
-      consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt
-      suscipit fugiat distinctio officia earum eius quae officiis quis harum
-      animi.`,
-    },
-  ]);
+
+  const { data } = useAccessData();
   const { footerJsx } = useFooterLogic();
   const { mouseImageTrailJsx } = useMouseImageTrailLogis({
     data,
@@ -277,7 +140,19 @@ export default function JiejoeHomePage() {
             ></Title>
 
             <div className="w-full h-[200dvh] flex flex-col">
-              <List data={data} windowTrackRef={smoothWrapper}></List>
+              {data.length < 6 ? (
+                <div className="w-full h-full flex justify-center items-center dark">
+                  <ContentInsufficient count={6}></ContentInsufficient>
+                </div>
+              ) : (
+                <List
+                  data={data}
+                  windowTrackRef={smoothWrapper}
+                  clickCb={(info: any) => {
+                    handleExplore(info);
+                  }}
+                ></List>
+              )}
             </div>
             <Title
               title={"RANDOM"}
@@ -291,7 +166,18 @@ export default function JiejoeHomePage() {
               }}
             ></Title>
             <div className="w-full h-[100dvh] flex items-center relative">
-              <RandomContent data={data}></RandomContent>
+              {data.length < 6 ? (
+                <div className="w-full h-full flex justify-center items-center dark">
+                  <ContentInsufficient count={6}></ContentInsufficient>
+                </div>
+              ) : (
+                <RandomContent
+                  data={data}
+                  clickCb={(info: any) => {
+                    handleExplore(info);
+                  }}
+                ></RandomContent>
+              )}
             </div>
             <div className="w-full h-[100dvh]">{mouseImageTrailJsx}</div>
             <div className="w-full">{footerJsx}</div>
