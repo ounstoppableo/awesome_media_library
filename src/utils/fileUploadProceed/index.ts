@@ -10,7 +10,7 @@ _worker.postMessage({
     localStorage.getItem("clientFileIdMapServerFileId") || "{}"
   ),
   hostname: location.hostname,
-  token: localStorage.getItem("Authorization"),
+  token: localStorage.getItem("token"),
 });
 _worker.addEventListener("message", (e) => {
   if (e.data.type === "updateClientFileIdMapServerFileId") {

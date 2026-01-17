@@ -22,7 +22,7 @@ class FetchInterceptor {
 
     // 请求拦截处理（比如添加认证 token）
     if (!finalOptions.headers["Authorization"]) {
-      const token = localStorage.getItem("Authorization");
+      const token = localStorage.getItem("token");
       if (token) {
         finalOptions.headers["Authorization"] = `${token}`;
       }

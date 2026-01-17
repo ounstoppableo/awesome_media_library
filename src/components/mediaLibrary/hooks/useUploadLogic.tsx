@@ -14,6 +14,7 @@ import {
   Plus,
   StopCircle,
   Upload,
+  UploadCloud,
 } from "lucide-react";
 import {
   Dialog,
@@ -31,7 +32,6 @@ import {
   workerListen,
 } from "@/utils/fileUploadProceed/listenerRegister";
 import { ProgressRadial } from "@/components/progress-1";
-import { Button as AntdButton } from "antd";
 import { codeMap } from "@/utils/backendStatus";
 import { wsSend } from "@/utils/clientWsMethod";
 import { WsUploadRequestDataType } from "@/wsConstructor/router/uploadRouter";
@@ -352,7 +352,7 @@ export default function useUploadLogic(props: {
     >
       <DialogTrigger asChild>
         <Button onClick={() => setDialogOpen(true)} className="cursor-pointer">
-          <Upload />
+          <UploadCloud />
           上传
         </Button>
       </DialogTrigger>

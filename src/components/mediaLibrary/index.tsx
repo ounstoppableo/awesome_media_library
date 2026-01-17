@@ -10,6 +10,7 @@ import {
   Play,
   Plus,
   RotateCcw,
+  RotateCcwIcon,
   Search,
   Upload,
 } from "lucide-react";
@@ -30,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/button-1";
 import { useEffect, useRef, useState } from "react";
 import useVitualScrollLogic from "./hooks/useVitualScrollLogic";
 
@@ -462,7 +463,7 @@ export default function MediaLibrary() {
                     });
                   }}
                 >
-                  <RotateCcw />
+                  <RotateCcwIcon />
                   重置
                 </Button>
                 {isAuth && uploadDialogJsx}

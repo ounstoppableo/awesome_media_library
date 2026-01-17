@@ -4,6 +4,6 @@
     "src/wsConstructor/**/*",
     "server.ts"
   ],
-  "exec": "ts-node -r tsconfig-paths/register -P tsconfig.server.json server.ts",
+  "exec": "npx tsx server.ts",
   "ext": "js ts"
 }

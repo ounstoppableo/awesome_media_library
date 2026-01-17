@@ -1,9 +1,9 @@
-import redisPool from "@/lib/redis";
+import redisPool from "../lib/redis";
 import { writeFile } from "fs/promises";
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { WsResponseMsgType, clientError, tokenMapUsername, wsSend } from "..";
-import log from "@/logs/setting";
+import log from "../logs/setting";
 import { resolve } from "path";
 import {
   deleteFile,
@@ -112,6 +112,11 @@ const redisNameSpace = {
 };
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+if (!isFileExist(fileStorePath)) {
+  mkdirSync(fileStorePath);
+}
+log("test");
 
 export default async function uploadRouter(
   ws: WebSocket,

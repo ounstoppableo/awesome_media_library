@@ -9,9 +9,7 @@ export const wsSend = (
   if (socket.readyState !== WebSocket.OPEN) {
     return;
   }
-  socket.send(
-    objectToBuffer({ ...msg, token: localStorage.getItem("Authorization") })
-  );
+  socket.send(objectToBuffer({ ...msg, token: localStorage.getItem("token") }));
 };
 
 let _listener: any = null;
@@ -37,7 +35,7 @@ export const wsListen = (
     const data = event.data;
     try {
       const _data: WsResponseMsgType<any> = bufferToObject(
-        new Uint8Array(await data.arrayBuffer())
+        new Uint8Array(await data.arrayBuffer()) as any
       ) as WsResponseMsgType<any>;
       if (_data.type === "error") {
         message.error({

@@ -1,12 +1,12 @@
 import WebSocket from "ws";
 
-import redisPool from "@/lib/redis";
-import log from "@/logs/setting";
+import redisPool from "../lib/redis";
+import log from "../logs/setting";
 import { clientError, wsSend } from "..";
 import { codeMap, codeMapMsg } from "@/utils/backendStatus";
 import errorStringify from "@/utils/errorStringify";
 import dayjs from "dayjs";
-import { getPool } from "@/lib/db";
+import { getPool } from "../lib/db";
 import { paramsCheck } from "@/utils/paramsCheck";
 
 export type operateType = "mediaInfoEdit";

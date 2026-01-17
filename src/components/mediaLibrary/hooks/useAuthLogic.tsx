@@ -7,7 +7,7 @@ export default function useAuthLogic() {
   const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("Authorization");
+    const token = localStorage.getItem("token");
     token &&
       request("/api/auth").then((res: CommonResponse) => {
         if (res.code === codeMap.success) {
