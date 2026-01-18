@@ -2,6 +2,7 @@ import { RefObject, useEffect, useRef } from "react";
 import { splitText, animate as animejsAnimate, stagger } from "animejs";
 
 export default function useOtherAnimateLogic(props: any) {
+  const { data } = props;
   const leftBtnRef = useRef<HTMLDivElement>(null);
   const rightBtnRef = useRef<HTMLDivElement>(null);
   const animeObj = useRef<any>({});
@@ -107,6 +108,7 @@ export default function useOtherAnimateLogic(props: any) {
   const shareRef = useRef<any>(null);
   const playRef = useRef<any>(null);
   useEffect(() => {
+    if (!data || !data.children || data.children.length === 0) return;
     generateAnimateOpacity([
       splitRef,
       shareRef,
@@ -114,7 +116,7 @@ export default function useOtherAnimateLogic(props: any) {
       leftBtnRef,
       rightBtnRef,
     ]);
-  }, []);
+  }, [data]);
 
   return {
     animateOpacity,

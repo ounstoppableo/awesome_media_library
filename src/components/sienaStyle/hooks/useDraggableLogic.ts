@@ -1,5 +1,5 @@
 import useMoveCursor from "@/hooks/useMoveCursor";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { Draggable, InertiaPlugin } from "gsap/all";
 import { createTimeline, stagger, splitText } from "animejs";
@@ -24,9 +24,11 @@ export default function useDraggableLogic(props: any) {
     gap,
   } = props;
   const dragInst = useRef<any>(null);
-  const { form, cursor, setForm, setCursorVisible } = useMoveCursor({
-    currentDirection,
-  });
+  const [form, setForm] = useState<"default" | "mousedown" | "up" | "down">(
+    "default"
+  );
+  const [cursorVisible, setCursorVisible] = useState(false);
+
   const { contextSafe } = useGSAP({ scope: scrollWrapper });
   useGSAP(
     () => {
@@ -43,24 +45,26 @@ export default function useDraggableLogic(props: any) {
 
       const trickerQueue = [
         () => {
-          gsap.set(dualScrollRef.current[0], {
-            [currentDirection]: "+=1",
-            modifiers: {
-              [currentDirection]: function (offset) {
-                return loop.current(offset) + "px";
+          dualScrollRef.current[0] &&
+            gsap.set(dualScrollRef.current[0], {
+              [currentDirection]: "+=1",
+              modifiers: {
+                [currentDirection]: function (offset) {
+                  return loop.current(offset) + "px";
+                },
               },
-            },
-          });
+            });
         },
         () => {
-          gsap.set(dualScrollRef.current[1], {
-            [currentDirection]: "-=1",
-            modifiers: {
-              [currentDirection]: function (offset) {
-                return loop.current(offset) + "px";
+          dualScrollRef.current[1] &&
+            gsap.set(dualScrollRef.current[1], {
+              [currentDirection]: "-=1",
+              modifiers: {
+                [currentDirection]: function (offset) {
+                  return loop.current(offset) + "px";
+                },
               },
-            },
-          });
+            });
         },
       ];
 
@@ -328,27 +332,33 @@ export default function useDraggableLogic(props: any) {
     }
   );
 
+  const splits = useRef<any>(null);
   const textSplitAntiShake = useRef<any>(null);
   const textSplitTimeLine = useRef<any>(createTimeline());
   useEffect(() => {
-    const textContainer =
-      scrollContainerItems.current[currentIndex]?.querySelector(".photoTitle");
-    if (!textContainer) return;
     if (textSplitAntiShake.current) clearTimeout(textSplitAntiShake.current);
-    const splits = splitText(textContainer, {
-      chars: {
-        wrap: "clip",
-        clone: "bottom",
-      },
-    });
     textSplitAntiShake.current = setTimeout(() => {
+      textSplitTimeLine.current.reset();
+      textSplitTimeLine.current.remove(splits.current?.chars);
+      splits.current?.revert();
+      const textContainer =
+        scrollContainerItems.current[currentIndex]?.querySelector(
+          ".photoTitle"
+        );
+      if (!textContainer) return;
+      splits.current = splitText(textContainer, {
+        chars: {
+          wrap: "clip",
+          clone: "bottom",
+        },
+      });
       textSplitTimeLine.current.add(
-        splits.chars,
+        splits.current.chars,
         {
           y: "-100%",
           loop: true,
-          loopDelay: 350,
-          duration: 750,
+          loopDelay: 500,
+          duration: 1000,
           ease: "inOut(2)",
         },
         stagger(150, { from: "center" })
@@ -356,9 +366,16 @@ export default function useDraggableLogic(props: any) {
     }, 2000);
     return () => {
       textSplitTimeLine.current.reset();
-      textSplitTimeLine.current.remove(splits.chars);
-      splits.revert();
+      textSplitTimeLine.current.remove(splits.current?.chars);
+      splits.current?.revert();
     };
   }, [currentIndex]);
-  return { cursor, handleChangeCurrent, handleControlCursor, setCursorVisible };
+  return {
+    cursorVisible,
+    form,
+    setForm,
+    handleChangeCurrent,
+    handleControlCursor,
+    setCursorVisible,
+  };
 }

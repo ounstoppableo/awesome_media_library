@@ -8,6 +8,7 @@ import {
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 
 import fontFile from "@/utils/fontFile";
+import { scaleNumber } from "./convention";
 
 const fontLoader = new FontLoader();
 const font = fontLoader.parse(fontFile);
@@ -41,21 +42,52 @@ export class AnimatedText3D extends Object3D {
       xEdge = 9999,
       yEdge = 9999,
       basicY = 0,
+      floatX = 0,
     } = {}
   ) {
     super();
+
+    this.floatX = floatX;
     this.position.y = basicY;
     this.containerBasicY = basicY;
     this.basePositionX = 0;
     this.basePositionY = 0;
     this.size = size;
-
+    text = text.replace(/[\s,\n]+/g, " ");
     const letters = [...text];
     this.overflow = null;
     let spaceCount = 0;
+    this.textScaleToFit = 0.7;
+    this.wrapXCount = undefined;
+
+    const refChar = "a";
+    const refCharGeom = new THREE.ShapeGeometry(
+      font.generateShapes(refChar, size, 1)
+    );
+
+    refCharGeom.computeBoundingBox();
+
     const createMesh = (letter) => {
-      const geom = new ShapeGeometry(font.generateShapes(letter, size, 1));
+      const shape = font.generateShapes(letter, size, 1);
+      if (shape.length == 0) return;
+      const geom = new ShapeGeometry(shape);
       geom.computeBoundingBox();
+
+      // threejs char size fit browser char size
+      if (/[\u4E00-\u9FFF]/.test(letter)) {
+        const realHeight = geom.boundingBox.max.y - geom.boundingBox.min.y;
+        const scale = (size / realHeight) * this.textScaleToFit;
+        geom.scale(scale, scale, 1);
+      } else {
+        geom.scale(this.textScaleToFit, this.textScaleToFit, 1);
+      }
+
+      if (/[\u4E00-\u9FFF]/.test(letter)) {
+        geom.translate(0, -geom.boundingBox.max.y, 0);
+      } else {
+        geom.translate(0, -refCharGeom.boundingBox.max.y, 0);
+      }
+
       const mat = new MeshBasicMaterial({
         color,
         opacity: 0,
@@ -83,13 +115,16 @@ export class AnimatedText3D extends Object3D {
         }
 
         const wordCharCount = nextSpace - index > 0 ? nextSpace - index + 1 : 1;
-        if (this.basePositionX + wordCharCount * size >= xEdge) {
+
+        if (
+          this.basePositionX + wordCharCount * size * this.textScaleToFit >=
+          xEdge
+        ) {
+          this.basePositionY -= lineHeight;
           this.basePositionX = 0;
-          // 查看下行的底部是否越线，一般越过一个size和一个lineHeight，但由于最顶部和最下部也有一半的lineHeight，所以总共减去两个lineHeight
+          if (!this.wrapXCount) this.wrapXCount = index;
           if (
-            Math.abs(
-              this.basePositionY - lineHeight - lineHeight - size - basicY
-            ) >= yEdge &&
+            Math.abs(this.basePositionY) + size >= yEdge &&
             typeof this.overflow !== "number"
           ) {
             this.overflow = index - spaceCount;
@@ -97,19 +132,35 @@ export class AnimatedText3D extends Object3D {
             this.children[this.overflow - 1].geometry = new ShapeGeometry(
               font.generateShapes(".", size, 1)
             );
+            this.children[this.overflow - 1].geometry.translate(
+              0,
+              -refCharGeom.boundingBox.max.y,
+              0
+            );
             this.children[this.overflow - 2].geometry.dispose();
             this.children[this.overflow - 2].geometry = new ShapeGeometry(
               font.generateShapes(".", size, 1)
+            );
+            this.children[this.overflow - 2].geometry.translate(
+              0,
+              -refCharGeom.boundingBox.max.y,
+              0
             );
             this.children[this.overflow - 3].geometry.dispose();
             this.children[this.overflow - 3].geometry = new ShapeGeometry(
               font.generateShapes(".", size, 1)
             );
+            this.children[this.overflow - 3].geometry.translate(
+              0,
+              -refCharGeom.boundingBox.max.y,
+              0
+            );
           }
-          this.basePositionY -= lineHeight;
         }
       } else {
-        this.add(createMesh(letter));
+        const mesh = createMesh(letter);
+        if (!mesh) return;
+        this.add(mesh);
       }
     });
 
@@ -177,6 +228,7 @@ export class AnimatedText3D extends Object3D {
 
       0
     );
+
     this.children.forEach((letter, index) => {
       if (typeof this.overflow === "number" && this.overflow <= index) return;
       tm.fromTo(
@@ -184,10 +236,16 @@ export class AnimatedText3D extends Object3D {
         { y: letter.userData.baseY },
         {
           y:
-            letter.userData.baseY +
             Math.sin(
-              index * 0.1 + ((Math.PI * letter.userData.baseY) % (Math.PI / 4))
-            ),
+              scaleNumber(
+                (this.floatX / (this.wrapXCount || this.children.length * 2)) *
+                  (index % (this.wrapXCount || this.children.length * 2)),
+                0,
+                this.floatX,
+                Math.PI / 3,
+                2 * Math.PI + Math.PI / 3
+              )
+            ) / 2,
         },
 
         0
@@ -206,7 +264,18 @@ export class AnimatedText3D extends Object3D {
       tm.fromTo(
         letter.rotation,
         { x: 0 },
-        { x: (index * 0.1 * Math.PI) % (Math.PI / 2) },
+        {
+          x:
+            Math.sin(
+              scaleNumber(
+                index % (this.wrapXCount || this.children.length * 2),
+                0,
+                this.wrapXCount || this.children.length * 2,
+                0,
+                Math.PI / 4
+              )
+            ) / 2,
+        },
 
         0
       );

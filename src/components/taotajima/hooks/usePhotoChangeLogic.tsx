@@ -6,6 +6,7 @@ export default function usePhotoChangeLogic(props: any) {
 
   // 照片翻页
   useEffect(() => {
+    sketch.current = null;
     if (!data || !data.children || data.children.length === 0) return;
     sketch.current = new (window as any).Sketch({
       contentId: "taotajimaSliderContent",
@@ -82,7 +83,6 @@ export default function usePhotoChangeLogic(props: any) {
       ],
       noiseAngle: Math.PI * 0.75,
     });
-
     return () => {
       sketch.current.destroy();
     };

@@ -59,7 +59,7 @@ export default function Taotajima() {
     playRef,
     leftBtnRef,
     rightBtnRef,
-  } = useOtherAnimateLogic({});
+  } = useOtherAnimateLogic({ data });
   const { currentSoftTextInst, generateSoftText, softText } = useSoftTextLogic({
     resizeObserverCb,
     data,
@@ -203,26 +203,22 @@ export default function Taotajima() {
             </div>
             {data.children.length >= 1 ? (
               <div className="absolute top-1/2 left-1/2 -translate-1/2 flex gap-[4vmin] items-center max-w-[50dvw]">
-                <div className=" text-white gap-[4vmin] flex flex-col items-start">
+                <div className=" text-white gap-[3vmin] flex flex-col items-start">
                   <div
-                    className=" gap-[2vmin] flex flex-col items-start relative"
+                    className=" gap-[2vmin] flex flex-col items-start relative opacity-0"
                     ref={contentRef}
                   >
-                    <div className="flex text-[2vmin] gap-[2vmin] h-fit ">
-                      <div className="opacity-0">
-                        #{(current + 1).toString().padStart(3, "0")}
-                      </div>
-                      <div className="w-[.0625rem] h-[4vmin] rotate-20 opacity-0"></div>
-                      <div className="opacity-0">
-                        {data.children[current].tag}
-                      </div>
+                    <div className="flex text-[3vmin] leading-[3vmin] gap-[2vmin] h-fit">
+                      <div>#{(current + 1).toString().padStart(3, "0")}</div>
+                      <div className="w-[.0625rem] h-[2vmin] rotate-20"></div>
+                      <div className="">{data.children[current].tag}</div>
                     </div>
-                    <div className="text-[4vmin] opacity-0">
+                    <div className="text-[5vmin] leading-[4vmin]">
                       {data.children[current].chineseTitle ||
                         data.children[current].englishTitle}
                     </div>
                     <div
-                      className="opacity-0 text-[1.5vmin] leading-[3.75vmin]"
+                      className="text-[2vmin] leading-[3.6vmin]"
                       ref={introduceRef}
                     >
                       {data.children[current].introduce}
@@ -332,6 +328,7 @@ export default function Taotajima() {
                   onClick={async () => {
                     if (togglePageControl.current) return;
                     clearCb("next");
+
                     togglePageControl.current = sketch.current.next();
                     togglePageControl.current.then(async (current: number) => {
                       await nextCb(current);

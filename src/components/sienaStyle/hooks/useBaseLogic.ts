@@ -21,7 +21,7 @@ export default function useBaseLogic(props: any) {
   const scrollWrapper = useRef<HTMLDivElement>(null);
   const scrollContainer = useRef<HTMLDivElement>(null);
   const scrollContainerItems = useRef<HTMLDivElement[]>([]);
-  const imgeContainerItems = useRef<(HTMLImageElement | null)[]>([]);
+  const imageContainerItems = useRef<(HTMLImageElement | null)[]>([]);
   const [currentDirection, _setCurrentDirection] = useState<"y" | "x">("y");
   const currentDirectionSync = useRef<"y" | "x">("y");
   const setCurrentDirection = (direction: "y" | "x") => {
@@ -77,7 +77,7 @@ export default function useBaseLogic(props: any) {
           scrollWrapper.current === null ||
           scrollContainerItems.current[0] === null ||
           scrollContainer.current === null ||
-          imgeContainerItems.current[0] === null
+          imageContainerItems.current[0] === null
         )
           return;
         const wrapperSize =
@@ -90,8 +90,8 @@ export default function useBaseLogic(props: any) {
             : scrollContainerItems.current[0].offsetWidth;
         const imageSize =
           currentDirectionSync.current === "y"
-            ? imgeContainerItems.current[0].offsetHeight
-            : imgeContainerItems.current[0].offsetWidth;
+            ? imageContainerItems.current[0].offsetHeight
+            : imageContainerItems.current[0].offsetWidth;
         const itemCount = _data.length * repeatCount;
         const _snap = Array.from(
           { length: itemCount },
@@ -106,7 +106,7 @@ export default function useBaseLogic(props: any) {
         ) => {
           if (currentDirectionSync.current === "y") {
             for (let i = 0; i < _snap.length; i++) {
-              const imgEl = imgeContainerItems.current[i];
+              const imgEl = imageContainerItems.current[i];
               if (!imgEl) continue;
               const changeOffset =
                 ((_snap[i] - offset) * 3 * imageSize) / scrollContainerSize;
@@ -306,7 +306,7 @@ export default function useBaseLogic(props: any) {
         }
         offset = snap[index as number] as number;
         gsap[animateType](scrollContainer.current, {
-          [currentDirection]: offset,
+          [currentDirectionSync.current]: offset,
         });
         initEffect.current.push((props: { snap: any; repeatCount: number }) => {
           if (id) {
@@ -316,10 +316,10 @@ export default function useBaseLogic(props: any) {
           }
           offset = props.snap[index as number] as number;
           gsap[animateType](scrollContainer.current, {
-            [currentDirection]: offset,
+            [currentDirectionSync.current]: offset,
           });
           computedItemOffset.current(offset, animateType);
-          if (currentDirection === "y") {
+          if (currentDirectionSync.current === "y") {
             computedImgOffset.current(offset, animateType);
           }
         });
@@ -327,14 +327,14 @@ export default function useBaseLogic(props: any) {
 
       const _offset = offset as number;
       computedItemOffset.current(_offset, animateType);
-      if (currentDirection === "y") {
+      if (currentDirectionSync.current === "y") {
         computedImgOffset.current(_offset, animateType);
       }
     }
   );
   const clearItemEffect = contextSafe(() => {
-    for (let i = 0; i < imgeContainerItems.current.length; i++) {
-      gsap.set(imgeContainerItems.current[i], {
+    for (let i = 0; i < imageContainerItems.current.length; i++) {
+      gsap.set(imageContainerItems.current[i], {
         transform: "translate(-50%,-50%)",
         filter: "unset",
       });
@@ -374,7 +374,7 @@ export default function useBaseLogic(props: any) {
     data,
     currentIndexWatcher,
     loop,
-    imgeContainerItems,
+    imageContainerItems,
     currentIndex,
     setCurrentIndex,
     getCurrentReadPhotoChildren,

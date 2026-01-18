@@ -24,6 +24,7 @@ class Sketch {
     this.displacement = opts.displacement;
     this.container = document.getElementById(this.contentId);
     this.direction = -1;
+    this.destroyFlag = false;
 
     this.slider = document.getElementById(this.sliderId);
     this.images = opts.images;
@@ -134,6 +135,7 @@ class Sketch {
 
   initiate(cb) {
     Promise.all([this.updateImages()]).then(() => {
+      if (this.destroyFlag) return;
       this.videoPlay();
       this.eventRigister();
       cb();
@@ -144,7 +146,7 @@ class Sketch {
     if (this.eventRigisters) {
       this.eventRigisters.map((eventRigister) => {
         const _cb = (e) =>
-          eventRigister.cb(e, this.prev.bind(this), this.next.bind(this));
+          eventRigister.cb(e, this.prev.bind(this), this.next.bind(this), this);
         this.container.addEventListener(eventRigister.event, _cb);
         this.eventClear.push(() => {
           this.container.removeEventListener(eventRigister.event, _cb);
@@ -344,6 +346,7 @@ class Sketch {
   }
 
   destroy() {
+    this.destroyFlag = true;
     this.eventClear.forEach((cb) => cb());
     this.videoDoms.forEach((video) => {
       video.remove();
@@ -351,6 +354,7 @@ class Sketch {
     this.canvasDom.forEach((canvas) => {
       canvas.remove();
     });
+    this.renderer.domElement.remove();
     this.renderer.dispose();
   }
 }
