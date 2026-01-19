@@ -8,7 +8,7 @@ export interface loadingState {
 }
 
 const initialState: loadingState = {
-  globalLoading: false,
+  globalLoading: true,
   sienaLoading: false,
   taotajimaLoading: false,
 };

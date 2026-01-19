@@ -14,3 +14,11 @@ export function scaleNumber(
     scaleStart + ((val - minVal) / (maxVal - minVal)) * (scaleEnd - scaleStart)
   );
 }
+
+export function uniqueBy(arr: any[], getKey: (obj: any) => string) {
+  const map = new Map();
+  for (const item of arr) {
+    map.set(getKey(item), item);
+  }
+  return [...map.values()];
+}

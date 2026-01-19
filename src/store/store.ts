@@ -3,6 +3,7 @@ import { Action, ThunkAction, configureStore } from "@reduxjs/toolkit";
 import loadingReducer from "./loading/loading-slice";
 import sienaControlReducer from "./sienaControl/sinaControl-slice";
 import taotajimaReducer from "./taotajimaControl/taotajima-slice";
+import jiejoeReducer from "./jiejoeControl/jiejoeControl-slice";
 
 // ...
 export const makeStore = () => {
@@ -11,6 +12,7 @@ export const makeStore = () => {
       loading: loadingReducer,
       sienaControl: sienaControlReducer,
       taotajimaControl: taotajimaReducer,
+      jiejoeControl: jiejoeReducer,
     },
   });
 };

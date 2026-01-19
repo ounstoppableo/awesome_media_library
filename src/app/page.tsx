@@ -24,6 +24,25 @@ import {
 } from "@/store/sienaControl/sinaControl-slice";
 import { useGSAP } from "@gsap/react";
 import { selectTaojimaControlOpenStatus } from "@/store/taotajimaControl/taotajima-slice";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/button-1";
+import {
+  ArrowUpDown,
+  FolderKanban,
+  Pen,
+  Settings,
+  ShieldCheck,
+  Truck,
+} from "lucide-react";
+import { MobileIcon } from "@radix-ui/react-icons";
+import AssetsList from "@/components/settingDialog/assetsList";
+import { setCloseScroll } from "@/store/jiejoeControl/jiejoeControl-slice";
 
 export default function Home() {
   const router = useRouter();
@@ -182,10 +201,12 @@ export default function Home() {
     }
   );
 
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <>
       {loading && (
-        <div className="inset-0 top-0 z-[99999] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
+        <div className="fixed inset-0 top-0 z-[99999] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
           <OrbitalLoader />
         </div>
       )}
@@ -228,6 +249,34 @@ export default function Home() {
         {showTaojima && <Taotajima></Taotajima>}
       </div>
       {<JiejoeHomePage></JiejoeHomePage>}
+      <div className="fixed bottom-[6vmin] left-[8vmin] z-150 dark">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="rounded-full">
+              <Settings className="size-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-48 dark">
+            <DropdownMenuItem
+              onClick={() => {
+                setDialogOpen(true);
+                dispatch(setCloseScroll({ closeScroll: true }));
+              }}
+            >
+              <FolderKanban className="mr-2 size-4" />
+              Manage Assets
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <AssetsList
+        open={dialogOpen}
+        handleOpenChange={(value: boolean) => {
+          setDialogOpen(value);
+          dispatch(setCloseScroll({ closeScroll: false }));
+        }}
+        className={"z-160"}
+      ></AssetsList>
     </>
   );
 }

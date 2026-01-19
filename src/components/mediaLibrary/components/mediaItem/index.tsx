@@ -41,15 +41,19 @@ export type MediaStruct = {
 export default function MediaItem(props: {
   media: MediaStruct & { play?: boolean };
   showSelect?: boolean;
+  selected?: boolean;
   deleteCb?: () => any;
   imgUploadMask?: any;
   mediaItemHeight?: number;
   tags?: string[];
   deleteConfirm?: boolean;
   isAuth: boolean;
+  handleSelect: (media: MediaStruct) => any;
+  handleCancelSelected: (media: MediaStruct) => any;
   infoChangeCb?: (params: any) => any;
 }) {
   const {
+    selected,
     media: defaultMediaData,
     showSelect = false,
     deleteCb,
@@ -58,6 +62,8 @@ export default function MediaItem(props: {
     mediaItemHeight = 320,
     deleteConfirm = false,
     isAuth = false,
+    handleSelect,
+    handleCancelSelected,
   } = props;
 
   const [defaultTags, setDefaultTags] = useState(props.tags);
@@ -66,7 +72,6 @@ export default function MediaItem(props: {
     setDefaultTags(props.tags || []);
     setTags(props.tags || []);
   }, [props.tags]);
-  const [selected, setSelected] = useState(false);
   const [media, setMedia] = useState(defaultMediaData);
   const [mediaItemTitleEdit, setMediaItemTitleEdit] = useState(false);
   const mediaItemTitleRef = useRef<any>(null);
@@ -180,7 +185,14 @@ export default function MediaItem(props: {
       className="relative animate-ocure transition-all duration-500 perspective-dramatic hover:translate-y-[-5px] group/mediaHover "
     >
       {showSelect && (
-        <div className="group/select absolute z-10 -right-4 top-8 w-fit h-fit">
+        <div
+          className="group/select absolute z-10 -right-4 top-8 w-fit h-fit"
+          onClick={() => {
+            selected
+              ? handleCancelSelected({ ...media })
+              : handleSelect?.({ ...media });
+          }}
+        >
           <svg
             className={`icon text-4xl rotate-90 stroke-40 ${
               selected ? "stroke-emerald-400" : "stroke-gray-400"

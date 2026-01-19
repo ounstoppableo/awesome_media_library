@@ -46,8 +46,8 @@ export default function RandomContent(props: any) {
     };
   }, [currentIndex]);
   return (
-    <>
-      <div className="h-full w-2/5 flex flex-col justify-center gap-[10%] py-[10%] pl-[10%]">
+    <div className="w-full h-full flex justify-between gap-[12%]">
+      <div className="h-full flex-1 flex flex-col justify-center pl-[8%] gap-[4%]">
         <div
           className="w-full text-[8vmin] leading-[8vmin] font-extrabold"
           style={{
@@ -64,10 +64,7 @@ export default function RandomContent(props: any) {
         >
           {data[currentIndex].chineseTitle || data[currentIndex].englishTitle}
         </div>
-        <div
-          className="text-[2.5vmin] text-white line-clamp-8"
-          ref={introduceRef}
-        >
+        <div className="text-[2.5vmin] text-white" ref={introduceRef}>
           {data[currentIndex].introduce}
         </div>
         <InteractiveHoverButton
@@ -81,7 +78,7 @@ export default function RandomContent(props: any) {
         />
       </div>
       <div
-        className="h-full w-3/5 flex justify-center items-center"
+        className="h-full w-2/5 flex justify-center items-center translate-x-[-20%]"
         ref={imageSwiperContainer}
       >
         <ImageSwiper
@@ -94,6 +91,6 @@ export default function RandomContent(props: any) {
           }}
         />
       </div>
-    </>
+    </div>
   );
 }

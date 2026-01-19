@@ -48,7 +48,12 @@ import { WsOperateRequestDataType } from "@/wsConstructor/router/operateRouter";
 import { message } from "antd";
 import useAuthLogic from "./hooks/useAuthLogic";
 
-export default function MediaLibrary() {
+export default function MediaLibrary(props: {
+  showSelect: boolean;
+  selectedMedias: MediaStruct[];
+  setSelectedMedias: (medias: MediaStruct[]) => any;
+}) {
+  const { showSelect, selectedMedias, setSelectedMedias } = props;
   const listContainerRef = useRef<any>(null);
   const headerRef = useRef<any>(null);
   const filterCardRef = useRef<any>(null);
@@ -87,7 +92,12 @@ export default function MediaLibrary() {
   };
 
   const mediaGap = 24;
-  const [mediaData, setMediaData] = useState<MediaStruct[]>([]);
+  const [mediaData, _setMediaData] = useState<MediaStruct[]>([]);
+  const mediaDataRef = useRef<MediaStruct[]>([]);
+  const setMediaData = (data: MediaStruct[]) => {
+    mediaDataRef.current = data;
+    _setMediaData(data);
+  };
 
   const { ghostDomHeight, showData } = useVitualScrollLogic({
     itemHeight: mediaItemHeight,
@@ -97,6 +107,7 @@ export default function MediaLibrary() {
     data: mediaData,
     scrollContainerRef: listContainerRef,
     setData: setMediaData,
+    tolerateRowCount: 6,
   });
 
   const defaultSearchParams = {
@@ -118,7 +129,12 @@ export default function MediaLibrary() {
 
   const { isAuth } = useAuthLogic();
 
-  const [isOver, setIsOver] = useState(false);
+  const [isOver, _setIsOver] = useState(false);
+  const isOverRef = useRef<boolean>(false);
+  const setIsOver = (value: boolean) => {
+    isOverRef.current = value;
+    _setIsOver(value);
+  };
 
   const getDateTime = (type: string) => {
     const todayZero = new Date();
@@ -210,26 +226,38 @@ export default function MediaLibrary() {
     getMeidaData();
   }, []);
 
-  const [dataLoading, setDataLoding] = useState(false);
+  const [dataLoading, _setDataLoding] = useState(false);
+  const dataLoadingRef = useRef<boolean>(false);
+  const setDataLoding = (value: boolean) => {
+    dataLoadingRef.current = value;
+    _setDataLoding(value);
+  };
   useEffect(() => {
-    const _cb = () => {
-      if (dataLoading) return;
-      if (isOver) return;
+    const _cb = (e: any) => {
+      if (dataLoadingRef.current) return;
+      if (isOverRef.current) return;
       if (
         listContainerRef.current.scrollTop +
           listContainerRef.current.offsetHeight >=
-        listContainerRef.current.scrollHeight - mediaItemHeight / 2
+          listContainerRef.current.scrollHeight - mediaItemHeight / 2 &&
+        e.deltaY > 0
       ) {
         setDataLoding(true);
-        setSearchParams({
-          ...searchParams,
-          id: mediaData[mediaData.length - 1].id,
-        });
+        setSearchParams(
+          Object.assign(
+            {
+              ...searchParams,
+            },
+            mediaDataRef.current[mediaDataRef.current.length - 1]?.id
+              ? { id: mediaDataRef.current[mediaDataRef.current.length - 1].id }
+              : {}
+          )
+        );
       }
     };
-    listContainerRef.current.addEventListener("scroll", _cb);
-    return () => listContainerRef.current?.removeEventListener("scroll", _cb);
-  }, [mediaData, dataLoading]);
+    listContainerRef.current.addEventListener("wheel", _cb);
+    return () => listContainerRef.current?.removeEventListener("wheel", _cb);
+  }, []);
 
   const [multiTagSelectorJsx, setMultiTagSelectorJsx] = useState(
     <MultipleSelector
@@ -388,7 +416,7 @@ export default function MediaLibrary() {
           </div>
         </header>
 
-        <main className="w-full flex flex-col gap-8 flex-1 container mx-auto px-4 py-8">
+        <main className="w-full flex flex-col gap-8 flex-1 container mx-auto px-4 pt-8">
           <Card ref={filterCardRef}>
             <CardContent>
               <div className="flex flex-wrap items-end gap-4 container mx-auto">
@@ -482,6 +510,22 @@ export default function MediaLibrary() {
               >
                 {showData.map((media) => (
                   <MediaItem
+                    showSelect={showSelect}
+                    handleSelect={(media) => {
+                      setSelectedMedias([...selectedMedias, media]);
+                    }}
+                    handleCancelSelected={(media) => {
+                      setSelectedMedias(
+                        selectedMedias.filter(
+                          (_media) => _media.id !== media.id
+                        )
+                      );
+                    }}
+                    selected={
+                      selectedMedias.findIndex(
+                        (_media) => _media.id === media.id
+                      ) !== -1
+                    }
                     tags={tags}
                     media={media}
                     key={media.id}
