@@ -6,6 +6,8 @@ import { useGSAP } from "@gsap/react";
 import request from "@/utils/fetch";
 import { useAppDispatch } from "@/store/hooks";
 import { setSienaLoading } from "@/store/loading/loading-slice";
+import { CommonResponse } from "@/types/response";
+import { codeMap } from "@/utils/backendStatus";
 
 export default function useBaseLogic(props: any) {
   const gap = 32;
@@ -33,9 +35,11 @@ export default function useBaseLogic(props: any) {
   const dispatch = useAppDispatch();
   useEffect(() => {
     request("/api/category/categoryList", { method: "get" }).then(
-      (res: any) => {
-        setData(res.data);
-        dispatch(setSienaLoading({ sienaLoading: false }));
+      (res: CommonResponse) => {
+        if (res.code === codeMap.success) {
+          setData(res.data);
+          dispatch(setSienaLoading({ sienaLoading: false }));
+        }
       }
     );
   }, []);

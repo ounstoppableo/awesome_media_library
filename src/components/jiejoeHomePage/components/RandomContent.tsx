@@ -5,7 +5,7 @@ import { SplitText } from "gsap/all";
 import { useEffect, useRef, useState } from "react";
 
 export default function RandomContent(props: any) {
-  const { data, clickCb } = props;
+  const { data, clickCb, handleCurrentIndexChange } = props;
   const imageSwiperContainer = useRef<any>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const titleRef = useRef<any>(null);
@@ -13,7 +13,10 @@ export default function RandomContent(props: any) {
   const charsSplit = useRef<any>(null);
   useEffect(() => {}, []);
   useEffect(() => {
+    handleCurrentIndexChange?.(currentIndex);
+    charsSplit.current?.revert();
     charsSplit.current = SplitText.create(titleRef.current);
+
     const tw = gsap.timeline();
     const tw2 = gsap.timeline();
 
@@ -24,7 +27,7 @@ export default function RandomContent(props: any) {
           opacity: 0,
           y: "-100%",
         },
-        { opacity: 1, y: 0, duration: 0.1 },
+        { opacity: 1, y: 0, duration: 0.2 },
         ">"
       );
     });
@@ -33,7 +36,7 @@ export default function RandomContent(props: any) {
       {
         opacity: 0,
       },
-      { opacity: 1 }
+      { opacity: 1, ease: "linear", duration: 0.8 }
     );
 
     return () => {

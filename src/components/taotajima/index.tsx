@@ -26,6 +26,8 @@ import {
 } from "@/store/taotajimaControl/taotajima-slice";
 import request from "@/utils/fetch";
 import ContentInsufficient from "../contentInsufficient";
+import { CommonResponse } from "@/types/response";
+import { codeMap } from "@/utils/backendStatus";
 
 /**
  * 操作量：图片尺寸、canvas尺寸(坐标轴尺度)、缩放比例
@@ -131,9 +133,11 @@ export default function Taotajima() {
     request("/api/category/categoryDetail", {
       method: "post",
       body: { id: currentId },
-    }).then((res: any) => {
-      setData(res.data);
-      dispatch(setTaotajimaLoading({ taotajimaLoading: false }));
+    }).then((res: CommonResponse) => {
+      if (res.code === codeMap.success) {
+        setData(res.data);
+        dispatch(setTaotajimaLoading({ taotajimaLoading: false }));
+      }
     });
   }, []);
   const back = () => {

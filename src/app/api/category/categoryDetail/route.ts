@@ -6,7 +6,12 @@ import errorStringify from "@/utils/errorStringify";
 import { NextRequest } from "next/server";
 
 export async function POST(_req: NextRequest) {
-  const body = await _req.json();
+  let body;
+  try {
+    body = await _req.json();
+  } catch (e) {
+    body = {};
+  }
   if (!body.id)
     return Response.json({
       code: codeMap.paramsIllegal,

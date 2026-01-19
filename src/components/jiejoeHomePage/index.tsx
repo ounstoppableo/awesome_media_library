@@ -34,6 +34,7 @@ export default function JiejoeHomePage() {
   const handleExplore = (info: any) => {
     dispatch(setOpen({ open: !taojimaOpen, id: info.id }));
   };
+
   const { resizeObserver, resizeObserverCb } = useResizeLogic();
   const { smoothWrapper, smoothContent } = useSmoothScrollerLogic();
   const { funBoardJsx } = useFunBoardLogic();
@@ -41,10 +42,10 @@ export default function JiejoeHomePage() {
   const { avatarJsx } = useAvatarLogic({ resizeObserverCb });
   const { fireworksJsx } = useFireWorksLogic();
 
-  const { data } = useAccessData();
+  const { newestData, randomData } = useAccessData();
   const { footerJsx } = useFooterLogic();
-  const { mouseImageTrailJsx } = useMouseImageTrailLogis({
-    data,
+  const { mouseImageTrailJsx, setCurrentIndex } = useMouseImageTrailLogis({
+    data: randomData,
     resizeObserverCb,
   });
   const { portfolioJsx } = usePortfolioLogic();
@@ -140,13 +141,13 @@ export default function JiejoeHomePage() {
             ></Title>
 
             <div className="w-full h-[200dvh] flex flex-col">
-              {data.length < 6 ? (
+              {newestData.length < 6 ? (
                 <div className="w-full h-full flex justify-center items-center dark">
                   <ContentInsufficient count={6}></ContentInsufficient>
                 </div>
               ) : (
                 <List
-                  data={data}
+                  data={newestData}
                   windowTrackRef={smoothWrapper}
                   clickCb={(info: any) => {
                     handleExplore(info);
@@ -166,16 +167,17 @@ export default function JiejoeHomePage() {
               }}
             ></Title>
             <div className="w-full h-[100dvh] flex items-center relative">
-              {data.length < 6 ? (
+              {randomData.length < 6 ? (
                 <div className="w-full h-full flex justify-center items-center dark">
                   <ContentInsufficient count={6}></ContentInsufficient>
                 </div>
               ) : (
                 <RandomContent
-                  data={data}
+                  data={randomData}
                   clickCb={(info: any) => {
                     handleExplore(info);
                   }}
+                  handleCurrentIndexChange={setCurrentIndex}
                 ></RandomContent>
               )}
             </div>
