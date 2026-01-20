@@ -50,10 +50,10 @@ import useAuthLogic from "./hooks/useAuthLogic";
 
 export default function MediaLibrary(props: {
   showSelect: boolean;
-  selectedMedias: MediaStruct[];
+  selectedMediaIds: (number | string)[];
   setSelectedMedias: (medias: MediaStruct[]) => any;
 }) {
-  const { showSelect, selectedMedias, setSelectedMedias } = props;
+  const { showSelect, selectedMediaIds, setSelectedMedias } = props;
   const listContainerRef = useRef<any>(null);
   const headerRef = useRef<any>(null);
   const filterCardRef = useRef<any>(null);
@@ -512,19 +512,25 @@ export default function MediaLibrary(props: {
                   <MediaItem
                     showSelect={showSelect}
                     handleSelect={(media) => {
-                      setSelectedMedias([...selectedMedias, media]);
+                      setSelectedMedias([
+                        ...mediaData.filter((media) =>
+                          selectedMediaIds.includes(media.id)
+                        ),
+                        media,
+                      ]);
                     }}
                     handleCancelSelected={(media) => {
+                      const selectedIds = selectedMediaIds.filter(
+                        (id) => id !== media.id
+                      );
                       setSelectedMedias(
-                        selectedMedias.filter(
-                          (_media) => _media.id !== media.id
+                        mediaData.filter((media) =>
+                          selectedIds.includes(media.id)
                         )
                       );
                     }}
                     selected={
-                      selectedMedias.findIndex(
-                        (_media) => _media.id === media.id
-                      ) !== -1
+                      selectedMediaIds.findIndex((id) => id === media.id) !== -1
                     }
                     tags={tags}
                     media={media}
