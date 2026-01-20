@@ -1,13 +1,24 @@
 import React from "react";
 import clsx from "clsx";
 
-export type TNoteType = "default" | "success" | "warning" | "error" | "alert" | "secondary" |
-  "violet" | "cyan" | "lite" | "ghost" | "tertiary" | "rotate-ccw";
+export type TNoteType =
+  | "default"
+  | "success"
+  | "warning"
+  | "error"
+  | "alert"
+  | "secondary"
+  | "violet"
+  | "cyan"
+  | "lite"
+  | "ghost"
+  | "tertiary"
+  | "rotate-ccw";
 
 const sizes = {
   small: "py-1.5 px-2 min-h-[34px] text-[13px]",
   medium: "py-2 px-3 min-h-10 text-[14px]",
-  large: "py-[11px] px-3 min-h-12 text-base"
+  large: "py-[11px] px-3 min-h-12 text-base",
 };
 
 interface NoteProps {
@@ -32,16 +43,11 @@ const linkColor = {
   lite: "var(--ds-gray-1000)",
   ghost: "var(--ds-gray-1000)",
   tertiary: "var(--ds-gray-1000)",
-  "rotate-ccw": "var(--ds-gray-1000)"
+  "rotate-ccw": "var(--ds-gray-1000)",
 };
 
 const DefaultIcon = () => (
-  <svg
-    height="16"
-    strokeLinejoin="round"
-    viewBox="0 0 16 16"
-    width="16"
-  >
+  <svg height="16" strokeLinejoin="round" viewBox="0 0 16 16" width="16">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -51,12 +57,7 @@ const DefaultIcon = () => (
 );
 
 const SuccessIcon = () => (
-  <svg
-    height="16"
-    strokeLinejoin="round"
-    viewBox="0 0 16 16"
-    width="16"
-  >
+  <svg height="16" strokeLinejoin="round" viewBox="0 0 16 16" width="16">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -66,30 +67,20 @@ const SuccessIcon = () => (
 );
 
 const WarningIcon = () => (
-  <svg
-    height="16"
-    stroke-linejoin="round"
-    viewBox="0 0 16 16"
-    width="16"
-  >
+  <svg height="16" strokeLinejoin="round" viewBox="0 0 16 16" width="16">
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M8.55846 2H7.44148L1.88975 13.5H14.1102L8.55846 2ZM9.90929 1.34788C9.65902 0.829456 9.13413 0.5 8.55846 0.5H7.44148C6.86581 0.5 6.34092 0.829454 6.09065 1.34787L0.192608 13.5653C-0.127943 14.2293 0.355835 15 1.09316 15H14.9068C15.6441 15 16.1279 14.2293 15.8073 13.5653L9.90929 1.34788ZM8.74997 4.75V5.5V8V8.75H7.24997V8V5.5V4.75H8.74997ZM7.99997 12C8.55226 12 8.99997 11.5523 8.99997 11C8.99997 10.4477 8.55226 10 7.99997 10C7.44769 10 6.99997 10.4477 6.99997 11C6.99997 11.5523 7.44769 12 7.99997 12Z"
     />
   </svg>
 );
 
 const ErrorIcon = () => (
-  <svg
-    height="16"
-    stroke-linejoin="round"
-    viewBox="0 0 16 16"
-    width="16"
-  >
+  <svg height="16" strokeLinejoin="round" viewBox="0 0 16 16" width="16">
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M5.30761 1.5L1.5 5.30761L1.5 10.6924L5.30761 14.5H10.6924L14.5 10.6924V5.30761L10.6924 1.5H5.30761ZM5.10051 0C4.83529 0 4.58094 0.105357 4.3934 0.292893L0.292893 4.3934C0.105357 4.58094 0 4.83529 0 5.10051V10.8995C0 11.1647 0.105357 11.4191 0.292894 11.6066L4.3934 15.7071C4.58094 15.8946 4.83529 16 5.10051 16H10.8995C11.1647 16 11.4191 15.8946 11.6066 15.7071L15.7071 11.6066C15.8946 11.4191 16 11.1647 16 10.8995V5.10051C16 4.83529 15.8946 4.58093 15.7071 4.3934L11.6066 0.292893C11.4191 0.105357 11.1647 0 10.8995 0H5.10051ZM8.75 3.75V4.5V8L8.75 8.75H7.25V8V4.5V3.75H8.75ZM8 12C8.55229 12 9 11.5523 9 11C9 10.4477 8.55229 10 8 10C7.44772 10 7 10.4477 7 11C7 11.5523 7.44772 12 8 12Z"
     />
   </svg>
@@ -102,54 +93,104 @@ export const Note = ({
   fill = false,
   disabled = false,
   label = true,
-  children
+  children,
 }: NoteProps) => {
   return (
     <>
       <div
         // @ts-ignore
-        style={{ "--geist-link-color": disabled ? "var(--ds-gray-700)" : linkColor[type] }}
+        style={
+          {
+            "--geist-link-color": disabled
+              ? "var(--ds-gray-700)"
+              : linkColor[type],
+          } as any
+        }
         className={clsx(
           "flex grow items-center justify-between gap-3 rounded-md font-sans leading-6 selection:text-selection-text-color box-border border",
           sizes[size],
-          (type === "default" || type === "tertiary" || type === "lite" || type === "ghost" || type === "rotate-ccw") && "text-gray-900 fill-gray-900 bg-transparent selection:bg-gray-900 border-gray-400",
-          type === "success" && `text-blue-900 fill-blue-900 selection:bg-blue-700 ${fill ? "border-blue-100 bg-blue-200" : "border-blue-400 bg-transparent"}`,
-          type === "warning" && `text-amber-900 fill-amber-900 selection:bg-amber-900 ${fill ? "border-amber-100 bg-amber-200" : "border-amber-400 bg-transparent"}`,
-          (type === "error" || type === "alert") && `text-red-900 fill-red-900 selection:bg-red-800 ${fill ? "border-red-100 bg-red-200" : "border-red-400 bg-transparent"}`,
-          type === "secondary" && `text-gray-900 fill-gray-900 selection:bg-gray-900 ${fill ? "border-transparent bg-gray-alpha-200" : "border-gray-alpha-400 bg-transparent"}`,
-          type === "violet" && `text-purple-900 fill-purple-900 selection:bg-purple-900 ${fill ? "border-purple-100 bg-purple-200" : "border-purple-400 bg-transparent"}`,
-          type === "cyan" && `text-teal-900 fill-teal-900 selection:bg-teal-900 ${fill ? "border-teal-100 bg-teal-200" : "border-teal-400 bg-transparent"}`,
-          disabled ? "note-disabled text-gray-700 fill-gray-700 border-gray-alpha-200 bg-transparent selection:bg-gray-900" : "note-link"
+          (type === "default" ||
+            type === "tertiary" ||
+            type === "lite" ||
+            type === "ghost" ||
+            type === "rotate-ccw") &&
+            "text-gray-900 fill-gray-900 bg-transparent selection:bg-gray-900 border-gray-400",
+          type === "success" &&
+            `text-blue-900 fill-blue-900 selection:bg-blue-700 ${
+              fill
+                ? "border-blue-100 bg-blue-200"
+                : "border-blue-400 bg-transparent"
+            }`,
+          type === "warning" &&
+            `text-amber-900 fill-amber-900 selection:bg-amber-900 ${
+              fill
+                ? "border-amber-100 bg-amber-200"
+                : "border-amber-400 bg-transparent"
+            }`,
+          (type === "error" || type === "alert") &&
+            `text-red-900 fill-red-900 selection:bg-red-800 ${
+              fill
+                ? "border-red-100 bg-red-200"
+                : "border-red-400 bg-transparent"
+            }`,
+          type === "secondary" &&
+            `text-gray-900 fill-gray-900 selection:bg-gray-900 ${
+              fill
+                ? "border-transparent bg-gray-alpha-200"
+                : "border-gray-alpha-400 bg-transparent"
+            }`,
+          type === "violet" &&
+            `text-purple-900 fill-purple-900 selection:bg-purple-900 ${
+              fill
+                ? "border-purple-100 bg-purple-200"
+                : "border-purple-400 bg-transparent"
+            }`,
+          type === "cyan" &&
+            `text-teal-900 fill-teal-900 selection:bg-teal-900 ${
+              fill
+                ? "border-teal-100 bg-teal-200"
+                : "border-teal-400 bg-transparent"
+            }`,
+          disabled
+            ? "note-disabled text-gray-700 fill-gray-700 border-gray-alpha-200 bg-transparent selection:bg-gray-900"
+            : "note-link"
         )}
       >
-        <div className={clsx(
-          "flex items-center m-0",
-          typeof label === "string" ? "gap-1" : size === "small" ? "gap-2" : "gap-3"
-        )}>
-          {((typeof label !== "string" && label !== false) || label === undefined) && (
+        <div
+          className={clsx(
+            "flex items-center m-0",
+            typeof label === "string"
+              ? "gap-1"
+              : size === "small"
+              ? "gap-2"
+              : "gap-3"
+          )}
+        >
+          {((typeof label !== "string" && label !== false) ||
+            label === undefined) && (
             <div className="w-4 h-4">
-              {{
-                default: <DefaultIcon />,
-                success: <SuccessIcon />,
-                warning: <WarningIcon />,
-                error: <ErrorIcon />,
-                alert: <DefaultIcon />,
-                secondary: <DefaultIcon />,
-                violet: <DefaultIcon />,
-                cyan: <DefaultIcon />,
-                lite: <DefaultIcon />,
-                ghost: <DefaultIcon />,
-                tertiary: <DefaultIcon />,
-                "rotate-ccw": <DefaultIcon />
-              }[type]}
+              {
+                {
+                  default: <DefaultIcon />,
+                  success: <SuccessIcon />,
+                  warning: <WarningIcon />,
+                  error: <ErrorIcon />,
+                  alert: <DefaultIcon />,
+                  secondary: <DefaultIcon />,
+                  violet: <DefaultIcon />,
+                  cyan: <DefaultIcon />,
+                  lite: <DefaultIcon />,
+                  ghost: <DefaultIcon />,
+                  tertiary: <DefaultIcon />,
+                  "rotate-ccw": <DefaultIcon />,
+                }[type]
+              }
             </div>
           )}
           {typeof label === "string" && (
             <span className="font-semibold whitespace-nowrap">{label}:</span>
           )}
-          <span>
-            {children}
-          </span>
+          <span>{children}</span>
         </div>
         {action}
       </div>

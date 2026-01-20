@@ -177,7 +177,7 @@ export default function List(props: any) {
           >
             <div className="absolute inset-0 z-10 flex px-[12vmin] items-center gap-[8vmin]">
               <div
-                className="text-[16vmin] leading-[14vmin] font-extrabold sequenceNumber"
+                className="text-[16vmin] leading-[14vmin] font-extrabold sequenceNumber dark:text-black"
                 style={{
                   textShadow: ` 
       2px 0 0 white,
@@ -192,7 +192,7 @@ export default function List(props: any) {
                 <div className="text-[6vmin] leading-[6vmin] font-extrabold truncate">
                   {item.englishTitle}
                 </div>
-                <div className="text-[2vmin] leading-[2vmin] truncate">
+                <div className="text-[3vmin] leading-[3vmin] truncate">
                   + {item.chineseTitle} +
                 </div>
               </div>
@@ -213,7 +213,11 @@ export default function List(props: any) {
               {
                 <img
                   className="object-cover w-full h-full"
-                  src={data[currentMouseHoverIndex].img}
+                  src={
+                    data[currentMouseHoverIndex].type === "video"
+                      ? data[currentMouseHoverIndex].thumbnail
+                      : data[currentMouseHoverIndex].sourcePath
+                  }
                 ></img>
               }
             </div>

@@ -8,6 +8,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { setSienaLoading } from "@/store/loading/loading-slice";
 import { CommonResponse } from "@/types/response";
 import { codeMap } from "@/utils/backendStatus";
+import { CategoryDetail } from "@/types/media";
 
 export default function useBaseLogic(props: any) {
   const gap = 32;
@@ -15,7 +16,7 @@ export default function useBaseLogic(props: any) {
   const resizeAntiShake = useRef<NodeJS.Timeout | null>(null);
   const dualScrollRef = useRef<(HTMLDivElement | null)[]>([]);
   const [currentReadPhotoId, setCurrentReadPhotoId] = useState("");
-  const [data, setData] = useState<any>([]);
+  const [data, setData] = useState<CategoryDetail[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentIndexWatcher = useRef<any>(null);
   const loop = useRef<(...params: any) => any>(function () {});
@@ -353,7 +354,7 @@ export default function useBaseLogic(props: any) {
   ) => {
     const arr = data.find(
       (item: any) => item.id + "" === getIdFromKey(currentReadPhotoId)
-    ).children;
+    )?.children;
     if (!arr) return [];
     return type === "front"
       ? arr.slice(0, Math.ceil(arr.length / 2))

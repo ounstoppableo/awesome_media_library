@@ -51,7 +51,7 @@ class FetchInterceptor {
     const res = await response.json();
     if (res.code !== codeMap.success) {
       if (res.code === codeMap.limitsOfAuthority) {
-        localStorage.setItem("Authorization", "");
+        localStorage.setItem("token", "");
         window.history.replaceState({}, "", window.location.pathname);
       }
       message.warning(res.msg);

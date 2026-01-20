@@ -95,6 +95,7 @@ export default function JiejoeHomePage() {
                 <div className="flex justify-center">
                   <div className="text-[min(6dvw,16dvh)] leading-[min(6dvw,16dvh)] scale-y-125 flex gap-8">
                     <span
+                      className="dark:text-black"
                       style={{
                         textShadow: ` 
                 2px 0 0 var(--themeColor),
@@ -142,7 +143,7 @@ export default function JiejoeHomePage() {
 
             <div className="w-full h-[200dvh] flex flex-col">
               {newestData.length < 6 ? (
-                <div className="w-full h-full flex justify-center items-center dark">
+                <div className="w-full h-full flex justify-center items-center">
                   <ContentInsufficient count={6}></ContentInsufficient>
                 </div>
               ) : (
@@ -160,15 +161,15 @@ export default function JiejoeHomePage() {
               useScrollAnimation={true}
               textStyle={{
                 textShadow: `
-                  2px 0 0 #fff,
-                 -2px 0 0 #fff,
-                  0 2px 0 #fff,
-                  0 -2px 0 #fff`,
+                  2px 0 0 var(--themeColor),
+                 -2px 0 0 var(--themeColor),
+                  0 2px 0 var(--themeColor),
+                  0 -2px 0 var(--themeColor)`,
               }}
             ></Title>
             <div className="w-full h-[100dvh] flex items-center relative">
               {randomData.length < 6 ? (
-                <div className="w-full h-full flex justify-center items-center dark">
+                <div className="w-full h-full flex justify-center items-center">
                   <ContentInsufficient count={6}></ContentInsufficient>
                 </div>
               ) : (

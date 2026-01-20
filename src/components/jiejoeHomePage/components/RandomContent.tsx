@@ -1,5 +1,6 @@
 import { ImageSwiper } from "@/components/image-swiper";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
+import { CategoryItem } from "@/types/media";
 import gsap from "gsap";
 import { SplitText } from "gsap/all";
 import { useEffect, useRef, useState } from "react";
@@ -70,8 +71,6 @@ export default function RandomContent(props: any) {
         <InteractiveHoverButton
           className="text-xl w-[24vmin] h-[6vmin] z-20"
           text="Explore"
-          defaultColor="bg-transparent"
-          hoverColor="white"
           onClick={() => {
             clickCb(data[currentIndex]);
           }}
@@ -83,7 +82,9 @@ export default function RandomContent(props: any) {
       >
         <ImageSwiper
           className="flex-1"
-          images={data.map((item: any) => item.img)}
+          images={data.map((item: CategoryItem) =>
+            item.type === "video" ? item.thumbnail : item.sourcePath
+          )}
           container={imageSwiperContainer}
           getCurrentIndex={(currentIndex: number) => {
             charsSplit.current?.revert();

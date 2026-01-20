@@ -1,6 +1,7 @@
 import ContentInsufficient from "@/components/contentInsufficient";
 import MouseImageTrail from "@/components/mouseImageTrail";
 import { cn } from "@/lib/utils";
+import { CategoryItem } from "@/types/media";
 import gsap from "gsap";
 import { use, useEffect, useRef, useState } from "react";
 import { FiMousePointer } from "react-icons/fi";
@@ -99,7 +100,7 @@ export default function useMouseImageTrailLogis(props: any) {
     !data[currentIndex] ||
     !data[currentIndex].children ||
     data[currentIndex].children.length < 3 ? (
-      <div className="w-full h-full flex justify-center items-center dark">
+      <div className="w-full h-full flex justify-center items-center">
         <ContentInsufficient count={3}></ContentInsufficient>
       </div>
     ) : (
@@ -231,7 +232,9 @@ export default function useMouseImageTrailLogis(props: any) {
               renderImageBuffer={50}
               rotationRange={25}
               images={
-                data[currentIndex]?.children?.map((item: any) => item.img) || []
+                data[currentIndex]?.children?.map((item: CategoryItem) =>
+                  item.type === "video" ? item.thumbnail : item.sourcePath
+                ) || []
               }
             >
               <section className="grid h-full w-full place-content-center bg-black">

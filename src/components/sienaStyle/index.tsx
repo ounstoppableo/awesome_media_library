@@ -160,7 +160,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                   generateKey(
                     Array.from({ length: repeatCount }, (_, i) => data).flat()[
                       currentIndex
-                    ].id,
+                    ].id as any,
                     currentIndex
                   )
                 );
@@ -263,7 +263,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                         ? "h-[70dvh] w-full justify-center items-center"
                         : "h-[60dvh] aspect-[4/5] justify-center items-center"
                     } flex text-4xl relative select-none `}
-                    key={generateKey(item.id, index)}
+                    key={generateKey(item.id as string, index)}
                     ref={(el: any) => {
                       !currentReadPhotoId &&
                         (scrollContainerItems.current[index] = el);
@@ -300,8 +300,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                         <InteractiveHoverButton
                           className="text-xl w-[32vmin] h-[7vmin]"
                           text="Explore"
-                          defaultColor="bg-transparent"
-                          hoverColor="white"
                           onClick={() => {
                             handleExplore(item);
                           }}
@@ -316,9 +314,11 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           <ContentInsufficient count={3}></ContentInsufficient>
         )}
         {currentReadPhotoId ? (
-          data.find(
-            (item: any) => item.id + "" === getIdFromKey(currentReadPhotoId)
-          ).children?.length >= 3 ? (
+          (
+            data.find(
+              (item: any) => item.id + "" === getIdFromKey(currentReadPhotoId)
+            ) as any
+          )?.children?.length >= 3 ? (
             <div
               className="h-full w-fit flex flex-col gap-8 overflow-hidden m-12 rounded-lg"
               onMouseMove={() => {
@@ -425,8 +425,6 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
               <InteractiveHoverButton
                 className="text-xl w-[24vmin] h-[6vmin] z-20"
                 text="Explore"
-                defaultColor="bg-transparent"
-                hoverColor="white"
                 onClick={() =>
                   handleExplore(
                     data.find(

@@ -89,6 +89,7 @@ import {
 import { Note } from "../note";
 import { Badge, BadgeDot } from "../badge-2";
 import { CategoryDetail, CategoryItem } from "@/types/media";
+import { OrbitalLoader } from "../orbital-loader";
 
 function TypeField(props: { formData: any; field: any; clean?: boolean }) {
   const { formData, field, clean = false } = props;
@@ -370,7 +371,8 @@ function IntroduceField(props: { formData: any; field: any; clean?: boolean }) {
 export default function AssetsList(props: any) {
   const { open, handleOpenChange, className } = props;
   const [data, setData] = useState<CategoryDetail[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [assetListloading, setAssetListLoading] = useState(false);
+  const [assetDetailLoading, setAssetDetailLoading] = useState(false);
   const [addMediaOpen, setAddMediaOpen] = useState(false);
   const [mediaSelectOpen, setMediaSelectOpen] = useState(false);
   const formSchema = z.object({
@@ -432,7 +434,7 @@ export default function AssetsList(props: any) {
     ),
   });
   useEffect(() => {
-    setLoading(true);
+    setAssetListLoading(true);
     request("/api/category/newestCategory", { method: "post" })
       .then((res: CommonResponse) => {
         if (res.code === codeMap.success) {
@@ -440,7 +442,7 @@ export default function AssetsList(props: any) {
         }
       })
       .finally(() => {
-        setLoading(false);
+        setAssetListLoading(false);
       });
   }, []);
   const formData = useForm<z.infer<typeof formSchema>>({
@@ -613,6 +615,11 @@ export default function AssetsList(props: any) {
               className
             )}
           >
+            {assetListloading && (
+              <div className="fixed inset-0 top-0 z-[99999] [--foreground:white] bg-black/40 flex justify-center items-center">
+                <OrbitalLoader />
+              </div>
+            )}
             <DialogHeader className="h-fit">
               <DialogTitle>资产列表</DialogTitle>
             </DialogHeader>
@@ -691,46 +698,59 @@ export default function AssetsList(props: any) {
                                 setAddMediaOpen(true);
                                 setCurrentStep(2);
                                 formData.reset();
+                                setAssetDetailLoading(true);
                                 request("/api/category/categoryDetail", {
                                   method: "post",
                                   body: { id: info.id },
-                                }).then((res: CommonResponse) => {
-                                  if (res.code === codeMap.success) {
-                                    const data = res.data as CategoryDetail;
-                                    formData.setValue(
-                                      "children",
-                                      data.children as any
-                                    );
-                                    formData.setValue(
-                                      "chineseTitle",
-                                      data.chineseTitle
-                                    );
-                                    formData.setValue(
-                                      "englishTitle",
-                                      data.englishTitle
-                                    );
-                                    formData.setValue("date", data.date);
-                                    formData.setValue(
-                                      "location",
-                                      data.location
-                                    );
-                                    formData.setValue("mediaId", data.mediaId);
-                                    formData.setValue(
-                                      "sourcePath",
-                                      data.sourcePath
-                                    );
-                                    formData.setValue("tag", data.tag);
-                                    formData.setValue("type", data.type);
-                                    formData.setValue(
-                                      "thumbnail",
-                                      data.thumbnail || ""
-                                    );
-                                    formData.setValue("tags", data.tags || []);
-                                    setSelectedMediaIds(
-                                      data.children.map((item) => item.mediaId)
-                                    );
-                                  }
-                                });
+                                })
+                                  .then((res: CommonResponse) => {
+                                    if (res.code === codeMap.success) {
+                                      const data = res.data as CategoryDetail;
+                                      formData.setValue(
+                                        "children",
+                                        data.children as any
+                                      );
+                                      formData.setValue(
+                                        "chineseTitle",
+                                        data.chineseTitle
+                                      );
+                                      formData.setValue(
+                                        "englishTitle",
+                                        data.englishTitle
+                                      );
+                                      formData.setValue("date", data.date);
+                                      formData.setValue(
+                                        "location",
+                                        data.location
+                                      );
+                                      formData.setValue(
+                                        "mediaId",
+                                        data.mediaId
+                                      );
+                                      formData.setValue(
+                                        "sourcePath",
+                                        data.sourcePath
+                                      );
+                                      formData.setValue("tag", data.tag);
+                                      formData.setValue("type", data.type);
+                                      formData.setValue(
+                                        "thumbnail",
+                                        data.thumbnail || ""
+                                      );
+                                      formData.setValue(
+                                        "tags",
+                                        data.tags || []
+                                      );
+                                      setSelectedMediaIds(
+                                        data.children.map(
+                                          (item) => item.mediaId
+                                        )
+                                      );
+                                    }
+                                  })
+                                  .finally(() => {
+                                    setAssetDetailLoading(false);
+                                  });
                               }}
                             >
                               <Edit></Edit>
@@ -783,6 +803,11 @@ export default function AssetsList(props: any) {
             className
           )}
         >
+          {assetDetailLoading && (
+            <div className="fixed inset-0 top-0 z-[99999] [--foreground:white] bg-black/40 flex justify-center items-center">
+              <OrbitalLoader />
+            </div>
+          )}
           <DialogHeader className="h-fit">
             <DialogTitle>{addAssetDialogTitle}</DialogTitle>
           </DialogHeader>

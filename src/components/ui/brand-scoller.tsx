@@ -65,7 +65,7 @@ export const BrandScroller = (props: any) => {
           .fill(0)
           .map((_, i) => (
             <div
-              className="flex shrink-0 justify-around flex-row"
+              className="flex shrink-0 justify-around flex-row dark:text-black"
               key={i + "normal"}
               ref={(el: any) => {
                 steps.current[i] = el;
@@ -148,7 +148,7 @@ export const BrandScrollerReverse = (props: any) => {
           .fill(0)
           .map((_, i) => (
             <div
-              className="flex shrink-0 justify-around flex-row"
+              className="flex shrink-0 justify-around flex-row dark:text-black"
               key={i + "reverse"}
               ref={(el: any) => {
                 steps.current[i] = el;

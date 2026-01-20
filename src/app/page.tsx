@@ -249,14 +249,14 @@ export default function Home() {
         {showTaojima && <Taotajima></Taotajima>}
       </div>
       {<JiejoeHomePage></JiejoeHomePage>}
-      <div className="fixed bottom-[6vmin] left-[8vmin] z-150 dark">
+      <div className="fixed bottom-[6vmin] left-[10vmin] z-150">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="rounded-full">
               <Settings className="size-5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-48 dark">
+          <DropdownMenuContent className="w-48">
             <DropdownMenuItem
               onClick={() => {
                 setDialogOpen(true);

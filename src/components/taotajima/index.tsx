@@ -28,6 +28,7 @@ import request from "@/utils/fetch";
 import ContentInsufficient from "../contentInsufficient";
 import { CommonResponse } from "@/types/response";
 import { codeMap } from "@/utils/backendStatus";
+import { CategoryDetail } from "@/types/media";
 
 /**
  * 操作量：图片尺寸、canvas尺寸(坐标轴尺度)、缩放比例
@@ -49,7 +50,7 @@ export default function Taotajima() {
   const instagramBtnRef = useRef<any>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const introduceRef = useRef<HTMLDivElement>(null);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<CategoryDetail | null>(null);
   const { resizeObserverCb } = useResizeLogic();
 
   const {
@@ -83,6 +84,7 @@ export default function Taotajima() {
     });
     setCurrent(current);
     requestAnimationFrame(() => {
+      if (!data) return;
       animateOpacity.current.play();
       generateSoftText
         .current(
@@ -108,6 +110,7 @@ export default function Taotajima() {
     });
     setCurrent(current);
     requestAnimationFrame(() => {
+      if (!data) return;
       animateOpacity.current.play();
       generateSoftText
         .current(
@@ -248,13 +251,17 @@ export default function Taotajima() {
                   </div>
                 </div>
 
-                <div className="dark" ref={playRef}>
+                <div ref={playRef}>
                   <InteractiveHoverButton
                     className="text-xl w-[20vmin] h-[20vmin] aspect-1/1 z-20 opacity-80"
                     text="play"
-                    defaultColor="white"
+                    defaultBgColor="white"
+                    defaultBorderColor="white"
+                    defaultTextColor="black"
+                    hoverBgColor="black"
+                    hoverBorderColor="black"
+                    hoverTextColor="white"
                     border={false}
-                    hoverColor="black"
                     dotPosition={"50%"}
                   />
                 </div>

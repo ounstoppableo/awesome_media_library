@@ -16,7 +16,7 @@ export default function PhotoItem(props: any) {
         }`}
       >
         <img
-          src={info.img}
+          src={info.type === "video" ? info.thumbnail : info.sourcePath}
           draggable={false}
           className={`${
             type === "small"

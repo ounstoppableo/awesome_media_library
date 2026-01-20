@@ -27,7 +27,7 @@ export default function Info(props: any) {
               type === "small" ? "text-[1.5vmin] " : "text-[2vmin] "
             } tracking-[.5vmin]`}
           >
-            {info.category.toUpperCase()}
+            {info.tag.toUpperCase()}
           </div>
           <div
             className={`photoTitle ${
@@ -65,7 +65,7 @@ export default function Info(props: any) {
           </div>
           <div className="flex border-t border-white border-b items-center justify-center gap-[6vmin] px-[1vmin] w-full">
             <div>CATEGORY</div>
-            <div>{info.category.toUpperCase()}</div>
+            <div>{info.tag.toUpperCase()}</div>
           </div>
         </div>
       </div>

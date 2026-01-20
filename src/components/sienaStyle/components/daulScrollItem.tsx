@@ -14,7 +14,7 @@ export default function DaulScrollItem(props: any) {
       className="h-full aspect-1/1 overflow-hidden relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:bg-[radial-gradient(transparent_0%,#000_90%)]"
     >
       <img
-        src={info.img}
+        src={info.type === "video" ? info.thumbnail : info.sourcePath}
         draggable={false}
         className={`w-full h-full object-cover select-none rounded-lg`}
         ref={(el) => {

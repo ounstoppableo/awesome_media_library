@@ -48,8 +48,8 @@ export default function MediaItem(props: {
   tags?: string[];
   deleteConfirm?: boolean;
   isAuth: boolean;
-  handleSelect: (media: MediaStruct) => any;
-  handleCancelSelected: (media: MediaStruct) => any;
+  handleSelect?: (media: MediaStruct) => any;
+  handleCancelSelected?: (media: MediaStruct) => any;
   infoChangeCb?: (params: any) => any;
 }) {
   const {
@@ -189,7 +189,7 @@ export default function MediaItem(props: {
           className="group/select absolute z-10 -right-4 top-8 w-fit h-fit"
           onClick={() => {
             selected
-              ? handleCancelSelected({ ...media })
+              ? handleCancelSelected?.({ ...media })
               : handleSelect?.({ ...media });
           }}
         >
@@ -210,7 +210,7 @@ export default function MediaItem(props: {
       )}
 
       <div
-        className={`w-full flex flex-col bg-white rounded-xl shadow-lg overflow-hidden transition-all group-hover/mediaHover:shadow-indigo-200`}
+        className={`w-full flex flex-col bg-white dark:bg-[#161616] rounded-xl shadow-lg overflow-hidden transition-all group-hover/mediaHover:shadow-indigo-200 dark:group-hover/mediaHover:shadow-gray-600`}
         style={{ height: mediaItemHeight + "px" }}
       >
         <div className="relative flex-1 flex flex-col overflow-hidden">
@@ -275,7 +275,7 @@ export default function MediaItem(props: {
           <div className="flex-1 flex justify-between text-sm text-gray-600 py-2 relative">
             <span className="capitalize">{media.type}</span>
             <span>{dayjs(media.updateTime).format("YYYY-MM-DD")}</span>
-            <div className="opacity-0 absolute inset-0 bg-white border-t border-gray-100 transition-all translate-y-[100%] group-hover/mediaHover:translate-y-0 group-hover/mediaHover:opacity-100">
+            <div className="opacity-0 absolute inset-0 bg-white dark:bg-[#161616] border-t border-gray-100 transition-all translate-y-[100%] group-hover/mediaHover:translate-y-0 group-hover/mediaHover:opacity-100">
               <div className="flex justify-between items-end h-full">
                 <div className="flex-1 overflow-x-auto flex gap-1">
                   {media.tags?.map((tag, index) => (
@@ -414,6 +414,9 @@ export default function MediaItem(props: {
                         }}
                         okText="是"
                         cancelText="否"
+                        getPopupContainer={(triggerNode) =>
+                          triggerNode.parentElement!
+                        }
                       >
                         <Button variant={"ghost"} className="h-6 w-6">
                           <Trash className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center transition-all" />

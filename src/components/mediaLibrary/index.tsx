@@ -49,9 +49,9 @@ import { message } from "antd";
 import useAuthLogic from "./hooks/useAuthLogic";
 
 export default function MediaLibrary(props: {
-  showSelect: boolean;
-  selectedMediaIds: (number | string)[];
-  setSelectedMedias: (medias: MediaStruct[]) => any;
+  showSelect?: boolean;
+  selectedMediaIds?: (number | string)[];
+  setSelectedMedias?: (medias: MediaStruct[]) => any;
 }) {
   const { showSelect, selectedMediaIds, setSelectedMedias } = props;
   const listContainerRef = useRef<any>(null);
@@ -257,7 +257,7 @@ export default function MediaLibrary(props: {
     };
     listContainerRef.current.addEventListener("wheel", _cb);
     return () => listContainerRef.current?.removeEventListener("wheel", _cb);
-  }, []);
+  }, [searchParams]);
 
   const [multiTagSelectorJsx, setMultiTagSelectorJsx] = useState(
     <MultipleSelector
@@ -400,7 +400,7 @@ export default function MediaLibrary(props: {
                   type="text"
                   id="searchInput"
                   placeholder="请输入媒体名称"
-                  className="search-input w-full px-4 py-3 rounded-full text-gray-800 bg-white bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="search-input dark:bg-[#161616] dark:text-gray-200 w-full px-4 py-3 rounded-full text-gray-800 bg-white bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   value={searchParams.title}
                   onChange={(e) => {
                     setSearchParams({
@@ -416,7 +416,7 @@ export default function MediaLibrary(props: {
           </div>
         </header>
 
-        <main className="w-full flex flex-col gap-8 flex-1 container mx-auto px-4 pt-8">
+        <main className="w-full flex flex-col gap-8 flex-1 container mx-auto px-4 py-8">
           <Card ref={filterCardRef}>
             <CardContent>
               <div className="flex flex-wrap items-end gap-4 container mx-auto">
@@ -437,7 +437,7 @@ export default function MediaLibrary(props: {
                     <SelectTrigger className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
                       <SelectValue placeholder="媒体类型" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[9999]">
                       <SelectItem value="all">全部</SelectItem>
                       <SelectItem value="video">视频</SelectItem>
                       <SelectItem value="image">图片</SelectItem>
@@ -472,7 +472,7 @@ export default function MediaLibrary(props: {
                     <SelectTrigger className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
                       <SelectValue placeholder="时间范围" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[9999]">
                       <SelectItem value="all">全部</SelectItem>
                       <SelectItem value="today">今天</SelectItem>
                       <SelectItem value="week">过去一周</SelectItem>
@@ -512,25 +512,26 @@ export default function MediaLibrary(props: {
                   <MediaItem
                     showSelect={showSelect}
                     handleSelect={(media) => {
-                      setSelectedMedias([
+                      setSelectedMedias?.([
                         ...mediaData.filter((media) =>
-                          selectedMediaIds.includes(media.id)
+                          selectedMediaIds?.includes(media.id)
                         ),
                         media,
                       ]);
                     }}
                     handleCancelSelected={(media) => {
-                      const selectedIds = selectedMediaIds.filter(
+                      const selectedIds = selectedMediaIds?.filter(
                         (id) => id !== media.id
                       );
-                      setSelectedMedias(
+                      setSelectedMedias?.(
                         mediaData.filter((media) =>
-                          selectedIds.includes(media.id)
+                          selectedIds?.includes(media.id)
                         )
                       );
                     }}
                     selected={
-                      selectedMediaIds.findIndex((id) => id === media.id) !== -1
+                      selectedMediaIds?.findIndex((id) => id === media.id) !==
+                      -1
                     }
                     tags={tags}
                     media={media}
@@ -612,7 +613,7 @@ export default function MediaLibrary(props: {
           )}
 
           {mediaData.length !== 0 && isOver && (
-            <div className="w-full flex justify-center items-center text-gray-400 text-sm">
+            <div className="w-full flex justify-center items-center text-gray-400 dark:text-gray-200 text-sm">
               🥳 到底了~
             </div>
           )}

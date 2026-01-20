@@ -1,3 +1,4 @@
+import { CategoryItem } from "@/types/media";
 import { useEffect, useRef } from "react";
 
 export default function usePhotoChangeLogic(props: any) {
@@ -16,7 +17,7 @@ export default function usePhotoChangeLogic(props: any) {
       easing: "easeOut",
       uniforms: {},
       displacement: "/3d/disp1.jpg",
-      images: data.children.map((item: any) => item.img),
+      images: data.children.map((item: CategoryItem) => item.sourcePath),
       fragment: `
             uniform float time;
             uniform float progress;
