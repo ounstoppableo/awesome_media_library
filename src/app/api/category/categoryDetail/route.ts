@@ -41,10 +41,9 @@ export async function POST(_req: NextRequest) {
       tag: "scene",
       children: [
         {
-          id: 1,
           mediaId: 126,
-          type: "image",
-          sourcePath: "/img21.jpg",
+          type: "video",
+          sourcePath: "/video.mp4",
           englishTitle: "Blench Bankai Mashup1",
           chineseTitle: "死神千年血战宣传片1",
           date: "2026.1.9",
@@ -58,7 +57,6 @@ export async function POST(_req: NextRequest) {
           tag: "scene",
         },
         {
-          id: 2,
           mediaId: 127,
           type: "image",
           sourcePath: "/img33.jpg",
@@ -76,7 +74,6 @@ export async function POST(_req: NextRequest) {
           tag: "scene",
         },
         {
-          id: 3,
           mediaId: 128,
           type: "image",
           sourcePath: "/Magic.jpg",
@@ -94,7 +91,6 @@ export async function POST(_req: NextRequest) {
           tag: "scene",
         },
         {
-          id: 4,
           mediaId: 129,
           type: "image",
           sourcePath: "/img21.jpg",
@@ -111,11 +107,10 @@ export async function POST(_req: NextRequest) {
           tag: "scene",
         },
         {
-          id: 5,
           mediaId: 130,
           type: "image",
           sourcePath: "/img21.jpg",
-          category: "scene",
+          tag: "scene",
           englishTitle: "Best strait scene",
           chineseTitle: "最佳海峡风景",
           date: "2026.1.7",
@@ -126,10 +121,8 @@ export async function POST(_req: NextRequest) {
               suscipit fugiat distinctio officia earum eius quae officiis quis harum
               animi.`,
           location: "TEL AVIV",
-          tag: "scene",
         },
         {
-          id: 6,
           mediaId: 131,
           type: "image",
           sourcePath:
@@ -147,7 +140,6 @@ export async function POST(_req: NextRequest) {
           tag: "scene",
         },
         {
-          id: 7,
           mediaId: 132,
           type: "image",
           sourcePath:
@@ -165,7 +157,6 @@ export async function POST(_req: NextRequest) {
           tag: "scene",
         },
         {
-          id: 8,
           mediaId: 133,
           type: "image",
           sourcePath:

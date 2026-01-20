@@ -110,7 +110,11 @@ function TypeField(props: { formData: any; field: any; clean?: boolean }) {
             </>
           )}
           <FormControl>
-            <Select {...field} onValueChange={(value) => field.onChange(value)}>
+            <Select
+              disabled={true}
+              {...field}
+              onValueChange={(value) => field.onChange(value)}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="请选择媒体类型" />
               </SelectTrigger>
@@ -286,6 +290,7 @@ function DateField(props: { formData: any; field: any; clean?: boolean }) {
             <Popover>
               <PopoverTrigger asChild>
                 <Button
+                  disabled={true}
                   variant="outline"
                   data-empty={!field.value}
                   className="data-[empty=true]:text-muted-foreground justify-start text-left font-normal w-full"

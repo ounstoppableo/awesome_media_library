@@ -76,12 +76,12 @@ export default function usePortfolioLogic() {
       >
         {"portfolio".toUpperCase()}
       </div>
-      <div className="text-white text-center mb-[3vmin]">
+      <div className="text-white text-center mb-[3vmin] flex flex-col items-center justify-center gap-[1vmin]">
         <div className="text-[3vmin] leading-[3vmin]" ref={chineseIntroduceRef}>
           Unstoppable840的摄影作品集
         </div>
-        <div className="text-[2vmin] leading-[3vmin]" ref={englishIntroduceRef}>
-          Unstoppable840's photography collection
+        <div className="text-[2vmin] leading-[2vmin]" ref={englishIntroduceRef}>
+          Unstoppable840's photography works
         </div>
       </div>
       <div

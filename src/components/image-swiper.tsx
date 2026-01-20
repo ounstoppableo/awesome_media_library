@@ -274,6 +274,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
             imageList.length,
             (Math.min(containerSize.width, containerSize.height) /
               cardOrder.length) *
+              0.8 *
               (Math.min(containerSize.width, containerSize.height) /
                 Math.max(containerSize.width, containerSize.height))
           )}px`,
@@ -326,6 +327,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
                 imageList.length,
                 (Math.min(containerSize.width, containerSize.height) /
                   cardOrder.length) *
+                  0.8 *
                   (Math.min(containerSize.width, containerSize.height) /
                     Math.max(containerSize.width, containerSize.height))
               )}px`,

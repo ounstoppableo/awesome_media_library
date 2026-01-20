@@ -248,7 +248,7 @@ export default function Home() {
         )}
         {showTaojima && <Taotajima></Taotajima>}
       </div>
-      {<JiejoeHomePage></JiejoeHomePage>}
+      <JiejoeHomePage></JiejoeHomePage>
       <div className="fixed bottom-[6vmin] left-[10vmin] z-150">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -256,7 +256,7 @@ export default function Home() {
               <Settings className="size-5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-48">
+          <DropdownMenuContent className="w-48 z-150">
             <DropdownMenuItem
               onClick={() => {
                 setDialogOpen(true);

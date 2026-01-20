@@ -237,16 +237,20 @@ export default function Taotajima() {
                   >
                     <div>Share:</div>
                     <div className="flex gap-[2vmin]">
-                      <Twitter
-                        ref={twitterBtnRef}
-                        onMouseEnter={animateBtn.bind(null, twitterBtnRef)}
-                        className="cursor-pointer w-[3vmin]"
-                      />
-                      <Instagram
-                        ref={instagramBtnRef}
+                      <div onMouseEnter={animateBtn.bind(null, twitterBtnRef)}>
+                        <Twitter
+                          ref={twitterBtnRef}
+                          className="cursor-pointer w-[3vmin]"
+                        />
+                      </div>
+                      <div
                         onMouseEnter={animateBtn.bind(null, instagramBtnRef)}
-                        className="cursor-pointer w-[3vmin]"
-                      />
+                      >
+                        <Instagram
+                          ref={instagramBtnRef}
+                          className="cursor-pointer w-[3vmin]"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
