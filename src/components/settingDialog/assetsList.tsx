@@ -17,15 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+
 import {
   Empty,
   EmptyContent,
@@ -50,7 +42,7 @@ import {
 } from "lucide-react";
 import { Button } from "../button-1";
 import MediaLibrary from "../mediaLibrary";
-import { z } from "zod";
+import { success, z } from "zod";
 import {
   Form,
   FormControl,
@@ -90,6 +82,8 @@ import { Note } from "../note";
 import { Badge, BadgeDot } from "../badge-2";
 import { CategoryDetail, CategoryItem } from "@/types/media";
 import { OrbitalLoader } from "../orbital-loader";
+import { Pagination, Popconfirm, message } from "antd";
+import categoryFormSchema from "@/utils/dataStruct";
 
 function TypeField(props: { formData: any; field: any; clean?: boolean }) {
   const { formData, field, clean = false } = props;
@@ -354,7 +348,6 @@ function IntroduceField(props: { formData: any; field: any; clean?: boolean }) {
       name={field}
       render={({ field }) => (
         <FormItem className={"flex-1"}>
-          {" "}
           {clean ? (
             <></>
           ) : (
@@ -380,78 +373,35 @@ export default function AssetsList(props: any) {
   const [assetDetailLoading, setAssetDetailLoading] = useState(false);
   const [addMediaOpen, setAddMediaOpen] = useState(false);
   const [mediaSelectOpen, setMediaSelectOpen] = useState(false);
-  const formSchema = z.object({
-    sourcePath: z.string(),
-    thumbnail: z.string(),
-    mediaId: z.union([
-      z.number(),
-      z.string().min(1, { message: "id参数不能为空" }),
-    ]),
-    type: z.string().min(1, { message: "类型参数不能为空" }),
-    englishTitle: z
-      .string()
-      .min(1, { message: "英文标题不能为空" })
-      .max(50, { message: "英文标题不能超过50个字符" }),
-    chineseTitle: z
-      .string()
-      .min(1, { message: "中文标题不能为空" })
-      .max(30, { message: "中文标题不能超过30个字符" }),
-    date: z.string().min(1, { message: "日期参数不能为空" }),
-    introduce: z
-      .string()
-      .min(150, { message: "介绍不能少于150字" })
-      .max(400, { message: "介绍不能超过400个字符" }),
-    location: z
-      .string()
-      .min(1, { message: "位置参数不能为空" })
-      .max(20, { message: "位置参数不能超过20个字符" }),
-    tag: z.string().min(1, { message: "标签参数不能为空" }),
-    tags: z.array(z.string()),
-    children: z.array(
-      z.object({
-        sourcePath: z.string(),
-        thumbnail: z.string(),
-        mediaId: z.union([
-          z.number(),
-          z.string().min(1, { message: "id参数不能为空" }),
-        ]),
-        type: z.string().min(1, { message: "类型参数不能为空" }),
-        englishTitle: z
-          .string()
-          .min(1, { message: "英文标题不能为空" })
-          .max(50, { message: "英文标题不能超过50个字符" }),
-        chineseTitle: z
-          .string()
-          .min(1, { message: "中文标题不能为空" })
-          .max(30, { message: "中文标题不能超过30个字符" }),
-        date: z.string().min(1, { message: "日期参数不能为空" }),
-        introduce: z
-          .string()
-          .min(150, { message: "介绍不能少于150字" })
-          .max(400, { message: "介绍不能超过400个字符" }),
-        location: z
-          .string()
-          .min(1, { message: "位置参数不能为空" })
-          .max(20, { message: "位置参数不能超过20个字符" }),
-        tag: z.string().min(1, { message: "标签参数不能为空" }),
-        tags: z.array(z.string()),
-      })
-    ),
+
+  // 分页
+  const [pageInfo, setPageInfo] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
   });
-  useEffect(() => {
+  const updateList = () => {
     setAssetListLoading(true);
-    request("/api/category/newestCategory", { method: "post" })
+    request("/api/category/categoryList", {
+      method: "post",
+      body: { page: pageInfo },
+    })
       .then((res: CommonResponse) => {
         if (res.code === codeMap.success) {
-          setData(res.data);
+          setData(res.data.list || []);
+          setPageInfo(res.data.page || { page: 1, limit: 10, total: 0 });
         }
       })
       .finally(() => {
         setAssetListLoading(false);
       });
-  }, []);
-  const formData = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  };
+  useEffect(() => {
+    updateList();
+  }, [pageInfo.page, pageInfo.limit]);
+  useEffect(() => {}, []);
+  const formData = useForm<z.infer<typeof categoryFormSchema>>({
+    resolver: zodResolver(categoryFormSchema),
     mode: "onBlur",
     defaultValues: {
       sourcePath: "",
@@ -468,14 +418,32 @@ export default function AssetsList(props: any) {
       mediaId: "",
     } as CategoryDetail,
   });
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  function onSubmit(values: z.infer<typeof categoryFormSchema>) {
+    if (values.children.length < 5) {
+      return message.warning("一个资产最少包含5张图片");
+    }
+    setAssetDetailLoading(true);
+    request("/api/category/add", {
+      method: "post",
+      body: values,
+    })
+      .then((res) => {
+        if (res.code === codeMap.success) {
+          message.success(res.msg);
+          setAddMediaOpen(false);
+          formData.reset();
+          setCurrentStep(1);
+        }
+      })
+      .finally(() => {
+        setAssetDetailLoading(false);
+      });
   }
   const [selectedMediaIds, setSelectedMediaIds] = useState<any>([]);
   const [addAssetDialogTitle, setAddAssetDialogTitle] =
     useState<string>("添加资产");
 
-  const mediaTableJsx = (data: z.infer<typeof formSchema>[]) => (
+  const mediaTableJsx = (data: z.infer<typeof categoryFormSchema>[]) => (
     <Table className="flex-1">
       <TableHeader>
         <TableRow>
@@ -733,6 +701,10 @@ export default function AssetsList(props: any) {
                                         data.mediaId
                                       );
                                       formData.setValue(
+                                        "introduce",
+                                        data.introduce
+                                      );
+                                      formData.setValue(
                                         "sourcePath",
                                         data.sourcePath
                                       );
@@ -760,42 +732,50 @@ export default function AssetsList(props: any) {
                             >
                               <Edit></Edit>
                             </Button>
-                            <Button
-                              className="w-8 h-8 rounded-full"
-                              variant={"destructive"}
+                            <Popconfirm
+                              placement="topLeft"
+                              title={"删除资产"}
+                              description={"您确定要删除该资产吗?"}
+                              okText="是"
+                              cancelText="否"
+                              getPopupContainer={(triggerNode) =>
+                                triggerNode.parentElement!
+                              }
+                              onConfirm={() => {
+                                request("/api/category/delete", {
+                                  method: "post",
+                                  body: { ids: [info.id] },
+                                }).then((res) => {
+                                  if (res.code === codeMap.success) {
+                                    message.success("删除成功");
+                                    updateList();
+                                  }
+                                });
+                              }}
                             >
-                              <Trash2></Trash2>
-                            </Button>
+                              <Button
+                                className="w-8 h-8 rounded-full"
+                                variant={"destructive"}
+                              >
+                                <Trash2></Trash2>
+                              </Button>
+                            </Popconfirm>
                           </div>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious href="#" />
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink href="#">1</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink href="#" isActive>
-                        2
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink href="#">3</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationNext href="#" />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+                <Pagination
+                  className="justify-center"
+                  showSizeChanger
+                  defaultCurrent={pageInfo.page}
+                  onChange={(page, limit) => {
+                    setPageInfo({ ...pageInfo, page, limit });
+                  }}
+                  total={pageInfo.total}
+                  pageSize={pageInfo.limit}
+                />
               </>
             )}
           </DialogContent>

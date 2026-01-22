@@ -2,7 +2,7 @@ import mysql from "mysql2/promise";
 
 let pool: any;
 
-export function getPool() {
+export function getPool(): mysql.Pool {
   if (!pool) {
     pool = mysql.createPool({
       host: process.env.DB_HOST,

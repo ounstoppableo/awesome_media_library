@@ -1,7 +1,7 @@
 "use client";
 
 import MediaLibrary from "@/components/mediaLibrary";
-import { message } from "antd";
+import { ConfigProvider, message, theme } from "antd";
 import Image from "next/image";
 import { useEffect } from "react";
 
@@ -14,8 +14,14 @@ export default function MediaLibraryPage() {
     });
   });
   return (
-    <div className="h-[100dvh]">
-      <MediaLibrary></MediaLibrary>
-    </div>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+      }}
+    >
+      <div className="h-[100dvh]">
+        <MediaLibrary></MediaLibrary>
+      </div>
+    </ConfigProvider>
   );
 }

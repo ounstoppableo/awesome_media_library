@@ -1,5 +1,5 @@
 "use client";
-import { message } from "antd";
+import { ConfigProvider, message, theme } from "antd";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -204,7 +204,11 @@ export default function Home() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
-    <>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+      }}
+    >
       {loading && (
         <div className="fixed inset-0 top-0 z-[99999] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
           <OrbitalLoader />
@@ -277,6 +281,6 @@ export default function Home() {
         }}
         className={"z-160"}
       ></AssetsList>
-    </>
+    </ConfigProvider>
   );
 }

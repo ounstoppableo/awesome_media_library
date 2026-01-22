@@ -1,7 +1,8 @@
 "use client";
 
 import { message } from "antd";
-import { codeMap } from "./backendStatus";
+import { codeMap, codeMapMsg } from "./backendStatus";
+import { CommonResponse } from "@/types/response";
 
 class FetchInterceptor {
   baseURL: string;
@@ -66,9 +67,13 @@ class FetchInterceptor {
   }
 }
 let fetchInterceptor: any;
-const request = (...params: any) => {
+const request = (...params: any): Promise<CommonResponse> => {
   if (!fetchInterceptor) {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined")
+      return Promise.resolve({
+        code: codeMap.clientError,
+        msg: codeMapMsg[codeMap.clientError],
+      });
     fetchInterceptor = new FetchInterceptor(location.origin, {});
   }
   return fetchInterceptor.request.apply(fetchInterceptor, params);
