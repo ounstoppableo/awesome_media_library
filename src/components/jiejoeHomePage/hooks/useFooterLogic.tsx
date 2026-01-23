@@ -1,3 +1,4 @@
+import { StackedCircularFooter } from "@/components/ui/stacked-circular-footer";
 import { useEffect, useState } from "react";
 
 export default function useFooterLogic() {
@@ -29,7 +30,7 @@ export default function useFooterLogic() {
           </filter>
         </defs>
       </svg>
-      <div className="relative h-[60dvh]">
+      <div className="relative h-[70vmin]">
         <div
           className=" [--footer-background:#fff] w-full absolute top-1/2 left-0"
           style={{
@@ -44,9 +45,9 @@ export default function useFooterLogic() {
                 key={index}
                 style={
                   {
-                    "--size": `${2 + Math.random() * 6}rem`,
+                    "--size": `${10 + Math.random() * 10}vmin`,
                     "--position": `${-10 + Math.random() * 110}%`,
-                    "--distance": `${0 + Math.random() * 6}rem`,
+                    "--distance": `${0 + Math.random() * 0}vmin`,
                     "--time": `${2 + Math.random() * 2}s`,
                     "--delay": `${-1 * (2 + Math.random() * 2)}s`,
                     animation: `bubble-size var(--time, 4s) ease-in infinite var(--delay, 0s),
@@ -56,7 +57,9 @@ export default function useFooterLogic() {
               ></div>
             ))}
         </div>
-        <div className="absolute bg-white inset-0 top-1/2"></div>
+        <div className="absolute bg-white inset-0 top-[30vmin]">
+          <StackedCircularFooter />
+        </div>
       </div>
     </>
   );
