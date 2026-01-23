@@ -46,10 +46,10 @@ export default function useFooterLogic() {
                 style={
                   {
                     "--size": `${10 + Math.random() * 10}vmin`,
-                    "--position": `${-10 + Math.random() * 110}%`,
-                    "--distance": `${0 + Math.random() * 0}vmin`,
-                    "--time": `${2 + Math.random() * 2}s`,
-                    "--delay": `${-1 * (2 + Math.random() * 2)}s`,
+                    "--position": `${-10 + Math.random() * 120}%`,
+                    "--distance": `${0 + Math.random() * 5}vmin`,
+                    "--time": `${2 + Math.random() * 4}s`,
+                    "--delay": `${2 * (2 + Math.random() * 4)}s`,
                     animation: `bubble-size var(--time, 4s) ease-in infinite var(--delay, 0s),
                   bubble-move var(--time, 4s) ease-in infinite var(--delay, 0s)`,
                   } as any
