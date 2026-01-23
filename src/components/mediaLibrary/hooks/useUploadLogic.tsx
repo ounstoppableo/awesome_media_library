@@ -393,8 +393,8 @@ export default function useUploadLogic(props: {
                   <FileAudio className="w-1/12 h-1/12 text-gray-400" />
                 </div>
                 <div className="flex text-sm text-gray-600 mt-4">
-                  <label className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
-                    <span>Upload a file</span>
+                  <label className="relative cursor-pointer bg-background rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
+                    <span>&nbsp;Upload a file&nbsp;</span>
                   </label>
                   <p className="pl-1">or drag and drop</p>
                 </div>
@@ -426,7 +426,7 @@ export default function useUploadLogic(props: {
                               type: "edit",
                               fileId: fileId,
                               fileInfo: {
-                                ...value,
+                                ...{ ...waitingUploadFiles[index], ...value },
                                 file: null,
                                 ext: media.file.name.split(".").pop(),
                               },
@@ -434,7 +434,7 @@ export default function useUploadLogic(props: {
                           });
                         setWaitingUploadFiles([
                           ...waitingUploadFiles.slice(0, index),
-                          value,
+                          { ...waitingUploadFiles[index], ...value },
                           ...waitingUploadFiles.slice(index + 1),
                         ]);
                       }}

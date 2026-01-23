@@ -195,7 +195,7 @@ export default function MediaItem(props: {
         >
           <svg
             className={`icon text-4xl rotate-90 stroke-40 ${
-              selected ? "stroke-emerald-400" : "stroke-gray-400"
+              selected ? "stroke-emerald-400" : "stroke-gray-300"
             } cursor-pointer group-hover/select:stroke-emerald-400 transition-all`}
             aria-hidden="true"
           >
@@ -203,7 +203,7 @@ export default function MediaItem(props: {
           </svg>
           <CircleCheck
             className={`absolute top-1/2 left-1/2 -translate-x-[5px] -translate-y-1/2 w-[40%] h-[40%] ${
-              selected ? "stroke-emerald-400" : "stroke-gray-400"
+              selected ? "stroke-emerald-400" : "stroke-gray-300"
             } cursor-pointer group-hover/select:stroke-emerald-400 transition-all`}
           ></CircleCheck>
         </div>

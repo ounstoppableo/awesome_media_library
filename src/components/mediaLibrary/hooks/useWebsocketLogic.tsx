@@ -10,9 +10,7 @@ export default function useWebsocketLogic() {
     // 连接 WebSocket 服务
     socketRef.current = new WebSocket(`ws://${location.hostname}:10000`);
 
-    socketRef.current.onopen = () => {
-      console.log("✅ WebSocket connected");
-    };
+    socketRef.current.onopen = () => {};
     const clear = wsListen(
       socketRef.current,
       () => {},
@@ -25,9 +23,7 @@ export default function useWebsocketLogic() {
         }
       }
     );
-    socketRef.current.onclose = () => {
-      console.log("❌ WebSocket closed");
-    };
+    socketRef.current.onclose = () => {};
 
     return () => {
       clear();

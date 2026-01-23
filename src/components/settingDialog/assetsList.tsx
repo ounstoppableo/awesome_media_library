@@ -605,6 +605,14 @@ export default function AssetsList(props: any) {
     formData.reset();
   };
 
+  useEffect(() => {
+    if (!addMediaOpen) {
+      setCurrentStep(1);
+      setSelectedMediaIds([]);
+      formData.reset();
+    }
+  }, [addMediaOpen]);
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -860,11 +868,6 @@ export default function AssetsList(props: any) {
         open={addMediaOpen}
         onOpenChange={(value) => {
           setAddMediaOpen(value);
-          if (!value) {
-            setCurrentStep(1);
-            setSelectedMediaIds([]);
-            formData.reset();
-          }
         }}
       >
         <DialogContent
