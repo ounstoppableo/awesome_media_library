@@ -8,6 +8,7 @@ import categoryFormSchema from "@/utils/dataStruct";
 import errorStringify from "@/utils/errorStringify";
 import { thumbnailPath } from "@/utils/fileOperate";
 import { zodResolver } from "@hookform/resolvers/zod";
+import dayjs from "dayjs";
 import { NextRequest } from "next/server";
 import z from "zod";
 
@@ -38,7 +39,8 @@ export async function POST(_req: NextRequest) {
          chineseTitle = ?,
          introduce = ?,
          location = ?,
-         tag = ?
+         tag = ?,
+         updateTime = ?
        WHERE id = ?;`,
       [
         body.mediaId,
@@ -47,6 +49,7 @@ export async function POST(_req: NextRequest) {
         body.introduce,
         body.location,
         body.tag,
+        dayjs().format("YYYY-MM-DD hh:mm:ss"),
         body.id,
       ]
     );

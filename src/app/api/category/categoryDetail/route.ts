@@ -29,7 +29,7 @@ export async function POST(_req: NextRequest) {
     await conn.beginTransaction();
     const [[category]]: any = await conn.query(
       `
-      SELECT category.id,mediaId,englishTitle,chineseTitle,introduce,location,tag,tags,type,sourcePath,updateTime date,thumbnail
+      SELECT category.id,mediaId,englishTitle,chineseTitle,introduce,location,tag,tags,type,sourcePath,category.updateTime date,thumbnail
       FROM category
       JOIN media ON category.mediaId = media.id
       WHERE category.id = ?;`,

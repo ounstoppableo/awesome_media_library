@@ -8,6 +8,7 @@ import categoryFormSchema from "@/utils/dataStruct";
 import errorStringify from "@/utils/errorStringify";
 import { thumbnailPath } from "@/utils/fileOperate";
 import { zodResolver } from "@hookform/resolvers/zod";
+import dayjs from "dayjs";
 import { NextRequest } from "next/server";
 import z from "zod";
 
@@ -30,7 +31,7 @@ export async function POST(_req: NextRequest) {
     await conn.beginTransaction();
 
     const insetCategory: any = await conn.query(
-      "INSERT INTO category (mediaId,englishTitle,chineseTitle,introduce,location,tag) VALUES (?,?,?,?,?,?)",
+      "INSERT INTO category (mediaId,englishTitle,chineseTitle,introduce,location,tag,updateTime) VALUES (?,?,?,?,?,?,?)",
       [
         body.mediaId,
         body.englishTitle,
@@ -38,6 +39,7 @@ export async function POST(_req: NextRequest) {
         body.introduce,
         body.location,
         body.tag,
+        dayjs().format("YYYY-MM-DD hh:mm:ss"),
       ]
     );
     const categoryId = insetCategory[0].insertId;

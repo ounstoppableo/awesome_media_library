@@ -441,9 +441,9 @@ export default function AssetsList(props: any) {
     } as CategoryDetail,
   });
   function onSubmit(values: z.infer<typeof categoryFormSchema>) {
-    if (values.children.length < 5) {
-      return message.warning("一个资产最少包含5张图片");
-    }
+    // if (values.children.length < 5) {
+    //   return message.warning("一个资产最少包含5张图片");
+    // }
     setAssetDetailLoading(true);
     request(
       addAssetDialogTitle === "添加资产"
@@ -856,7 +856,17 @@ export default function AssetsList(props: any) {
           </DialogContent>
         </form>
       </Dialog>
-      <Dialog open={addMediaOpen} onOpenChange={setAddMediaOpen}>
+      <Dialog
+        open={addMediaOpen}
+        onOpenChange={(value) => {
+          setAddMediaOpen(value);
+          if (!value) {
+            setCurrentStep(1);
+            setSelectedMediaIds([]);
+            formData.reset();
+          }
+        }}
+      >
         <DialogContent
           className={cn(
             "w-[80dvw] max-w-[80dvw_!important] h-[80dvh] flex flex-col",
@@ -993,7 +1003,12 @@ export default function AssetsList(props: any) {
                                             "chineseTitle",
                                             media.chineseTitle
                                           );
-                                          formData.setValue("date", media.date);
+                                          formData.setValue(
+                                            "date",
+                                            dayjs().format(
+                                              "YYYY-MM-DD hh:mm:ss"
+                                            )
+                                          );
                                           formData.setValue(
                                             "englishTitle",
                                             media.englishTitle

@@ -31,11 +31,11 @@ export async function POST(_req: NextRequest) {
     await conn.beginTransaction();
     const [categories] = await conn.query(
       `
-      SELECT category.id,mediaId,englishTitle,chineseTitle,introduce,location,tag,tags,type,sourcePath,updateTime date,thumbnail
+      SELECT category.id,mediaId,englishTitle,chineseTitle,introduce,location,tag,tags,type,sourcePath,category.updateTime date,thumbnail
       FROM category
       JOIN media ON category.mediaId = media.id
       ${body.filter?.chineseTitle ? "WHERE chineseTitle like ?" : ""}
-      ORDER BY updateTime DESC
+      ORDER BY category.updateTime DESC
       LIMIT ?, ?;`,
       body.filter?.chineseTitle
         ? [

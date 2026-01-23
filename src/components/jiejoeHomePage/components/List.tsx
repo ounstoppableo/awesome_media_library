@@ -1,4 +1,5 @@
 import ClientPortal from "@/components/clientPortal";
+import dayjs from "dayjs";
 import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -198,7 +199,7 @@ export default function List(props: any) {
               </div>
               <div className="flex-1"></div>
               <div className="text-white text-[3vmin] leading-[3vmin] date">
-                {item.date}
+                {dayjs(item.date).format("YYYY-MM-DD")}
               </div>
             </div>
             <div className="absolute inset-0 bg-white scale-y-0 origin-center z-0 background"></div>
