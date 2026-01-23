@@ -16,20 +16,33 @@ const MouseImageTrail = ({
 
   const lastRenderPosition = useRef({ x: 0, y: 0 });
   const imageRenderCount = useRef(0);
+  const scopeRect = useRef({ x: 0, y: 0 });
 
+  useEffect(() => {
+    const cb = () => {
+      requestAnimationFrame(() => {
+        scopeRect.current = scope.current.getBoundingClientRect();
+      });
+    };
+    window.addEventListener("wheel", cb);
+    return () => {
+      window.removeEventListener("wheel", cb);
+    };
+  }, []);
   const handleMouseMove = (e: any) => {
     const { clientX, clientY } = e;
-
+    const _clientX = clientX - scopeRect.current.x;
+    const _clientY = clientY - scopeRect.current.y;
     const distance = calculateDistance(
-      clientX,
-      clientY,
+      _clientX,
+      _clientY,
       lastRenderPosition.current.x,
       lastRenderPosition.current.y
     );
 
     if (distance >= renderImageBuffer) {
-      lastRenderPosition.current.x = clientX;
-      lastRenderPosition.current.y = clientY;
+      lastRenderPosition.current.x = _clientX;
+      lastRenderPosition.current.y = _clientY;
 
       renderNextImage();
     }
@@ -98,7 +111,7 @@ const MouseImageTrail = ({
 
       {images.map((img: any, index: number) => (
         <img
-          className="pointer-events-none absolute left-0 top-0 h-48 w-auto rounded-xl border-4 border-white bg-neutral-900 object-cover opacity-0"
+          className="pointer-events-none absolute left-0 top-0 h-[32vmin] w-auto rounded-xl border-4 border-white bg-neutral-900 object-cover opacity-0"
           src={img}
           alt={`Mouse move image ${index}`}
           key={index}
