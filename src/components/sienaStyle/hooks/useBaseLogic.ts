@@ -35,14 +35,15 @@ export default function useBaseLogic(props: any) {
 
   const dispatch = useAppDispatch();
   useEffect(() => {
-    request("/api/category/categoryList", { method: "get" }).then(
-      (res: CommonResponse) => {
-        if (res.code === codeMap.success) {
-          setData(res.data);
-          dispatch(setSienaLoading({ sienaLoading: false }));
-        }
+    request("/api/category/categoryList", {
+      method: "post",
+      body: { page: { page: 1, limit: 50 } },
+    }).then((res: CommonResponse) => {
+      if (res.code === codeMap.success) {
+        setData(res.data.list);
+        dispatch(setSienaLoading({ sienaLoading: false }));
       }
-    );
+    });
   }, []);
 
   const computedImgOffset = useRef<

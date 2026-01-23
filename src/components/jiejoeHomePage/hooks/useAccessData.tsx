@@ -12,19 +12,25 @@ export default function useAccessData() {
 
   useEffect(() => {
     dispatch(setGlobalLoading({ globalLoading: true }));
-    request("/api/category/randomCategory", { method: "post" })
+    request("/api/category/randomCategory", {
+      method: "post",
+      body: { count: 11 },
+    })
       .then((res: CommonResponse) => {
         if (res.code === codeMap.success) {
-          setRandomData(res.data);
+          setRandomData(res.data.list);
         }
       })
       .finally(() => {
         dispatch(setGlobalLoading({ globalLoading: false }));
       });
-    request("/api/category/newestCategory", { method: "post" })
+    request("/api/category/categoryList", {
+      method: "post",
+      body: { page: { page: 1, limit: 6 } },
+    })
       .then((res: CommonResponse) => {
         if (res.code === codeMap.success) {
-          setNewestData(res.data);
+          setNewestData(res.data.list || []);
         }
       })
       .finally(() => {

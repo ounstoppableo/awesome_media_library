@@ -27,7 +27,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import request from "@/utils/fetch";
 import { CommonResponse } from "@/types/response";
 import { codeMap } from "@/utils/backendStatus";
@@ -36,6 +36,7 @@ import {
   Delete,
   Edit,
   Plus,
+  Search,
   Store,
   Trash,
   Trash2,
@@ -84,6 +85,8 @@ import { CategoryDetail, CategoryItem } from "@/types/media";
 import { OrbitalLoader } from "../orbital-loader";
 import { Pagination, Popconfirm, message } from "antd";
 import categoryFormSchema from "@/utils/dataStruct";
+import { ResetIcon } from "@radix-ui/react-icons";
+import { Field, FieldLabel } from "../ui/field";
 
 function TypeField(props: { formData: any; field: any; clean?: boolean }) {
   const { formData, field, clean = false } = props;
@@ -373,18 +376,37 @@ export default function AssetsList(props: any) {
   const [assetDetailLoading, setAssetDetailLoading] = useState(false);
   const [addMediaOpen, setAddMediaOpen] = useState(false);
   const [mediaSelectOpen, setMediaSelectOpen] = useState(false);
+  const [searchParams, _setSearchParams] = useState({
+    chineseTitle: "",
+  });
+  const searchParamsSync = useRef({
+    chineseTitle: "",
+  });
+  const setSearchParams = (value: any) => {
+    _setSearchParams(value);
+    searchParamsSync.current = value;
+  };
 
   // 分页
-  const [pageInfo, setPageInfo] = useState({
+  const [pageInfo, _setPageInfo] = useState({
     page: 1,
     limit: 10,
     total: 0,
   });
+  const pageInfoSync = useRef({
+    page: 1,
+    limit: 10,
+    total: 0,
+  });
+  const setPageInfo = (value: any) => {
+    _setPageInfo(value);
+    pageInfoSync.current = value;
+  };
   const updateList = () => {
     setAssetListLoading(true);
     request("/api/category/categoryList", {
       method: "post",
-      body: { page: pageInfo },
+      body: { page: pageInfoSync.current, filter: searchParamsSync.current },
     })
       .then((res: CommonResponse) => {
         if (res.code === codeMap.success) {
@@ -423,16 +445,22 @@ export default function AssetsList(props: any) {
       return message.warning("一个资产最少包含5张图片");
     }
     setAssetDetailLoading(true);
-    request("/api/category/add", {
-      method: "post",
-      body: values,
-    })
+    request(
+      addAssetDialogTitle === "添加资产"
+        ? "/api/category/add"
+        : "/api/category/edit",
+      {
+        method: "post",
+        body: values,
+      }
+    )
       .then((res) => {
         if (res.code === codeMap.success) {
           message.success(res.msg);
           setAddMediaOpen(false);
           formData.reset();
           setCurrentStep(1);
+          updateList();
         }
       })
       .finally(() => {
@@ -618,10 +646,54 @@ export default function AssetsList(props: any) {
               </Empty>
             ) : (
               <>
-                <div className="flex gap-[2vmin]">
+                <div className="flex gap-[4vmin]">
                   <Button onClick={handleAddAsset}>
                     <Plus></Plus>添加资产
                   </Button>
+
+                  <Field orientation="horizontal">
+                    <FieldLabel
+                      htmlFor="chineseTitleSearch"
+                      className="whitespace-nowrap"
+                    >
+                      中文名称
+                    </FieldLabel>
+                    <Input
+                      id="chineseTitleSearch"
+                      placeholder="请输入中文标题进行模糊搜索"
+                      value={searchParams.chineseTitle}
+                      onChange={(e) =>
+                        setSearchParams({
+                          ...searchParams,
+                          chineseTitle: e.target.value,
+                        })
+                      }
+                      onKeyUp={(e) => {
+                        if (e.code === "Enter") {
+                          setPageInfo({ page: 1, limit: 10, total: 0 });
+                          updateList();
+                        }
+                      }}
+                    ></Input>
+                    <Button
+                      variant={"secondary"}
+                      onClick={() => {
+                        setPageInfo({ page: 1, limit: 10, total: 0 });
+                        setSearchParams({ chineseTitle: "" });
+                        updateList();
+                      }}
+                    >
+                      <ResetIcon></ResetIcon>重置
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setPageInfo({ page: 1, limit: 10, total: 0 });
+                        updateList();
+                      }}
+                    >
+                      <Search></Search>查询
+                    </Button>
+                  </Field>
                 </div>
                 <Table className="flex-1">
                   <TableHeader>
@@ -653,7 +725,9 @@ export default function AssetsList(props: any) {
                         </TableCell>
                         <TableCell>{info.chineseTitle}</TableCell>
                         <TableCell>{info.englishTitle}</TableCell>
-                        <TableCell>{info.date}</TableCell>
+                        <TableCell>
+                          {dayjs(info.date).format("YYYY-MM-DD")}
+                        </TableCell>
                         <TableCell>{info.location}</TableCell>
                         <TableCell>{info.tag}</TableCell>
                         <TableCell
@@ -718,6 +792,7 @@ export default function AssetsList(props: any) {
                                         "tags",
                                         data.tags || []
                                       );
+                                      formData.setValue("id", data.id);
                                       setSelectedMediaIds(
                                         data.children.map(
                                           (item) => item.mediaId

@@ -1,6 +1,7 @@
 import z from "zod";
 
 const categoryFormSchema = z.object({
+  id: z.any(),
   sourcePath: z.string(),
   thumbnail: z.string(),
   mediaId: z.union([

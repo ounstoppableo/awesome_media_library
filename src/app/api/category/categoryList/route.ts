@@ -13,7 +13,7 @@ type Page = {
 };
 
 export async function POST(_req: NextRequest) {
-  let body: { page: Page };
+  let body: { page: Page; filter?: { chineseTitle: string } };
   try {
     body = await _req.json();
   } catch (e) {
@@ -34,14 +34,26 @@ export async function POST(_req: NextRequest) {
       SELECT category.id,mediaId,englishTitle,chineseTitle,introduce,location,tag,tags,type,sourcePath,updateTime date,thumbnail
       FROM category
       JOIN media ON category.mediaId = media.id
-      ORDER BY category.id
+      ${body.filter?.chineseTitle ? "WHERE chineseTitle like ?" : ""}
+      ORDER BY updateTime DESC
       LIMIT ?, ?;`,
-      [startOffset, body.page.limit]
+      body.filter?.chineseTitle
+        ? [
+            "%" + body.filter.chineseTitle.split("").join("%") + "%",
+            startOffset,
+            body.page.limit,
+          ]
+        : [startOffset, body.page.limit]
     );
     const [[{ total }]]: any = await conn.query(
       `
       SELECT COUNT(*) AS total
-      FROM category`
+      FROM category
+      ${body.filter?.chineseTitle ? "WHERE chineseTitle like ?" : ""}
+      `,
+      body.filter?.chineseTitle
+        ? ["%" + body.filter.chineseTitle.split("").join("%") + "%"]
+        : []
     );
     const promises = (categories as CategoryDetail[]).map(async (category) => {
       category.tags = JSON.parse((category.tags as any) || "[]");

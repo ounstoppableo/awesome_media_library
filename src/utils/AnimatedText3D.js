@@ -103,14 +103,24 @@ export class AnimatedText3D extends Object3D {
       return mesh;
     };
     letters.forEach((letter, index) => {
-      if (letter === " ") {
-        spaceCount++;
-        this.basePositionX += size * 0.5;
+      if (letter === " " || /[\u4E00-\u9FFF]/.test(letter)) {
+        if (letter === " ") {
+          spaceCount++;
+          this.basePositionX += size * 0.5;
+        }
+
         let nextSpace = 0;
-        for (let i = index + 1; i < letters.length; i++) {
-          if (letters[i] === " " || i === letters.length - 1) {
-            nextSpace = i;
-            break;
+        if (/[\u4E00-\u9FFF]/.test(letter)) {
+          nextSpace = index + 1;
+          const mesh = createMesh(letter);
+          if (!mesh) return;
+          this.add(mesh);
+        } else {
+          for (let i = index + 1; i < letters.length; i++) {
+            if (letters[i] === " " || i === letters.length - 1) {
+              nextSpace = i;
+              break;
+            }
           }
         }
 
@@ -128,6 +138,7 @@ export class AnimatedText3D extends Object3D {
             typeof this.overflow !== "number"
           ) {
             this.overflow = index - spaceCount;
+            console.log(this.overflow);
             this.children[this.overflow - 1].geometry.dispose();
             this.children[this.overflow - 1].geometry = new ShapeGeometry(
               font.generateShapes(".", size, 1)

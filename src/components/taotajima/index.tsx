@@ -271,122 +271,139 @@ export default function Taotajima() {
                 </div>
               </div>
             ) : (
-              <ContentInsufficient count={1}></ContentInsufficient>
+              <div className="absolute inset-0 flex justify-center items-center bg-black z-[-1]">
+                <ContentInsufficient count={1}></ContentInsufficient>
+              </div>
             )}
             <div className="flex-1"></div>
-            <div className="relative text-white text-xl flex gap-[10dvw] max-w-[50dvw] select-none">
-              {
-                <div
-                  className="relative flex flex-col items-end w-[20dvw] cursor-pointer"
-                  ref={leftBtnRef}
-                  onMouseEnter={() => {
-                    if (togglePageControl.current) return;
-                    animatePageToggleBtn(leftBtnRef, "left", "enter");
-                  }}
-                  onMouseLeave={() => {
-                    if (togglePageControl.current) return;
-                    animatePageToggleBtn(leftBtnRef, "left", "leave");
-                  }}
-                  onClick={async () => {
-                    if (togglePageControl.current) return;
-                    clearCb("prev");
-                    togglePageControl.current = sketch.current.prev();
-                    togglePageControl.current.then(async (current: number) => {
-                      await prevCb(current);
-                      togglePageControl.current = null;
-                    });
-                  }}
-                >
+            {data.children?.length >= 2 && (
+              <>
+                <div className="relative text-white text-xl flex gap-[10dvw] max-w-[50dvw] select-none">
                   {
-                    <>
-                      <div
-                        className="pageCount text-[2vmin]"
-                        key={current === 0 ? data.children.length : current}
-                      >
-                        #
-                        {(current === 0 ? data.children.length : current)
-                          .toString()
-                          .padStart(3, "0")}
-                      </div>
-                      <div className="truncate w-[80%] title text-right text-[2.5vmin]">
-                        {data.children[
-                          current === 0 ? data.children.length - 1 : current - 1
-                        ].chineseTitle ||
-                          data.children[
-                            current === 0
-                              ? data.children.length - 1
-                              : current - 1
-                          ].englishTitle}
-                      </div>
-                      <svg
-                        viewBox="0 0 360 7"
-                        className="fill-white absolute bottom-[1vmin] arrow origin-right"
-                      >
-                        <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
-                      </svg>
-                    </>
+                    <div
+                      className="relative flex flex-col items-end w-[20dvw] cursor-pointer"
+                      ref={leftBtnRef}
+                      onMouseEnter={() => {
+                        if (togglePageControl.current) return;
+                        animatePageToggleBtn(leftBtnRef, "left", "enter");
+                      }}
+                      onMouseLeave={() => {
+                        if (togglePageControl.current) return;
+                        animatePageToggleBtn(leftBtnRef, "left", "leave");
+                      }}
+                      onClick={async () => {
+                        if (togglePageControl.current) return;
+                        clearCb("prev");
+                        togglePageControl.current = sketch.current.prev();
+                        togglePageControl.current.then(
+                          async (current: number) => {
+                            await prevCb(current);
+                            togglePageControl.current = null;
+                          }
+                        );
+                      }}
+                    >
+                      {
+                        <>
+                          <div
+                            className="pageCount text-[2vmin]"
+                            key={current === 0 ? data.children.length : current}
+                          >
+                            #
+                            {(current === 0 ? data.children.length : current)
+                              .toString()
+                              .padStart(3, "0")}
+                          </div>
+                          <div className="truncate w-[80%] title text-right text-[2.5vmin]">
+                            {data.children[
+                              current === 0
+                                ? data.children.length - 1
+                                : current - 1
+                            ].chineseTitle ||
+                              data.children[
+                                current === 0
+                                  ? data.children.length - 1
+                                  : current - 1
+                              ].englishTitle}
+                          </div>
+                          <svg
+                            viewBox="0 0 360 7"
+                            className="fill-white absolute bottom-[1vmin] arrow origin-right"
+                          >
+                            <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
+                          </svg>
+                        </>
+                      }
+                    </div>
                   }
-                </div>
-              }
-              {
-                <div
-                  className="relative flex flex-col items-start w-[20dvw] cursor-pointer"
-                  ref={rightBtnRef}
-                  onMouseEnter={() => {
-                    if (togglePageControl.current) return;
-                    animatePageToggleBtn(rightBtnRef, "right", "enter");
-                  }}
-                  onMouseLeave={() => {
-                    if (togglePageControl.current) return;
-                    animatePageToggleBtn(rightBtnRef, "right", "leave");
-                  }}
-                  onClick={async () => {
-                    if (togglePageControl.current) return;
-                    clearCb("next");
+                  {
+                    <div
+                      className="relative flex flex-col items-start w-[20dvw] cursor-pointer"
+                      ref={rightBtnRef}
+                      onMouseEnter={() => {
+                        if (togglePageControl.current) return;
+                        animatePageToggleBtn(rightBtnRef, "right", "enter");
+                      }}
+                      onMouseLeave={() => {
+                        if (togglePageControl.current) return;
+                        animatePageToggleBtn(rightBtnRef, "right", "leave");
+                      }}
+                      onClick={async () => {
+                        if (togglePageControl.current) return;
+                        clearCb("next");
 
-                    togglePageControl.current = sketch.current.next();
-                    togglePageControl.current.then(async (current: number) => {
-                      await nextCb(current);
-                      togglePageControl.current = null;
-                    });
-                  }}
-                >
-                  {
-                    <>
-                      <div
-                        className="pageCount text-[2vmin]"
-                        key={
-                          current + 2 > data.children.length ? 1 : current + 2
-                        }
-                      >
-                        #
-                        {(current + 2 > data.children.length ? 1 : current + 2)
-                          .toString()
-                          .padStart(3, "0")}
-                      </div>
-                      <div className="truncate w-[80%] title text-[2.5vmin]">
-                        {data.children[
-                          current + 1 > data.children.length - 1
-                            ? 1
-                            : current + 1
-                        ].chineseTitle ||
-                          data.children[
-                            current + 1 > data.children.length - 1
+                        togglePageControl.current = sketch.current.next();
+                        togglePageControl.current.then(
+                          async (current: number) => {
+                            await nextCb(current);
+                            togglePageControl.current = null;
+                          }
+                        );
+                      }}
+                    >
+                      {
+                        <>
+                          <div
+                            className="pageCount text-[2vmin]"
+                            key={
+                              current + 2 > data.children.length
+                                ? 1
+                                : current + 2
+                            }
+                          >
+                            #
+                            {(current + 2 > data.children.length
                               ? 1
-                              : current + 1
-                          ].englishTitle}
-                      </div>
-                      <svg
-                        viewBox="0 0 360 7"
-                        className="fill-white absolute bottom-[1vmin] arrow origin-left"
-                      >
-                        <polyline points="0,7 360,7 339,0 339,6 0,6"></polyline>
-                      </svg>
-                    </>
+                              : current + 2
+                            )
+                              .toString()
+                              .padStart(3, "0")}
+                          </div>
+                          <div className="truncate w-[80%] title text-[2.5vmin]">
+                            {data.children[
+                              current + 1 > data.children.length - 1
+                                ? 1
+                                : current + 1
+                            ].chineseTitle ||
+                              data.children[
+                                current + 1 > data.children.length - 1
+                                  ? 1
+                                  : current + 1
+                              ].englishTitle}
+                          </div>
+                          <svg
+                            viewBox="0 0 360 7"
+                            className="fill-white absolute bottom-[1vmin] arrow origin-left"
+                          >
+                            <polyline points="0,7 360,7 339,0 339,6 0,6"></polyline>
+                          </svg>
+                        </>
+                      }
+                    </div>
                   }
                 </div>
-              }
-            </div>
+              </>
+            )}
           </div>
           <div className="absolute inset-0 z-0" ref={softText}></div>
         </div>
