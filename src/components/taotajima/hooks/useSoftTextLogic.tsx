@@ -23,8 +23,7 @@ export default function useSoftTextLogic(props: any) {
       return (generateSoftText.current = (
         pageCountText: string,
         titleText: string,
-        contentText: string,
-        direction: "next" | "prev" = "next"
+        contentText: string
       ) => {
         engine.current.clear();
         engine.current.updateSize(
@@ -48,7 +47,9 @@ export default function useSoftTextLogic(props: any) {
         );
 
         const contentRect = contentRef.current.getBoundingClientRect();
-        const shareRect = shareRef.current.getBoundingClientRect();
+        const shareRect = shareRef.current?.getBoundingClientRect() || {
+          height: 0,
+        };
         const introduceRect = introduceRef.current.getBoundingClientRect();
         const centerToLeftEdge = pxToWorld(
           contentRect.x,
@@ -164,7 +165,7 @@ export default function useSoftTextLogic(props: any) {
     };
     const cb = () => {
       textGenerate()(
-        `#${(1).toString().padStart(3, "0")}  /  ${data.children[0].tag}`,
+        `#${(0).toString().padStart(3, "0")}  /  ${data.children[0].tag}`,
         data.children[0].chineseTitle || data.children[0].englishTitle,
         data.children[0].introduce
       ).toShow("next");

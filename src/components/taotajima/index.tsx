@@ -114,7 +114,7 @@ export default function Taotajima() {
       animateOpacity.current.play();
       generateSoftText
         .current(
-          `#${(current + 1).toString().padStart(3, "0")}  /  ${
+          `#${current.toString().padStart(3, "0")}  /  ${
             data.children[current].tag
           }`,
           data.children[current].chineseTitle ||
@@ -160,7 +160,7 @@ export default function Taotajima() {
       {data ? (
         <div
           id="taotajimaSliderContent"
-          className="w-full h-full relative select-none"
+          className="w-full h-full relative select-none bg-black"
         >
           <div
             className="w-full h-full relative after:absolute after:inset-0 after:bg-black/40"
@@ -216,7 +216,7 @@ export default function Taotajima() {
                     ref={contentRef}
                   >
                     <div className="flex text-[3vmin] leading-[3vmin] gap-[2vmin] h-fit">
-                      <div>#{(current + 1).toString().padStart(3, "0")}</div>
+                      <div>#{current.toString().padStart(3, "0")}</div>
                       <div className="w-[.0625rem] h-[2vmin] rotate-20"></div>
                       <div className="">{data.children[current].tag}</div>
                     </div>
@@ -231,47 +231,53 @@ export default function Taotajima() {
                       {data.children[current].introduce}
                     </div>
                   </div>
-                  <div
-                    className="text-[2vmin] flex gap-[2vmin] items-center"
-                    ref={shareRef}
-                  >
-                    <div>Share:</div>
-                    <div className="flex gap-[2vmin]">
-                      <div onMouseEnter={animateBtn.bind(null, twitterBtnRef)}>
-                        <Twitter
-                          ref={twitterBtnRef}
-                          className="cursor-pointer w-[3vmin]"
-                        />
-                      </div>
-                      <div
-                        onMouseEnter={animateBtn.bind(null, instagramBtnRef)}
-                      >
-                        <Instagram
-                          ref={instagramBtnRef}
-                          className="cursor-pointer w-[3vmin]"
-                        />
+                  {
+                    <div
+                      className="text-[2vmin] flex gap-[2vmin] items-center"
+                      ref={shareRef}
+                    >
+                      <div>Share:</div>
+                      <div className="flex gap-[2vmin]">
+                        <div
+                          onMouseEnter={animateBtn.bind(null, twitterBtnRef)}
+                        >
+                          <Twitter
+                            ref={twitterBtnRef}
+                            className="cursor-pointer w-[3vmin]"
+                          />
+                        </div>
+                        <div
+                          onMouseEnter={animateBtn.bind(null, instagramBtnRef)}
+                        >
+                          <Instagram
+                            ref={instagramBtnRef}
+                            className="cursor-pointer w-[3vmin]"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  }
                 </div>
 
-                <div ref={playRef}>
-                  <InteractiveHoverButton
-                    className="text-xl w-[20vmin] h-[20vmin] aspect-1/1 z-20 opacity-80"
-                    text="play"
-                    defaultBgColor="white"
-                    defaultBorderColor="white"
-                    defaultTextColor="black"
-                    hoverBgColor="black"
-                    hoverBorderColor="black"
-                    hoverTextColor="white"
-                    border={false}
-                    dotPosition={"50%"}
-                  />
-                </div>
+                {
+                  <div ref={playRef}>
+                    <InteractiveHoverButton
+                      className="text-xl w-[20vmin] h-[20vmin] aspect-1/1 z-20 opacity-80"
+                      text="play"
+                      defaultBgColor="white"
+                      defaultBorderColor="white"
+                      defaultTextColor="black"
+                      hoverBgColor="black"
+                      hoverBorderColor="black"
+                      hoverTextColor="white"
+                      border={false}
+                      dotPosition={"50%"}
+                    />
+                  </div>
+                }
               </div>
             ) : (
-              <div className="absolute inset-0 flex justify-center items-center bg-black z-[-1]">
+              <div className="absolute inset-0 flex justify-center items-center z-[-1]">
                 <ContentInsufficient count={1}></ContentInsufficient>
               </div>
             )}
@@ -307,10 +313,17 @@ export default function Taotajima() {
                         <>
                           <div
                             className="pageCount text-[2vmin]"
-                            key={current === 0 ? data.children.length : current}
+                            key={
+                              current === 0
+                                ? data.children.length - 1
+                                : current - 1
+                            }
                           >
                             #
-                            {(current === 0 ? data.children.length : current)
+                            {(current === 0
+                              ? data.children.length - 1
+                              : current - 1
+                            )
                               .toString()
                               .padStart(3, "0")}
                           </div>
@@ -366,15 +379,15 @@ export default function Taotajima() {
                           <div
                             className="pageCount text-[2vmin]"
                             key={
-                              current + 2 > data.children.length
-                                ? 1
-                                : current + 2
+                              current + 1 > data.children.length - 1
+                                ? 0
+                                : current + 1
                             }
                           >
                             #
-                            {(current + 2 > data.children.length
-                              ? 1
-                              : current + 2
+                            {(current + 1 > data.children.length - 1
+                              ? 0
+                              : current + 1
                             )
                               .toString()
                               .padStart(3, "0")}

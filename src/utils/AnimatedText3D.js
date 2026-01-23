@@ -138,7 +138,6 @@ export class AnimatedText3D extends Object3D {
             typeof this.overflow !== "number"
           ) {
             this.overflow = index - spaceCount;
-            console.log(this.overflow);
             this.children[this.overflow - 1].geometry.dispose();
             this.children[this.overflow - 1].geometry = new ShapeGeometry(
               font.generateShapes(".", size, 1)
