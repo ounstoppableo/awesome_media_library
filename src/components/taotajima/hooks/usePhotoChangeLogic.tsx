@@ -8,7 +8,10 @@ export default function usePhotoChangeLogic(props: any) {
   // 照片翻页
   useEffect(() => {
     sketch.current = null;
-    if (!data || !data.children || data.children.length === 0) return;
+    if (!data || !data.children || data.children.length === 0)
+      return () => {
+        sketch.current?.destroy();
+      };
     sketch.current = new (window as any).Sketch({
       contentId: "taotajimaSliderContent",
       sliderId: "taotajimaSlider",

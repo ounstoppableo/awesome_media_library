@@ -130,15 +130,16 @@ export default function Taotajima() {
   const currentId = useAppSelector(selectTaojimaCurrentId);
   const dispatch = useAppDispatch();
   useEffect(() => {
-    request("/api/category/categoryDetail", {
-      method: "post",
-      body: { id: currentId },
-    }).then((res: CommonResponse) => {
-      if (res.code === codeMap.success) {
-        setData(res.data);
-        dispatch(setTaotajimaLoading({ taotajimaLoading: false }));
-      }
-    });
+    currentId &&
+      request("/api/category/categoryDetail", {
+        method: "post",
+        body: { id: currentId },
+      }).then((res: CommonResponse) => {
+        if (res.code === codeMap.success) {
+          setData(res.data);
+          dispatch(setTaotajimaLoading({ taotajimaLoading: false }));
+        }
+      });
   }, []);
   const back = () => {
     dispatch(setOpen({ open: false, id: "" }));

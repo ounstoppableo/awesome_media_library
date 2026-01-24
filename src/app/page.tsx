@@ -27,7 +27,7 @@ import {
 import { useGSAP } from "@gsap/react";
 import {
   selectTaojimaControlOpenStatus,
-  setOpen as TaotajimaOpen,
+  setOpen as setTaotajimaOpen,
 } from "@/store/taotajimaControl/taotajima-slice";
 import {
   DropdownMenu,
@@ -318,7 +318,7 @@ export default function Home() {
               <OrbitalLoader />
             </div>
           )}
-          {showTaojima && <Taotajima></Taotajima>}
+          {showTaojima && !dialogOpen && <Taotajima></Taotajima>}
         </div>
         <div
           className="fixed inset-0 translate-x-1/1 z-150 overflow-hidden bg-background"
@@ -343,7 +343,7 @@ export default function Home() {
               <DropdownMenuItem
                 onClick={() => {
                   setDialogOpen(true);
-                  dispatch(TaotajimaOpen({ open: false, id: "" }));
+                  dispatch(setTaotajimaOpen({ open: false, id: "" }));
                   dispatch(setCloseScroll({ closeScroll: true }));
                 }}
                 className="flex items-center gap-2 rounded-lg py-2 px-2 hover:bg-background/50"

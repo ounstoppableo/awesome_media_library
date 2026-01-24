@@ -704,12 +704,12 @@ export default function AssetsList(props: any) {
           <DialogTrigger asChild></DialogTrigger>
           <DialogContent
             className={cn(
-              "w-[100dvw] max-w-[100dvw_!important] h-[100dvh] flex flex-col overflow-hidden rounded-none",
+              "w-[100dvw] max-w-[100dvw_!important] h-[100dvh] flex flex-col overflow-hidden rounded-none border-none",
               className
             )}
           >
             <div
-              className="fixed inset-0 translate-x-1/1 z-140 overflow-hidden"
+              className="absolute inset-0 translate-x-1/1 z-140 overflow-hidden"
               ref={taojimaContainer}
             >
               {taojimaLoading && (
@@ -986,7 +986,7 @@ export default function AssetsList(props: any) {
       >
         <DialogContent
           className={cn(
-            "w-[80dvw] max-w-[80dvw_!important] h-[80dvh] flex flex-col overflow-hidden",
+            "w-[80dvw] max-w-[80dvw_!important] h-[80dvh] flex flex-col overflow-hidden border-none",
             className
           )}
         >
