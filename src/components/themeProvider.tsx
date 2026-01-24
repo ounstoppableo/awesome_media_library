@@ -12,20 +12,16 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const localDarkMode = localStorage.getItem("darkMode");
     dispatch(
-      setDarkMode(
-        JSON.parse(
-          localDarkMode !== "true" && localDarkMode !== "false"
-            ? "true"
-            : localDarkMode
-        )
-      )
+      setDarkMode({ darkMode: localDarkMode === "false" ? false : true })
     );
   }, []);
   useEffect(() => {
-    localStorage.setItem("darkMode", JSON.stringify(darkMode));
-    darkMode
-      ? document.documentElement.classList.add("dark")
-      : document.documentElement.classList.remove("dark");
+    if (typeof darkMode === "boolean") {
+      localStorage.setItem("darkMode", JSON.stringify(darkMode));
+      darkMode
+        ? document.documentElement.classList.add("dark")
+        : document.documentElement.classList.remove("dark");
+    }
   }, [darkMode]);
   return children;
 }

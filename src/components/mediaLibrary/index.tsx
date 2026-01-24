@@ -47,6 +47,8 @@ import { wsSend } from "@/utils/clientWsMethod";
 import { WsOperateRequestDataType } from "@/wsConstructor/router/operateRouter";
 import { message } from "antd";
 import useAuthLogic from "./hooks/useAuthLogic";
+import { useAppDispatch } from "@/store/hooks";
+import { setMediaLibraryLoading } from "@/store/loading/loading-slice";
 
 export default function MediaLibrary(props: {
   showSelect?: boolean;
@@ -222,8 +224,11 @@ export default function MediaLibrary(props: {
     }
   }, [searchParams]);
 
+  const dispatch = useAppDispatch();
   useEffect(() => {
-    getMeidaData();
+    getMeidaData().finally(() => {
+      dispatch(setMediaLibraryLoading({ mediaLibraryLoading: false }));
+    });
   }, []);
 
   const [dataLoading, _setDataLoding] = useState(false);
@@ -416,10 +421,10 @@ export default function MediaLibrary(props: {
           </div>
         </header>
 
-        <main className="w-full flex flex-col gap-8 flex-1 container mx-auto px-4 py-8">
+        <main className="w-full flex flex-col gap-[4vmin] flex-1 container mx-auto px-[8vmin] py-[6vmin]">
           <Card ref={filterCardRef}>
             <CardContent>
-              <div className="flex flex-wrap items-end gap-4 container mx-auto">
+              <div className="flex flex-wrap items-end gap-[2vmin] container mx-auto">
                 <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     媒体类型
@@ -482,7 +487,7 @@ export default function MediaLibrary(props: {
                   </Select>
                 </div>
                 <Button
-                  variant='secondary'
+                  variant="secondary"
                   className="cursor-pointer"
                   onClick={() => {
                     setSearchParams({ ...defaultSearchParams });
@@ -613,14 +618,14 @@ export default function MediaLibrary(props: {
           )}
 
           {mediaData.length !== 0 && isOver && (
-            <div className="w-full flex justify-center items-center text-gray-400 dark:text-gray-200 text-sm">
+            <div className="w-full flex justify-center items-center text-muted-foreground text-sm">
               🥳 到底了~
             </div>
           )}
         </main>
       </div>
       <Button
-        className="fixed bottom-8 left-8 cursor-pointer rounded-full w-8 h-8"
+        className="fixed bottom-[6vmin] left-[6vmin] cursor-pointer rounded-full w-8 h-8"
         onClick={() => {
           listContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
         }}

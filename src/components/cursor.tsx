@@ -74,7 +74,7 @@ export default function Cursor(props: {
     <div
       ref={cursorRef}
       className={clsx(
-        "absolute w-24 h-24 z-[var(--maxZIndex)]] flex justify-center items-center text-white select-none pointer-events-none opacity-0 origin-[0%_0%]"
+        "absolute w-24 h-24 z-[calc(var(--maxZIndex)_+_1)] flex justify-center items-center text-white select-none pointer-events-none opacity-0 origin-[0%_0%]"
       )}
     >
       <div

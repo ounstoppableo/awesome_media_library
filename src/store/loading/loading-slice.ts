@@ -5,12 +5,14 @@ export interface loadingState {
   globalLoading: boolean;
   sienaLoading: boolean;
   taotajimaLoading: boolean;
+  mediaLibraryLoading: boolean;
 }
 
 const initialState: loadingState = {
   globalLoading: true,
   sienaLoading: false,
   taotajimaLoading: false,
+  mediaLibraryLoading: false,
 };
 
 export const loadingSlice = createSlice({
@@ -35,11 +37,21 @@ export const loadingSlice = createSlice({
     ) {
       state.taotajimaLoading = action.payload.taotajimaLoading;
     },
+    setMediaLibraryLoading(
+      state,
+      action: PayloadAction<Pick<loadingState, "mediaLibraryLoading">>
+    ) {
+      state.mediaLibraryLoading = action.payload.mediaLibraryLoading;
+    },
   },
 });
 
-export const { setGlobalLoading, setSienaLoading, setTaotajimaLoading } =
-  loadingSlice.actions;
+export const {
+  setGlobalLoading,
+  setSienaLoading,
+  setTaotajimaLoading,
+  setMediaLibraryLoading,
+} = loadingSlice.actions;
 
 export const selectGlobalLoading = (state: RootState) =>
   state.loading.globalLoading;
@@ -47,4 +59,6 @@ export const selectSienaLoading = (state: RootState) =>
   state.loading.sienaLoading;
 export const selectTaotajimaLoading = (state: RootState) =>
   state.loading.taotajimaLoading;
+export const selectMediaLibraryLoading = (state: RootState) =>
+  state.loading.mediaLibraryLoading;
 export default loadingSlice.reducer;

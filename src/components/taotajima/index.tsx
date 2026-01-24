@@ -11,7 +11,7 @@ import { Instagram, Play, Twitter, X } from "lucide-react";
 import { InteractiveHoverButton } from "../ui/interactive-hover-button";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-
+import { motion } from "motion/react";
 import { AnimatedText3D, pxToWorld, remToWorld } from "@/utils/AnimatedText3D";
 import { Engine } from "@/utils/engine";
 import useSoftTextLogic from "./hooks/useSoftTextLogic";
@@ -46,8 +46,6 @@ import { CategoryDetail } from "@/types/media";
 export default function Taotajima() {
   const backBtnRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(0);
-  const twitterBtnRef = useRef<any>(null);
-  const instagramBtnRef = useRef<any>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const introduceRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState<CategoryDetail | null>(null);
@@ -56,7 +54,6 @@ export default function Taotajima() {
   const {
     animateOpacity,
     animatePageToggleBtn,
-    animateBtn,
     splitRef,
     shareRef,
     playRef,
@@ -114,7 +111,7 @@ export default function Taotajima() {
       animateOpacity.current.play();
       generateSoftText
         .current(
-          `#${current.toString().padStart(3, "0")}  /  ${
+          `#${(current + 1).toString().padStart(3, "0")}  /  ${
             data.children[current].tag
           }`,
           data.children[current].chineseTitle ||
@@ -216,7 +213,7 @@ export default function Taotajima() {
                     ref={contentRef}
                   >
                     <div className="flex text-[3vmin] leading-[3vmin] gap-[2vmin] h-fit">
-                      <div>#{current.toString().padStart(3, "0")}</div>
+                      <div>#{(current + 1).toString().padStart(3, "0")}</div>
                       <div className="w-[.0625rem] h-[2vmin] rotate-20"></div>
                       <div className="">{data.children[current].tag}</div>
                     </div>
@@ -238,22 +235,26 @@ export default function Taotajima() {
                     >
                       <div>Share:</div>
                       <div className="flex gap-[2vmin]">
-                        <div
-                          onMouseEnter={animateBtn.bind(null, twitterBtnRef)}
+                        <motion.div
+                          whileHover={{
+                            scale: 1.3,
+                            rotate: 360,
+                            transition: { duration: 0.1 },
+                          }}
+                          transition={{ duration: 0.5 }}
                         >
-                          <Twitter
-                            ref={twitterBtnRef}
-                            className="cursor-pointer w-[3vmin]"
-                          />
-                        </div>
-                        <div
-                          onMouseEnter={animateBtn.bind(null, instagramBtnRef)}
+                          <Twitter className="cursor-pointer w-[3vmin] hover:text-[var(--themeColor)] transition-all duration-300" />
+                        </motion.div>
+                        <motion.div
+                          whileHover={{
+                            scale: 1.3,
+                            rotate: 360,
+                            transition: { duration: 0.1 },
+                          }}
+                          transition={{ duration: 0.5 }}
                         >
-                          <Instagram
-                            ref={instagramBtnRef}
-                            className="cursor-pointer w-[3vmin]"
-                          />
-                        </div>
+                          <Instagram className="cursor-pointer w-[3vmin] hover:text-[var(--themeColor)] transition-all duration-300" />
+                        </motion.div>
                       </div>
                     </div>
                   }
@@ -272,6 +273,14 @@ export default function Taotajima() {
                       hoverTextColor="white"
                       border={false}
                       dotPosition={"50%"}
+                      onClick={() => {
+                        window.open(
+                          location.origin +
+                            "/" +
+                            data.children[current].sourcePath,
+                          "_blank"
+                        );
+                      }}
                     />
                   </div>
                 }
@@ -313,17 +322,10 @@ export default function Taotajima() {
                         <>
                           <div
                             className="pageCount text-[2vmin]"
-                            key={
-                              current === 0
-                                ? data.children.length - 1
-                                : current - 1
-                            }
+                            key={current === 0 ? data.children.length : current}
                           >
                             #
-                            {(current === 0
-                              ? data.children.length - 1
-                              : current - 1
-                            )
+                            {(current === 0 ? data.children.length : current)
                               .toString()
                               .padStart(3, "0")}
                           </div>
@@ -379,15 +381,15 @@ export default function Taotajima() {
                           <div
                             className="pageCount text-[2vmin]"
                             key={
-                              current + 1 > data.children.length - 1
-                                ? 0
-                                : current + 1
+                              current + 2 > data.children.length
+                                ? 1
+                                : current + 2
                             }
                           >
                             #
-                            {(current + 1 > data.children.length - 1
-                              ? 0
-                              : current + 1
+                            {(current + 2 > data.children.length
+                              ? 1
+                              : current + 2
                             )
                               .toString()
                               .padStart(3, "0")}

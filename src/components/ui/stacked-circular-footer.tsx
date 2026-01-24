@@ -21,7 +21,7 @@ function StackedCircularFooter() {
     <footer className="bg-transparent pb-[4vmin] h-full flex justify-center items-center">
       <div className="container mx-auto px-[2%] md:px-[3%]">
         <div className="flex flex-col items-center gap-[3vmin]">
-          <div className="rounded-full w-[12vmin] overflow-hidden hover:rotate-360 transition-all duration-500">
+          <div className="rounded-full w-[12vmin] overflow-hidden hover:rotate-360 transition-all duration-300">
             <img
               src="https://www.unstoppable840.cn/assets/avatar.jpeg"
               className="icon-class w-full"
@@ -82,55 +82,51 @@ function StackedCircularFooter() {
             </motion.a>
           </nav>
           <div className="flex space-x-[4vmin]">
-            <motion.button
+            <motion.div
               className="w-fit h-fit cursor-pointer"
               whileHover={{
                 scale: 1.3,
-                color: "var(--themeColor)",
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
             >
-              <BsWechat className="h-[3vmin_!important] w-[3vmin_!important]" />
+              <BsWechat className="h-[3vmin_!important] w-[3vmin_!important] hover:text-[var(--themeColor)] transition-all duration-300 text-black" />
               <span className="sr-only">WeChat</span>
-            </motion.button>
+            </motion.div>
 
-            <motion.button
+            <motion.div
               className="w-fit h-fit cursor-pointer"
               whileHover={{
                 scale: 1.3,
-                color: "var(--themeColor)",
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
             >
-              <BsTiktok className="h-[3vmin_!important] w-[3vmin_!important]" />
+              <BsTiktok className="h-[3vmin_!important] w-[3vmin_!important] hover:text-[var(--themeColor)] transition-all duration-300 text-black" />
               <span className="sr-only">TikTok</span>
-            </motion.button>
-            <motion.button
+            </motion.div>
+            <motion.div
               className="w-fit h-fit cursor-pointer"
               whileHover={{
                 scale: 1.3,
-                color: "var(--themeColor)",
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
             >
-              <BsTelegram className="h-[3vmin_!important] w-[3vmin_!important]" />
+              <BsTelegram className="h-[3vmin_!important] w-[3vmin_!important] hover:text-[var(--themeColor)] transition-all duration-300 text-black" />
               <span className="sr-only">Telegram</span>
-            </motion.button>
-            <motion.button
-              className="w-fit h-fit cursor-pointer"
+            </motion.div>
+            <motion.div
+              className="w-fit h-fit cursor-pointer text-black"
               whileHover={{
                 scale: 1.3,
-                color: "var(--themeColor)",
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
             >
-              <Github className="h-[3vmin_!important] w-[3vmin_!important]" />
+              <Github className="h-[3vmin_!important] w-[3vmin_!important] hover:text-[var(--themeColor)] transition-all duration-300" />
               <span className="sr-only">Github</span>
-            </motion.button>
+            </motion.div>
           </div>
           <div className="text-center">
             <p className="text-[2vmin] text-muted-foreground">

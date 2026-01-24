@@ -75,21 +75,6 @@ export default function useOtherAnimateLogic(props: any) {
     }
   };
 
-  const animateBtn = (btnRef: RefObject<any>) => {
-    if (!btnRef.current) return;
-    gsap.fromTo(
-      btnRef.current,
-      { scale: 0.5, rotate: "0deg", opacity: 0.6 },
-      {
-        scale: 1,
-        rotate: "360deg",
-        opacity: 1,
-        ease: "power2.inOut",
-        duration: 0.3,
-      }
-    );
-  };
-
   const animateOpacity = useRef<any>({});
   const generateAnimateOpacity = (refs: any[]) => {
     animateOpacity.current = gsap.timeline();
@@ -121,7 +106,6 @@ export default function useOtherAnimateLogic(props: any) {
   return {
     animateOpacity,
     animatePageToggleBtn,
-    animateBtn,
     splitRef,
     shareRef,
     playRef,

@@ -165,7 +165,7 @@ export default function useSoftTextLogic(props: any) {
     };
     const cb = () => {
       textGenerate()(
-        `#${(0).toString().padStart(3, "0")}  /  ${data.children[0].tag}`,
+        `#${(1).toString().padStart(3, "0")}  /  ${data.children[0].tag}`,
         data.children[0].chineseTitle || data.children[0].englishTitle,
         data.children[0].introduce
       ).toShow("next");

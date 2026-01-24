@@ -5,6 +5,7 @@ import sienaControlReducer from "./sienaControl/sinaControl-slice";
 import taotajimaReducer from "./taotajimaControl/taotajima-slice";
 import jiejoeReducer from "./jiejoeControl/jiejoeControl-slice";
 import darkModeReducer from "./darkMode/darkMode-slice";
+import mediaLibraryReducer from "./mediaLibrarControl/mediaLibrary-slice";
 
 // ...
 export const makeStore = () => {
@@ -15,6 +16,7 @@ export const makeStore = () => {
       taotajimaControl: taotajimaReducer,
       jiejoeControl: jiejoeReducer,
       darkMode: darkModeReducer,
+      mediaLibraryControl: mediaLibraryReducer,
     },
   });
 };
