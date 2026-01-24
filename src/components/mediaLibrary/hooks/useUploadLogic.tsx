@@ -356,7 +356,7 @@ export default function useUploadLogic(props: {
           上传
         </Button>
       </DialogTrigger>
-      <DialogContent className="min-w-[80vw] max-w-[80vw] min-h-[80vh] max-h-[80vh] flex flex-col z-[9999]">
+      <DialogContent className="min-w-[80vw] max-w-[80vw] min-h-[80vh] max-h-[80vh] flex flex-col z-[var(--maxZIndex)]">
         {loadingJsx}
         <DialogHeader>
           <DialogTitle>媒体上传</DialogTitle>

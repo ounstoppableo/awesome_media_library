@@ -28,44 +28,42 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/button-1";
 import {
   ArrowUpDown,
+  Bell,
+  Check,
   FolderKanban,
+  Moon,
+  Palette,
   Pen,
   Settings,
   ShieldCheck,
+  Sun,
   Truck,
 } from "lucide-react";
 import { MobileIcon } from "@radix-ui/react-icons";
 import AssetsList from "@/components/settingDialog/assetsList";
 import { setCloseScroll } from "@/store/jiejoeControl/jiejoeControl-slice";
+import { selectDarkMode, setDarkMode } from "@/store/darkMode/darkMode-slice";
+import ThemeProvider from "@/components/themeProvider";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const router = useRouter();
   const loading = useAppSelector(selectGlobalLoading);
+  const darkMode = useAppSelector(selectDarkMode);
 
   const dispatch = useAppDispatch();
-  const buttonRef = useRef<any>(null);
-  const tw = useRef<any>(null);
-
-  const { contextSafe } = useGSAP(
-    () => {
-      tw.current = gsap.timeline({ paused: true });
-      tw.current.to(
-        "button",
-        {
-          background: "white",
-        },
-        0
-      );
-      tw.current.to("svg", { stroke: "black" }, 0);
-    },
-    { scope: buttonRef }
-  );
 
   const sienaOpenStatus = useAppSelector(selectSienaControlOpenStatus);
   const sienaContainer = useRef<any>(null);
@@ -130,12 +128,6 @@ export default function Home() {
       dependencies: [sienaOpenStatus],
     }
   );
-  const handleMouseEnter = contextSafe(() => {
-    tw.current.play();
-  });
-  const handleMouseLeave = contextSafe(() => {
-    tw.current.reverse();
-  });
 
   const taojimaOpenStatus = useAppSelector(selectTaojimaControlOpenStatus);
   const taojimaLoading = useAppSelector(selectTaotajimaLoading);
@@ -204,83 +196,120 @@ export default function Home() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.darkAlgorithm,
-      }}
-    >
-      {loading && (
-        <div className="fixed inset-0 top-0 z-[99999] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
-          <OrbitalLoader />
+    <ThemeProvider>
+      <ConfigProvider
+        theme={{
+          algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        }}
+      >
+        {loading && (
+          <div className="fixed inset-0 top-0 z-[var(--maxZIndex)] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
+            <OrbitalLoader />
+          </div>
+        )}
+
+        <button
+          onClick={() => {
+            dispatch(setOpen({ open: !sienaOpenStatus }));
+          }}
+          className={cn(
+            "transition-all duration-300 hover:bg-white [--stroke:white] hover:[--stroke:black] absolute focus:outline-none top-[6vmin] right-[8vmin] z-120 w-8 h-8 bg-transparent rounded-full flex justify-center items-center cursor-pointer"
+          )}
+        >
+          <MenuToggleIcon
+            open={sienaOpenStatus}
+            className="size-6"
+            duration={500}
+          />
+        </button>
+        <div
+          className="fixed inset-0 translate-y-1/1 z-100 overflow-hidden"
+          ref={sienaContainer}
+        >
+          {sienaLoading && (
+            <div className="inset-0 top-0 z-[var(--maxZIndex)] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
+              <OrbitalLoader />
+            </div>
+          )}
+          {showSiena && <SienaStyle></SienaStyle>}
         </div>
-      )}
-      <button
-        ref={buttonRef}
-        onClick={() => {
-          dispatch(setOpen({ open: !sienaOpenStatus }));
-        }}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        className="absolute focus:outline-none top-[6vmin] right-[8vmin] z-120 w-8 h-8 bg-transparent rounded-full flex justify-center items-center cursor-pointer"
-      >
-        <MenuToggleIcon
-          open={sienaOpenStatus}
-          className="size-6"
-          duration={500}
-          stroke={"white"}
-        />
-      </button>
-      <div
-        className="fixed inset-0 translate-y-1/1 z-100 overflow-hidden"
-        ref={sienaContainer}
-      >
-        {sienaLoading && (
-          <div className="inset-0 top-0 z-[99999] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
-            <OrbitalLoader />
-          </div>
-        )}
-        {showSiena && <SienaStyle></SienaStyle>}
-      </div>
-      <div
-        className="fixed inset-0 translate-x-1/1 z-140 overflow-hidden"
-        ref={taojimaContainer}
-      >
-        {taojimaLoading && (
-          <div className="inset-0 top-0 z-[99999] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
-            <OrbitalLoader />
-          </div>
-        )}
-        {showTaojima && <Taotajima></Taotajima>}
-      </div>
-      <JiejoeHomePage></JiejoeHomePage>
-      <div className="fixed bottom-[6vmin] left-[10vmin] z-150">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="rounded-full">
-              <Settings className="size-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-48 z-150">
-            <DropdownMenuItem
-              onClick={() => {
-                setDialogOpen(true);
-                dispatch(setCloseScroll({ closeScroll: true }));
-              }}
-            >
-              <FolderKanban className="mr-2 size-4" />
-              Manage Assets
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <AssetsList
-        open={dialogOpen}
-        handleOpenChange={(value: boolean) => {
-          setDialogOpen(value);
-          dispatch(setCloseScroll({ closeScroll: false }));
-        }}
-        className={"z-160"}
-      ></AssetsList>
-    </ConfigProvider>
+        <div
+          className="fixed inset-0 translate-x-1/1 z-140 overflow-hidden"
+          ref={taojimaContainer}
+        >
+          {taojimaLoading && (
+            <div className="inset-0 top-0 z-[var(--maxZIndex)] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
+              <OrbitalLoader />
+            </div>
+          )}
+          {showTaojima && <Taotajima></Taotajima>}
+        </div>
+        <JiejoeHomePage></JiejoeHomePage>
+        <div className="fixed bottom-[6vmin] left-[10vmin] z-150">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="rounded-full">
+                <Settings className="size-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48 z-150">
+              <DropdownMenuItem
+                onClick={() => {
+                  setDialogOpen(true);
+                  dispatch(setCloseScroll({ closeScroll: true }));
+                }}
+                className="flex items-center gap-2 rounded-lg py-2 px-2 hover:bg-background/50"
+              >
+                <FolderKanban className="w-4 h-4" />
+                Manage Assets
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-1" />
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="flex items-center gap-2 rounded-lg py-2 px-2 hover:bg-background/50">
+                  <Palette className="w-4 h-4" />
+                  <span className="flex-1">Theme</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent className="w-44 rounded-lg border shadow-sm p-1 z-[var(--maxZIndex)]">
+                    <DropdownMenuRadioGroup value="light">
+                      <DropdownMenuRadioItem
+                        value="light"
+                        className="flex items-center gap-2 py-1 px-2 rounded"
+                        onClick={() => {
+                          dispatch(setDarkMode({ darkMode: false }));
+                        }}
+                      >
+                        <Sun className="w-4 h-4" />
+                        <span className="flex-1">Light</span>
+                        {darkMode ? <></> : <Check className="h-4 w-4"></Check>}
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem
+                        value="dark"
+                        className="flex items-center gap-2 py-1 px-2 rounded"
+                        onClick={() => {
+                          dispatch(setDarkMode({ darkMode: true }));
+                        }}
+                      >
+                        <Moon className="w-4 h-4" />
+                        <span className="flex-1">Dark</span>
+                        {darkMode ? <Check className="h-4 w-4"></Check> : <></>}
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <AssetsList
+          open={dialogOpen}
+          handleOpenChange={(value: boolean) => {
+            setDialogOpen(value);
+            dispatch(setCloseScroll({ closeScroll: false }));
+          }}
+          className={"z-160"}
+        ></AssetsList>
+      </ConfigProvider>
+    </ThemeProvider>
   );
 }

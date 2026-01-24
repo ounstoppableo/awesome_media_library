@@ -400,7 +400,7 @@ export default function MediaLibrary(props: {
                   type="text"
                   id="searchInput"
                   placeholder="请输入媒体名称"
-                  className="search-input dark:bg-[#161616] dark:text-gray-200 w-full px-4 py-3 rounded-full text-gray-800 bg-white bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="search-input dark:bg-background dark:text-gray-200 w-full px-4 py-3 rounded-full text-gray-800 bg-white bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   value={searchParams.title}
                   onChange={(e) => {
                     setSearchParams({
@@ -437,7 +437,7 @@ export default function MediaLibrary(props: {
                     <SelectTrigger className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
                       <SelectValue placeholder="媒体类型" />
                     </SelectTrigger>
-                    <SelectContent className="z-[9999]">
+                    <SelectContent className="z-[var(--maxZIndex)]">
                       <SelectItem value="all">全部</SelectItem>
                       <SelectItem value="video">视频</SelectItem>
                       <SelectItem value="image">图片</SelectItem>
@@ -472,7 +472,7 @@ export default function MediaLibrary(props: {
                     <SelectTrigger className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
                       <SelectValue placeholder="时间范围" />
                     </SelectTrigger>
-                    <SelectContent className="z-[9999]">
+                    <SelectContent className="z-[var(--maxZIndex)]">
                       <SelectItem value="all">全部</SelectItem>
                       <SelectItem value="today">今天</SelectItem>
                       <SelectItem value="week">过去一周</SelectItem>
@@ -482,7 +482,7 @@ export default function MediaLibrary(props: {
                   </Select>
                 </div>
                 <Button
-                  variant="outline"
+                  variant='secondary'
                   className="cursor-pointer"
                   onClick={() => {
                     setSearchParams({ ...defaultSearchParams });

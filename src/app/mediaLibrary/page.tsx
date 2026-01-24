@@ -1,11 +1,14 @@
 "use client";
 
 import MediaLibrary from "@/components/mediaLibrary";
+import ThemeProvider from "@/components/themeProvider";
+import { selectDarkMode } from "@/store/darkMode/darkMode-slice";
+import { useAppSelector } from "@/store/hooks";
 import { ConfigProvider, message, theme } from "antd";
-import Image from "next/image";
 import { useEffect } from "react";
 
 export default function MediaLibraryPage() {
+  const darkMode = useAppSelector(selectDarkMode);
   useEffect(() => {
     message.config({
       duration: 3,
@@ -14,14 +17,16 @@ export default function MediaLibraryPage() {
     });
   });
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.darkAlgorithm,
-      }}
-    >
-      <div className="h-[100dvh]">
-        <MediaLibrary></MediaLibrary>
-      </div>
-    </ConfigProvider>
+    <ThemeProvider>
+      <ConfigProvider
+        theme={{
+          algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        }}
+      >
+        <div className="h-[100dvh]">
+          <MediaLibrary></MediaLibrary>
+        </div>
+      </ConfigProvider>
+    </ThemeProvider>
   );
 }

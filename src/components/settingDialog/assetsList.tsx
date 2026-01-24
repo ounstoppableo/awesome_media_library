@@ -115,7 +115,7 @@ function TypeField(props: { formData: any; field: any; clean?: boolean }) {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="请选择媒体类型" />
               </SelectTrigger>
-              <SelectContent className="z-[9999]">
+              <SelectContent className="z-[var(--maxZIndex)]">
                 {[
                   { label: "视频", value: "video" },
                   { label: "图片", value: "image" },
@@ -190,7 +190,7 @@ function TagField(props: {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="请选择媒体类型" />
               </SelectTrigger>
-              <SelectContent className="z-[9999]">
+              <SelectContent className="z-[var(--maxZIndex)]">
                 {(tags || []).map((tag) => (
                   <SelectItem key={tag} value={tag}>
                     {tag}
@@ -300,7 +300,7 @@ function DateField(props: { formData: any; field: any; clean?: boolean }) {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-[9999]">
+              <PopoverContent className="w-auto p-0 z-[var(--maxZIndex)]">
                 <Calendar
                   mode="single"
                   selected={field.value as any}
@@ -620,12 +620,12 @@ export default function AssetsList(props: any) {
           <DialogTrigger asChild></DialogTrigger>
           <DialogContent
             className={cn(
-              "w-[100dvw] max-w-[100dvw_!important] h-[100dvh] flex flex-col",
+              "w-[100dvw] max-w-[100dvw_!important] h-[100dvh] flex flex-col overflow-hidden",
               className
             )}
           >
             {assetListloading && (
-              <div className="fixed inset-0 top-0 z-[99999] [--foreground:white] bg-black/40 flex justify-center items-center">
+              <div className="fixed inset-0 top-0 z-[var(--maxZIndex)] [--foreground:white] bg-black/40 flex justify-center items-center">
                 <OrbitalLoader />
               </div>
             )}
@@ -872,12 +872,12 @@ export default function AssetsList(props: any) {
       >
         <DialogContent
           className={cn(
-            "w-[80dvw] max-w-[80dvw_!important] h-[80dvh] flex flex-col",
+            "w-[80dvw] max-w-[80dvw_!important] h-[80dvh] flex flex-col overflow-hidden",
             className
           )}
         >
           {assetDetailLoading && (
-            <div className="fixed inset-0 top-0 z-[99999] [--foreground:white] bg-black/40 flex justify-center items-center">
+            <div className="fixed inset-0 top-0 z-[var(--maxZIndex)] [--foreground:white] bg-black/40 flex justify-center items-center">
               <OrbitalLoader />
             </div>
           )}
@@ -1047,7 +1047,7 @@ export default function AssetsList(props: any) {
                                         <SelectTrigger className="w-full">
                                           <SelectValue placeholder="请选择媒体源" />
                                         </SelectTrigger>
-                                        <SelectContent className="z-[9999]">
+                                        <SelectContent className="z-[var(--maxZIndex)]">
                                           {formData
                                             .getValues("children")
                                             .map((media: any) => (

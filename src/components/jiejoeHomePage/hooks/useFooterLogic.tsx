@@ -49,7 +49,7 @@ export default function useFooterLogic() {
                     "--position": `${-10 + Math.random() * 120}%`,
                     "--distance": `${0 + Math.random() * 5}vmin`,
                     "--time": `${2 + Math.random() * 4}s`,
-                    "--delay": `${2 * (2 + Math.random() * 4)}s`,
+                    "--delay": `${Math.random() * 4}s`,
                     animation: `bubble-size var(--time, 4s) ease-in infinite var(--delay, 0s),
                   bubble-move var(--time, 4s) ease-in infinite var(--delay, 0s)`,
                   } as any

@@ -11,7 +11,6 @@ export function MenuToggleIcon({
   open,
   className,
   fill = "none",
-  stroke = "currentColor",
   strokeWidth = 2.5,
   strokeLinecap = "round",
   strokeLinejoin = "round",
@@ -22,7 +21,7 @@ export function MenuToggleIcon({
     <svg
       strokeWidth={strokeWidth}
       fill={fill}
-      stroke={stroke}
+      stroke={"var(--stroke)"}
       viewBox="0 0 32 32"
       strokeLinecap={strokeLinecap}
       strokeLinejoin={strokeLinejoin}
