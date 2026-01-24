@@ -15,7 +15,6 @@ export const darkModeSlice = createSlice({
   reducers: {
     setDarkMode(state, action: PayloadAction<Pick<darkModeState, "darkMode">>) {
       state.darkMode = action.payload.darkMode;
-      localStorage.setItem("darkMode", JSON.stringify(state.darkMode));
     },
   },
 });

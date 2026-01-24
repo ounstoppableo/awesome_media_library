@@ -22,6 +22,7 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
     );
   }, []);
   useEffect(() => {
+    localStorage.setItem("darkMode", JSON.stringify(darkMode));
     darkMode
       ? document.documentElement.classList.add("dark")
       : document.documentElement.classList.remove("dark");

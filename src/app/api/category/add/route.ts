@@ -13,6 +13,12 @@ import { NextRequest } from "next/server";
 import z from "zod";
 
 export async function POST(_req: NextRequest) {
+  const token = _req.headers.get("Authorization");
+  if (!token || !(await useAuth(token)))
+    return Response.json({
+      code: codeMap.limitsOfAuthority,
+      msg: codeMapMsg[codeMap.limitsOfAuthority],
+    } as CommonResponse);
   let body: z.infer<typeof categoryFormSchema>;
   try {
     body = await _req.json();

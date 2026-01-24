@@ -57,6 +57,7 @@ import { setCloseScroll } from "@/store/jiejoeControl/jiejoeControl-slice";
 import { selectDarkMode, setDarkMode } from "@/store/darkMode/darkMode-slice";
 import ThemeProvider from "@/components/themeProvider";
 import { cn } from "@/lib/utils";
+import zhCN from "antd/locale/zh_CN";
 
 export default function Home() {
   const router = useRouter();
@@ -198,6 +199,7 @@ export default function Home() {
   return (
     <ThemeProvider>
       <ConfigProvider
+        locale={zhCN}
         theme={{
           algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
@@ -242,7 +244,7 @@ export default function Home() {
               <OrbitalLoader />
             </div>
           )}
-          {showTaojima && <Taotajima></Taotajima>}
+          {showTaojima && !dialogOpen && <Taotajima></Taotajima>}
         </div>
         <JiejoeHomePage></JiejoeHomePage>
         <div className="fixed bottom-[6vmin] left-[10vmin] z-150">

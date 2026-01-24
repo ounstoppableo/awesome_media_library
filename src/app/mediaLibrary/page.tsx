@@ -6,6 +6,7 @@ import { selectDarkMode } from "@/store/darkMode/darkMode-slice";
 import { useAppSelector } from "@/store/hooks";
 import { ConfigProvider, message, theme } from "antd";
 import { useEffect } from "react";
+import zhCN from "antd/locale/zh_CN";
 
 export default function MediaLibraryPage() {
   const darkMode = useAppSelector(selectDarkMode);
@@ -19,6 +20,7 @@ export default function MediaLibraryPage() {
   return (
     <ThemeProvider>
       <ConfigProvider
+        locale={zhCN}
         theme={{
           algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}

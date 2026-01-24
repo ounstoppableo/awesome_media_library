@@ -166,7 +166,9 @@ export async function DELETE(_req: NextRequest) {
       delete_sql = delete_sql.slice(0, delete_sql.length - 1);
       select_sql += ");";
       delete_sql += ");";
-      const sourcePaths = (await getPool().query(select_sql, body.ids))[0];
+      const sourcePaths = (
+        await getPool().query(select_sql, body.ids)
+      )[0] as any[];
       await getPool().query(delete_sql, body.ids);
       if (sourcePaths) {
         for (let i = 0; i < sourcePaths.length; i++) {

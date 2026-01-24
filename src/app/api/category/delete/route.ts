@@ -8,6 +8,12 @@ import { codeMap, codeMapMsg } from "@/utils/backendStatus";
 import { NextRequest } from "next/server";
 
 export async function POST(_req: NextRequest) {
+  const token = _req.headers.get("Authorization");
+  if (!token || !(await useAuth(token)))
+    return Response.json({
+      code: codeMap.limitsOfAuthority,
+      msg: codeMapMsg[codeMap.limitsOfAuthority],
+    } as CommonResponse);
   let body;
   try {
     body = await _req.json();

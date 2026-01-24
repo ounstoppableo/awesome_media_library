@@ -40,6 +40,8 @@ import {
   Store,
   Trash,
   Trash2,
+  View,
+  ViewIcon,
 } from "lucide-react";
 import { Button } from "../button-1";
 import MediaLibrary from "../mediaLibrary";
@@ -87,6 +89,18 @@ import { Pagination, Popconfirm, message } from "antd";
 import categoryFormSchema from "@/utils/dataStruct";
 import { ResetIcon } from "@radix-ui/react-icons";
 import { Field, FieldLabel } from "../ui/field";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  selectTaojimaControlOpenStatus,
+  setOpen,
+} from "@/store/taotajimaControl/taotajima-slice";
+import { useGSAP } from "@gsap/react";
+import {
+  selectTaotajimaLoading,
+  setTaotajimaLoading,
+} from "@/store/loading/loading-slice";
+import Taotajima from "../taotajima";
+import useAuthLogic from "./hook/useAuthLogic";
 
 function TypeField(props: { formData: any; field: any; clean?: boolean }) {
   const { formData, field, clean = false } = props;
@@ -386,6 +400,12 @@ export default function AssetsList(props: any) {
     _setSearchParams(value);
     searchParamsSync.current = value;
   };
+  const { isAuth } = useAuthLogic();
+  const dispatch = useAppDispatch();
+  const taojimaOpen = useAppSelector(selectTaojimaControlOpenStatus);
+  const handleExplore = (info: any) => {
+    dispatch(setOpen({ open: !taojimaOpen, id: info.id }));
+  };
 
   // 分页
   const [pageInfo, _setPageInfo] = useState({
@@ -605,6 +625,70 @@ export default function AssetsList(props: any) {
     formData.reset();
   };
 
+  const taojimaOpenStatus = useAppSelector(selectTaojimaControlOpenStatus);
+  const taojimaLoading = useAppSelector(selectTaotajimaLoading);
+  const [showTaojima, setShowTaojima] = useState(false);
+  const taojimaContainer = useRef<any>(null);
+  const { contextSafe: taojima } = useGSAP(
+    () => {
+      const tm = gsap.timeline();
+      if (taojimaOpenStatus) {
+        dispatch(setTaotajimaLoading({ taotajimaLoading: true }));
+        tm.to(taojimaContainer.current, {
+          x: 0,
+          duration: 0.5,
+          ease: "linear",
+        });
+        tm.fromTo(
+          taojimaContainer.current,
+          {
+            borderTopLeftRadius: "20vmin",
+            borderBottomLeftRadius: "20vmin",
+          },
+          {
+            borderTopLeftRadius: 0,
+            borderBottomLeftRadius: 0,
+            duration: 0.5,
+            ease: "linear",
+          }
+        );
+        tm.play().then(() => {
+          setShowTaojima(true);
+        });
+      } else {
+        tm.to(
+          taojimaContainer.current,
+          {
+            x: "100%",
+            duration: 0.5,
+            ease: "linear",
+          },
+          0
+        ).then(() => {
+          setShowTaojima(false);
+        });
+        tm.fromTo(
+          taojimaContainer.current,
+          {
+            borderTopLeftRadius: 0,
+            borderBottomLeftRadius: 0,
+          },
+          {
+            borderTopLeftRadius: "20vmin",
+            borderBottomLeftRadius: "20vmin",
+            duration: 0.1,
+            ease: "linear",
+          },
+          0
+        );
+      }
+    },
+    {
+      scope: taojimaContainer,
+      dependencies: [taojimaOpenStatus],
+    }
+  );
+
   useEffect(() => {
     if (!addMediaOpen) {
       setCurrentStep(1);
@@ -620,10 +704,21 @@ export default function AssetsList(props: any) {
           <DialogTrigger asChild></DialogTrigger>
           <DialogContent
             className={cn(
-              "w-[100dvw] max-w-[100dvw_!important] h-[100dvh] flex flex-col overflow-hidden",
+              "w-[100dvw] max-w-[100dvw_!important] h-[100dvh] flex flex-col overflow-hidden rounded-none",
               className
             )}
           >
+            <div
+              className="fixed inset-0 translate-x-1/1 z-140 overflow-hidden"
+              ref={taojimaContainer}
+            >
+              {taojimaLoading && (
+                <div className="inset-0 top-0 z-[var(--maxZIndex)] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
+                  <OrbitalLoader />
+                </div>
+              )}
+              {showTaojima && <Taotajima></Taotajima>}
+            </div>
             {assetListloading && (
               <div className="fixed inset-0 top-0 z-[var(--maxZIndex)] [--foreground:white] bg-black/40 flex justify-center items-center">
                 <OrbitalLoader />
@@ -645,19 +740,27 @@ export default function AssetsList(props: any) {
                     添加资产，使其能在其他地方进行服务
                   </EmptyDescription>
                 </EmptyHeader>
-                <EmptyContent>
-                  <Button variant="outline" size="sm" onClick={handleAddAsset}>
-                    <Plus></Plus>
-                    添加资产
-                  </Button>
-                </EmptyContent>
+                {isAuth && (
+                  <EmptyContent>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddAsset}
+                    >
+                      <Plus></Plus>
+                      添加资产
+                    </Button>
+                  </EmptyContent>
+                )}
               </Empty>
             ) : (
               <>
-                <div className="flex gap-[4vmin]">
-                  <Button onClick={handleAddAsset}>
-                    <Plus></Plus>添加资产
-                  </Button>
+                <div className="flex gap-[4vmin] max-md:flex-wrap">
+                  {isAuth && (
+                    <Button onClick={handleAddAsset}>
+                      <Plus></Plus>添加资产
+                    </Button>
+                  )}
 
                   <Field orientation="horizontal">
                     <FieldLabel
@@ -747,102 +850,113 @@ export default function AssetsList(props: any) {
                         <TableCell className="w-32">
                           <div className="w-full h-full flex justify-center items-center gap-[2vmin]">
                             <Button
+                              variant={"outline"}
                               className="w-8 h-8 rounded-full"
-                              onClick={() => {
-                                setAddAssetDialogTitle("修改资产");
-                                setAddMediaOpen(true);
-                                setCurrentStep(2);
-                                formData.reset();
-                                setAssetDetailLoading(true);
-                                request("/api/category/categoryDetail", {
-                                  method: "post",
-                                  body: { id: info.id },
-                                })
-                                  .then((res: CommonResponse) => {
-                                    if (res.code === codeMap.success) {
-                                      const data = res.data as CategoryDetail;
-                                      formData.setValue(
-                                        "children",
-                                        data.children as any
-                                      );
-                                      formData.setValue(
-                                        "chineseTitle",
-                                        data.chineseTitle
-                                      );
-                                      formData.setValue(
-                                        "englishTitle",
-                                        data.englishTitle
-                                      );
-                                      formData.setValue("date", data.date);
-                                      formData.setValue(
-                                        "location",
-                                        data.location
-                                      );
-                                      formData.setValue(
-                                        "mediaId",
-                                        data.mediaId
-                                      );
-                                      formData.setValue(
-                                        "introduce",
-                                        data.introduce
-                                      );
-                                      formData.setValue(
-                                        "sourcePath",
-                                        data.sourcePath
-                                      );
-                                      formData.setValue("tag", data.tag);
-                                      formData.setValue("type", data.type);
-                                      formData.setValue(
-                                        "thumbnail",
-                                        data.thumbnail || ""
-                                      );
-                                      formData.setValue(
-                                        "tags",
-                                        data.tags || []
-                                      );
-                                      formData.setValue("id", data.id);
-                                      setSelectedMediaIds(
-                                        data.children.map(
-                                          (item) => item.mediaId
-                                        )
-                                      );
-                                    }
-                                  })
-                                  .finally(() => {
-                                    setAssetDetailLoading(false);
-                                  });
-                              }}
+                              onClick={() => handleExplore(info)}
                             >
-                              <Edit></Edit>
+                              <ViewIcon></ViewIcon>
                             </Button>
-                            <Popconfirm
-                              placement="topLeft"
-                              title={"删除资产"}
-                              description={"您确定要删除该资产吗?"}
-                              okText="是"
-                              cancelText="否"
-                              getPopupContainer={(triggerNode) =>
-                                triggerNode.parentElement!
-                              }
-                              onConfirm={() => {
-                                request("/api/category/delete", {
-                                  method: "post",
-                                  body: { ids: [info.id] },
-                                }).then((res) => {
-                                  if (res.code === codeMap.success) {
-                                    message.success("删除成功");
-                                    updateList();
-                                  }
-                                });
-                              }}
-                            >
+                            {isAuth && (
                               <Button
                                 className="w-8 h-8 rounded-full"
-                                variant={"destructive"}
+                                onClick={() => {
+                                  setAddAssetDialogTitle("修改资产");
+                                  setAddMediaOpen(true);
+                                  setCurrentStep(2);
+                                  formData.reset();
+                                  setAssetDetailLoading(true);
+                                  request("/api/category/categoryDetail", {
+                                    method: "post",
+                                    body: { id: info.id },
+                                  })
+                                    .then((res: CommonResponse) => {
+                                      if (res.code === codeMap.success) {
+                                        const data = res.data as CategoryDetail;
+                                        formData.setValue(
+                                          "children",
+                                          data.children as any
+                                        );
+                                        formData.setValue(
+                                          "chineseTitle",
+                                          data.chineseTitle
+                                        );
+                                        formData.setValue(
+                                          "englishTitle",
+                                          data.englishTitle
+                                        );
+                                        formData.setValue("date", data.date);
+                                        formData.setValue(
+                                          "location",
+                                          data.location
+                                        );
+                                        formData.setValue(
+                                          "mediaId",
+                                          data.mediaId
+                                        );
+                                        formData.setValue(
+                                          "introduce",
+                                          data.introduce
+                                        );
+                                        formData.setValue(
+                                          "sourcePath",
+                                          data.sourcePath
+                                        );
+                                        formData.setValue("tag", data.tag);
+                                        formData.setValue("type", data.type);
+                                        formData.setValue(
+                                          "thumbnail",
+                                          data.thumbnail || ""
+                                        );
+                                        formData.setValue(
+                                          "tags",
+                                          data.tags || []
+                                        );
+                                        formData.setValue("id", data.id);
+                                        setSelectedMediaIds(
+                                          data.children.map(
+                                            (item) => item.mediaId
+                                          )
+                                        );
+                                      }
+                                    })
+                                    .finally(() => {
+                                      setAssetDetailLoading(false);
+                                    });
+                                }}
                               >
-                                <Trash2></Trash2>
+                                <Edit></Edit>
                               </Button>
-                            </Popconfirm>
+                            )}
+                            {isAuth && (
+                              <Popconfirm
+                                placement="topLeft"
+                                title={"删除资产"}
+                                description={"您确定要删除该资产吗?"}
+                                okText="是"
+                                cancelText="否"
+                                getPopupContainer={(triggerNode) =>
+                                  triggerNode.parentElement!
+                                }
+                                onConfirm={() => {
+                                  request("/api/category/delete", {
+                                    method: "post",
+                                    body: { ids: [info.id] },
+                                  }).then((res) => {
+                                    if (res.code === codeMap.success) {
+                                      message.success("删除成功");
+                                      updateList();
+                                    }
+                                  });
+                                }}
+                              >
+                                <Button
+                                  className="w-8 h-8 rounded-full"
+                                  variant={"destructive"}
+                                >
+                                  <Trash2></Trash2>
+                                </Button>
+                              </Popconfirm>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
