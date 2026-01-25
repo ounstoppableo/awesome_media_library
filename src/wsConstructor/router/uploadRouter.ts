@@ -58,31 +58,31 @@ export type WsUploadRequestDataType<T extends uploadType> = {
       };
     }
   : T extends "uploading"
-  ? {
-      fileId: string;
-      chunk: Uint8Array;
-      processChunkIndex: number;
-      ext: string;
-    }
-  : T extends "uploadEnd"
-  ? { fileId: string; ext: string; size?: number }
-  : T extends "delete"
-  ? { fileId: string; ext: string }
-  : T extends "edit"
-  ? {
-      fildId: string;
-      fileInfo: {
-        clientFileId: string;
-        title: string;
-        tags: string[];
-        size: number;
-        type: string;
-        createTime: string;
-        updateTime: string;
+    ? {
+        fileId: string;
+        chunk: Uint8Array;
+        processChunkIndex: number;
         ext: string;
-      };
-    }
-  : never);
+      }
+    : T extends "uploadEnd"
+      ? { fileId: string; ext: string; size?: number }
+      : T extends "delete"
+        ? { fileId: string; ext: string }
+        : T extends "edit"
+          ? {
+              fildId: string;
+              fileInfo: {
+                clientFileId: string;
+                title: string;
+                tags: string[];
+                size: number;
+                type: string;
+                createTime: string;
+                updateTime: string;
+                ext: string;
+              };
+            }
+          : never);
 export type WsUploadResponseDataType<T extends uploadType> = {
   type: T;
   fileId: string;
@@ -93,18 +93,18 @@ export type WsUploadResponseDataType<T extends uploadType> = {
       processedChunkIndexs?: number[];
     }
   : T extends "uploadEnd"
-  ? {
-      sourcePath: string;
-      size: number;
-      thumbnail: string;
-    }
-  : T extends "uploading"
-  ? {
-      processedChunkIndex: number;
-    }
-  : T extends "edit"
-  ? {}
-  : never);
+    ? {
+        sourcePath: string;
+        size: number;
+        thumbnail: string;
+      }
+    : T extends "uploading"
+      ? {
+          processedChunkIndex: number;
+        }
+      : T extends "edit"
+        ? {}
+        : never);
 
 const redisNameSpace = {
   fileInfo: (username: string) => "fileInfo" + "_" + username,
@@ -116,11 +116,10 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024;
 if (!isFileExist(fileStorePath)) {
   mkdirSync(fileStorePath);
 }
-log("test");
 
 export default async function uploadRouter(
   ws: WebSocket,
-  req: WsUploadRequestDataType<any>
+  req: WsUploadRequestDataType<any>,
 ) {
   const redisInst = await redisPool.acquire();
   await uploadStart(req, ws, redisInst);
@@ -134,7 +133,7 @@ export default async function uploadRouter(
 const uploadStart = async (
   req: WsUploadRequestDataType<any>,
   ws: WebSocket,
-  redisInst: any
+  redisInst: any,
 ) => {
   if (req.type === "uploadStart") {
     const paramsStatus = paramsCheck(req, {
@@ -170,15 +169,15 @@ const uploadStart = async (
       return clientError(
         ws,
         `文件大小限制为${MAX_FILE_SIZE / 1024 / 1024}MB以内`,
-        codeMap.fileExceedLimit
+        codeMap.fileExceedLimit,
       );
 
     if (_req.fileId) {
       fileInfo = JSON.parse(
         (await redisInst.HGET(
           redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
-          _req.fileId
-        )) || "null"
+          _req.fileId,
+        )) || "null",
       );
       fileInfo && (fileId = _req.fileId);
 
@@ -187,13 +186,13 @@ const uploadStart = async (
         const storagePath = getStoragePath(
           fileId,
           _req.fileInfo.ext,
-          tokenMapUsername[_req.token]
+          tokenMapUsername[_req.token],
         );
         const storagePathRelative = getStoragePath(
           fileId,
           _req.fileInfo.ext,
           tokenMapUsername[_req.token],
-          false
+          false,
         );
         if (!tempPath || !storagePath || !storagePathRelative)
           return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
@@ -207,7 +206,7 @@ const uploadStart = async (
               thumbnail = await thumbnailGenerate(
                 storagePath,
                 _req.fileId,
-                tokenMapUsername[_req.token]
+                tokenMapUsername[_req.token],
               );
             }
             const res: WsResponseMsgType<"upload"> = {
@@ -256,7 +255,7 @@ const uploadStart = async (
       await redisInst.HSET(
         redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
         fileId,
-        JSON.stringify(_req.fileInfo)
+        JSON.stringify(_req.fileInfo),
       );
     }
     const tempPath = getTempPath(fileId, tokenMapUsername[_req.token]);
@@ -284,7 +283,7 @@ const fileLock: any = {};
 const uploading = async (
   req: WsUploadRequestDataType<any>,
   ws: WebSocket,
-  redisInst: any
+  redisInst: any,
 ) => {
   if (req.type === "uploading") {
     const paramsStatus = paramsCheck(req, {
@@ -313,7 +312,7 @@ const uploading = async (
         return clientError(
           ws,
           `文件大小限制为${MAX_FILE_SIZE / 1024 / 1024}MB以内`,
-          codeMap.fileExceedLimit
+          codeMap.fileExceedLimit,
         );
       if (_req.fileId && isFileExist(fileTempPath)) {
         const res: WsResponseMsgType<"upload"> = {
@@ -354,7 +353,7 @@ const uploading = async (
 const uploadEnd = async (
   req: WsUploadRequestDataType<any>,
   ws: WebSocket,
-  redisInst: any
+  redisInst: any,
 ) => {
   if (req.type === "uploadEnd") {
     const paramsStatus = paramsCheck(req, {
@@ -377,13 +376,13 @@ const uploadEnd = async (
     const targetPath = getStoragePath(
       _req.fileId,
       _req.ext,
-      tokenMapUsername[_req.token]
+      tokenMapUsername[_req.token],
     );
     const targetPathRelative = getStoragePath(
       _req.fileId,
       _req.ext,
       tokenMapUsername[_req.token],
-      false
+      false,
     );
     if (!fileTempPath || !targetDir || !targetPath || !targetPathRelative)
       return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
@@ -397,7 +396,7 @@ const uploadEnd = async (
           thumbnail = await thumbnailGenerate(
             targetPath,
             _req.fileId,
-            tokenMapUsername[_req.token]
+            tokenMapUsername[_req.token],
           );
         }
         const res: WsResponseMsgType<"upload"> = {
@@ -457,7 +456,7 @@ const uploadEnd = async (
             thumbnail = await thumbnailGenerate(
               targetPath,
               _req.fileId,
-              tokenMapUsername[_req.token]
+              tokenMapUsername[_req.token],
             );
           }
           const res: WsResponseMsgType<"upload"> = {
@@ -480,7 +479,7 @@ const uploadEnd = async (
               JSON.stringify({
                 sourcePath: targetPathRelative,
                 thumbnail: thumbnail,
-              })
+              }),
             );
           } catch (err: any) {
             log(errorStringify(err), "error");
@@ -502,7 +501,7 @@ const uploadEnd = async (
 const deleteFileCb = async (
   req: WsUploadRequestDataType<any>,
   ws: WebSocket,
-  redisInst: any
+  redisInst: any,
 ) => {
   if (req.type === "delete" && req.fileId) {
     const paramsStatus = paramsCheck(req, {
@@ -521,21 +520,21 @@ const deleteFileCb = async (
     const storagePath = getStoragePath(
       _req.fileId,
       _req.ext,
-      tokenMapUsername[_req.token]
+      tokenMapUsername[_req.token],
     );
     const thumbnailPath = getThumbnailPath(
       _req.fileId,
-      tokenMapUsername[_req.token]
+      tokenMapUsername[_req.token],
     );
     if (!tempPath || !storagePath)
       return clientError(ws, "权限不足", codeMap.limitsOfAuthority);
     redisInst.HDEL(
       redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
-      _req.fileId
+      _req.fileId,
     );
     redisInst.HDEL(
       redisNameSpace.fileInvariantInfo(tokenMapUsername[_req.token]),
-      _req.fileId
+      _req.fileId,
     );
     try {
       isFileExist(tempPath) &&
@@ -561,7 +560,7 @@ const deleteFileCb = async (
 const editCb = async (
   req: WsUploadRequestDataType<any>,
   ws: WebSocket,
-  redisInst: any
+  redisInst: any,
 ) => {
   if (req.type === "edit") {
     const paramsStatus = paramsCheck(req, {
@@ -594,8 +593,8 @@ const editCb = async (
     const fileInfo = JSON.parse(
       (await redisInst.HGET(
         redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
-        _req.fileId
-      )) || "null"
+        _req.fileId,
+      )) || "null",
     );
 
     if (fileInfo) {
@@ -604,7 +603,7 @@ const editCb = async (
       redisInst.HSET(
         redisNameSpace.fileInfo(tokenMapUsername[_req.token]),
         _req.fileId,
-        JSON.stringify({ ...fileInfo, ..._req.fileInfo })
+        JSON.stringify({ ...fileInfo, ..._req.fileInfo }),
       );
     }
   }

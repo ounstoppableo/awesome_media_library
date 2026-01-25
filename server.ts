@@ -3,9 +3,7 @@ import wsConstructor from "./src/wsConstructor";
 import dotenv from "dotenv";
 import path from "path";
 
-dotenv.config({ path: path.resolve(__dirname, ".env.local") });
-
-import mysql from "mysql2/promise";
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
 const wss = new WebSocketServer({
   port: 10000,

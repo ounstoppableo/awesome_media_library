@@ -20,8 +20,8 @@ export type WsRequestMsgType<T extends wsMessageTypes> = {
   data: T extends "operate"
     ? WsOperateRequestDataType<any>
     : T extends "upload"
-    ? WsUploadRequestDataType<any>
-    : never;
+      ? WsUploadRequestDataType<any>
+      : never;
   token: string;
 };
 
@@ -30,14 +30,14 @@ export type WsResponseMsgType<T> = {
   data: T extends "operate"
     ? WsOperateResponseDataType
     : T extends "upload"
-    ? WsUploadResponseDataType<any>
-    : T extends "error"
-    ? {
-        msg: string;
-        code: number;
-        [key: string]: any;
-      }
-    : never;
+      ? WsUploadResponseDataType<any>
+      : T extends "error"
+        ? {
+            msg: string;
+            code: number;
+            [key: string]: any;
+          }
+        : never;
 };
 
 const tokenMapExpireTime: any = {};
@@ -48,7 +48,7 @@ export default async function wsConstructor(ws: WebSocket) {
     if (isBinary) {
       try {
         const _message = bufferToObject(
-          message
+          message,
         ) as WsRequestMsgType<wsMessageTypes>;
         if (
           tokenMapExpireTime[_message.token] &&
@@ -58,8 +58,8 @@ export default async function wsConstructor(ws: WebSocket) {
           if (await useAuth(_message.token)) {
             const info = JSON.parse(
               Buffer.from(_message.token.split(".")[1], "base64").toString(
-                "utf-8"
-              )
+                "utf-8",
+              ),
             );
             tokenMapExpireTime[_message.token] = info.exp;
             tokenMapUsername[_message.token] = info.data;
@@ -114,7 +114,7 @@ export default async function wsConstructor(ws: WebSocket) {
 
 export function wsSend<T extends wsMessageTypes>(
   ws: WebSocket,
-  res: WsResponseMsgType<T>
+  res: WsResponseMsgType<T>,
 ) {
   ws.send(objectToBuffer(res));
 }
@@ -123,7 +123,7 @@ export function clientError(
   ws: WebSocket,
   msg: string,
   code: number = codeMap.serverError,
-  args?: any
+  args?: any,
 ) {
   const res: WsResponseMsgType<"error"> = {
     type: "error",

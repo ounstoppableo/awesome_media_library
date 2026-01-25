@@ -3,12 +3,16 @@ import fs from "fs";
 import dayjs from "dayjs";
 import SonicBoom from "sonic-boom";
 import { resolve } from "path";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function findTargetLogFile() {
   let logFilePath = resolve(
     __dirname,
     "..",
-    `${dayjs(new Date()).format("YYYY-MM-DD")}.log`
+    `${dayjs(new Date()).format("YYYY-MM-DD")}.log`,
   );
 
   return {
@@ -25,7 +29,7 @@ let _fileLogger: any = null;
 
 export default function log(
   content: string,
-  type: "info" | "error" | "debug" | "fatal" | "warn" | "trace" = "info"
+  type: "info" | "error" | "debug" | "fatal" | "warn" | "trace" = "info",
 ) {
   if (
     _logFileInfo &&
@@ -60,7 +64,7 @@ export default function log(
           dest: _logFileInfo.logFilePath,
           mkdir: true,
           append: true,
-        })
+        }),
       );
       _pinoLogger[type](content);
       _filePinoLogger[type](content);

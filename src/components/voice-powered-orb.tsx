@@ -29,8 +29,8 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const microphoneRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const dataArrayRef = useRef<Uint8Array | null>(null);
-  const animationFrameRef = useRef<number>();
+  const dataArrayRef = useRef<Uint8Array | any>(null);
+  const animationFrameRef = useRef<number>(-1);
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
   const vert = /* glsl */ `
@@ -268,8 +268,9 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       // Store the stream reference for cleanup
       mediaStreamRef.current = stream;
 
-      audioContextRef.current = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      audioContextRef.current = new (
+        window.AudioContext || (window as any).webkitAudioContext
+      )();
 
       // Resume audio context if needed
       if (audioContextRef.current.state === "suspended") {
@@ -288,7 +289,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
 
       microphoneRef.current.connect(analyserRef.current);
       dataArrayRef.current = new Uint8Array(
-        analyserRef.current.frequencyBinCount
+        analyserRef.current.frequencyBinCount,
       );
 
       console.log("Microphone initialized successfully");
@@ -306,7 +307,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
     if (!container) return;
 
     let rendererInstance: Renderer | null = null;
-    let glContext: WebGLRenderingContext | WebGL2RenderingContext | null = null;
+    let glContext: WebGLRenderingContext | WebGL2RenderingContext | any = null;
     let rafId: number;
     let program: Program | null = null;
 
@@ -340,7 +341,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
             value: new Vec3(
               glContext.canvas.width,
               glContext.canvas.height,
-              glContext.canvas.width / glContext.canvas.height
+              glContext.canvas.width / glContext.canvas.height,
             ),
           },
           hue: { value: hue },
@@ -368,7 +369,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
           program.uniforms.iResolution.value.set(
             glContext.canvas.width,
             glContext.canvas.height,
-            glContext.canvas.width / glContext.canvas.height
+            glContext.canvas.width / glContext.canvas.height,
           );
         }
       };
@@ -423,18 +424,18 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
           program.uniforms.hover.value = Math.min(voiceLevel * 2.0, 1.0);
           program.uniforms.hoverIntensity.value = Math.min(
             voiceLevel * maxHoverIntensity * 0.8,
-            maxHoverIntensity
+            maxHoverIntensity,
           );
         }
         if (enableScrollControl) {
           scrollSpeed.current;
           program.uniforms.hover.value = Math.min(
             scrollSpeed.current * 2.0,
-            1.0
+            1.0,
           );
           program.uniforms.hoverIntensity.value = Math.min(
             scrollSpeed.current * maxHoverIntensity * 0.8,
-            maxHoverIntensity
+            maxHoverIntensity,
           );
         } else {
           // Keep effects at 0 when not using voice control
@@ -450,7 +451,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
         if (rendererInstance && glContext) {
           // Clear the canvas with transparent background before rendering
           glContext.clear(
-            glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT
+            glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT,
           );
           rendererInstance.render({ scene: mesh });
         }

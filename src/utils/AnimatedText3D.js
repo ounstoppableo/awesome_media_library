@@ -28,7 +28,7 @@ function remToWorld(rem, camera, container) {
   return pxToWorld(px / FIX, camera, container);
 }
 
-export class AnimatedText3D extends Object3D {
+class AnimatedText3D extends Object3D {
   constructor(
     text,
     {
@@ -43,7 +43,7 @@ export class AnimatedText3D extends Object3D {
       yEdge = 9999,
       basicY = 0,
       floatX = 0,
-    } = {}
+    } = {},
   ) {
     super();
 
@@ -62,11 +62,11 @@ export class AnimatedText3D extends Object3D {
 
     const refChar = "a";
     const refCharGeom = new THREE.ShapeGeometry(
-      font.generateShapes(refChar, size, 1)
+      font.generateShapes(refChar, size, 1),
     );
     const refChineseChar = "国";
     const refChineseCharGeom = new THREE.ShapeGeometry(
-      font.generateShapes(refChineseChar, size, 1)
+      font.generateShapes(refChineseChar, size, 1),
     );
 
     refCharGeom.computeBoundingBox();
@@ -158,30 +158,30 @@ export class AnimatedText3D extends Object3D {
             this.overflow = index - spaceCount;
             this.children[this.overflow - 1].geometry.dispose();
             this.children[this.overflow - 1].geometry = new ShapeGeometry(
-              font.generateShapes(".", size, 1)
+              font.generateShapes(".", size, 1),
             );
             this.children[this.overflow - 1].geometry.translate(
               0,
               -refCharGeom.boundingBox.max.y,
-              0
+              0,
             );
             this.children[this.overflow - 2].geometry.dispose();
             this.children[this.overflow - 2].geometry = new ShapeGeometry(
-              font.generateShapes(".", size, 1)
+              font.generateShapes(".", size, 1),
             );
             this.children[this.overflow - 2].geometry.translate(
               0,
               -refCharGeom.boundingBox.max.y,
-              0
+              0,
             );
             this.children[this.overflow - 3].geometry.dispose();
             this.children[this.overflow - 3].geometry = new ShapeGeometry(
-              font.generateShapes(".", size, 1)
+              font.generateShapes(".", size, 1),
             );
             this.children[this.overflow - 3].geometry.translate(
               0,
               -refCharGeom.boundingBox.max.y,
-              0
+              0,
             );
           }
         }
@@ -206,7 +206,7 @@ export class AnimatedText3D extends Object3D {
       this.position,
       { x: enterOffset.x || 0, y: this.position.y + (enterOffset.y || 0) },
       { x: 0, y: this.containerBasicY },
-      0
+      0,
     );
     this.children.forEach((letter, index) => {
       if (typeof this.overflow === "number" && this.overflow <= index) return;
@@ -216,11 +216,11 @@ export class AnimatedText3D extends Object3D {
           y:
             letter.userData.baseY +
             Math.sin(
-              index * 0.1 + ((Math.PI * letter.userData.baseY) % (Math.PI / 4))
+              index * 0.1 + ((Math.PI * letter.userData.baseY) % (Math.PI / 4)),
             ),
         },
         { y: letter.userData.baseY },
-        0
+        0,
       );
       tm.fromTo(
         letter.material,
@@ -230,13 +230,13 @@ export class AnimatedText3D extends Object3D {
         {
           opacity: 1,
         },
-        0
+        0,
       );
       tm.fromTo(
         letter.rotation,
         { x: (index * 0.1 * Math.PI) % (Math.PI / 2) },
         { x: 0 },
-        0
+        0,
       );
     });
     await tm.play();
@@ -254,7 +254,7 @@ export class AnimatedText3D extends Object3D {
       { x: 0, y: this.containerBasicY },
       { x: enterOffset.x || 0, y: this.position.y + (enterOffset.y || 0) },
 
-      0
+      0,
     );
 
     this.children.forEach((letter, index) => {
@@ -271,12 +271,12 @@ export class AnimatedText3D extends Object3D {
                 0,
                 this.floatX,
                 Math.PI / 3,
-                2 * Math.PI + Math.PI / 3
-              )
+                2 * Math.PI + Math.PI / 3,
+              ),
             ) / 2,
         },
 
-        0
+        0,
       );
       tm.fromTo(
         letter.material,
@@ -287,7 +287,7 @@ export class AnimatedText3D extends Object3D {
           opacity: 0,
         },
 
-        0
+        0,
       );
       tm.fromTo(
         letter.rotation,
@@ -300,12 +300,12 @@ export class AnimatedText3D extends Object3D {
                 0,
                 this.wrapXCount || this.children.length * 2,
                 0,
-                Math.PI / 4
-              )
+                Math.PI / 4,
+              ),
             ) / 2,
         },
 
-        0
+        0,
       );
     });
     await tm.play();
