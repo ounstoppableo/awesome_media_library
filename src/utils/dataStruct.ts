@@ -20,8 +20,8 @@ const categoryFormSchema = z.object({
   date: z.string().min(1, { message: "日期参数不能为空" }),
   introduce: z
     .string()
-    .min(150, { message: "介绍不能少于150字" })
-    .max(400, { message: "介绍不能超过400个字符" }),
+    .min(100, { message: "介绍不能少于100字" })
+    .max(300, { message: "介绍不能超过300个字符" }),
   location: z
     .string()
     .min(1, { message: "位置参数不能为空" })
@@ -48,8 +48,8 @@ const categoryFormSchema = z.object({
       date: z.string().min(1, { message: "日期参数不能为空" }),
       introduce: z
         .string()
-        .min(150, { message: "介绍不能少于150字" })
-        .max(400, { message: "介绍不能超过400个字符" }),
+        .min(100, { message: "介绍不能少于100字" })
+        .max(300, { message: "介绍不能超过300个字符" }),
       location: z
         .string()
         .min(1, { message: "位置参数不能为空" })

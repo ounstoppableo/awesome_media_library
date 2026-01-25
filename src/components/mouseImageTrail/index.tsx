@@ -24,9 +24,9 @@ const MouseImageTrail = ({
         scopeRect.current = scope.current.getBoundingClientRect();
       });
     };
-    window.addEventListener("wheel", cb);
+    window.addEventListener("scroll", cb);
     return () => {
-      window.removeEventListener("wheel", cb);
+      window.removeEventListener("scroll", cb);
     };
   }, []);
   const handleMouseMove = (e: any) => {

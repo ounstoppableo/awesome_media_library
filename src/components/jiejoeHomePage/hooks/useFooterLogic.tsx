@@ -1,3 +1,5 @@
+import { GridBackground } from "@/components/ui/grid.background";
+import AnoAI from "@/components/ui/shader-background";
 import { StackedCircularFooter } from "@/components/ui/stacked-circular-footer";
 import { useEffect, useState } from "react";
 
@@ -58,7 +60,17 @@ export default function useFooterLogic() {
             ))}
         </div>
         <div className="absolute bg-white inset-0 top-[30vmin]">
-          <StackedCircularFooter />
+          <div className="relative z-1">
+            <StackedCircularFooter />
+          </div>
+          <div className="absolute bottom-0 z-0 w-full h-full">
+            <GridBackground
+              className="opacity-80"
+              intensity={100}
+              horizontalVignetteSize={50}
+              verticalVignetteSize={50}
+            ></GridBackground>
+          </div>
         </div>
       </div>
     </>

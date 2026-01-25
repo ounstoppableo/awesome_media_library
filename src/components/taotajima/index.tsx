@@ -45,7 +45,12 @@ import { CategoryDetail } from "@/types/media";
 
 export default function Taotajima() {
   const backBtnRef = useRef<HTMLDivElement>(null);
-  const [current, setCurrent] = useState(0);
+  const [current, _setCurrent] = useState(0);
+  const currentRef = useRef(0);
+  const setCurrent = (value: number) => {
+    _setCurrent(value);
+    currentRef.current = value;
+  };
   const contentRef = useRef<HTMLDivElement>(null);
   const introduceRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState<CategoryDetail | null>(null);
@@ -66,6 +71,7 @@ export default function Taotajima() {
     contentRef,
     shareRef,
     introduceRef,
+    currentRef,
   });
 
   const togglePageControl = useRef<any>(null);

@@ -1,18 +1,8 @@
 "use client";
-import { FiMousePointer } from "react-icons/fi";
-import MouseImageTrail from "../mouseImageTrail";
-import { RainbowCursor } from "../rainbow-cursor";
 import { VoicePoweredOrb } from "../voice-powered-orb";
 import useAvatarLogic from "./hooks/useAvatarLogic";
-import useBrightBallLogic from "./hooks/useBrightBallLogic";
-import useFireWorksLogic from "./hooks/useFireWorksLogic";
 import useFunBoardLogic from "./hooks/useFunBoardLogic";
 import useResizeLogic from "./hooks/useResizeLogic";
-import { ImageSwiper } from "../image-swiper";
-import { use, useEffect, useRef, useState } from "react";
-import { InteractiveHoverButton } from "../ui/interactive-hover-button";
-import useListLogic from "./components/List";
-import { BrandScroller, BrandScrollerReverse } from "../ui/brand-scoller";
 import useFooterLogic from "./hooks/useFooterLogic";
 import Title from "./components/Title";
 import List from "./components/List";
@@ -27,6 +17,9 @@ import {
 } from "@/store/taotajimaControl/taotajima-slice";
 import ContentInsufficient from "../contentInsufficient";
 import useAccessData from "./hooks/useAccessData";
+import { BeamsBackground } from "../ui/beams-background";
+import ShaderBackground from "../ui/shader-background";
+import { SilkBackground } from "../ui/silk-background";
 
 export default function JiejoeHomePage() {
   const dispatch = useAppDispatch();
@@ -38,9 +31,7 @@ export default function JiejoeHomePage() {
   const { resizeObserver, resizeObserverCb } = useResizeLogic();
   const { smoothWrapper, smoothContent } = useSmoothScrollerLogic();
   const { funBoardJsx } = useFunBoardLogic();
-  const { brightBallJsx } = useBrightBallLogic();
   const { avatarJsx } = useAvatarLogic({ resizeObserverCb });
-  const { fireworksJsx } = useFireWorksLogic();
 
   const { newestData, randomData } = useAccessData();
   const { footerJsx } = useFooterLogic();
@@ -56,7 +47,9 @@ export default function JiejoeHomePage() {
         <div ref={smoothContent}>
           <div className="flex flex-col w-[100dvw] h-fit bg-black select-none noScrollbar overflow-x-hidden">
             <div className="w-full h-[100dvh] flex justify-center items-center relative">
-              <div className="absolute inset-0 z-9">{fireworksJsx}</div>
+              <div className="absolute inset-0 z-1 after:absolute after:bottom-0 after:h-[50%] after:inset-x-0 after:bg-gradient-to-t after:from-black after:to-transparent after:z-10">
+                <SilkBackground />
+              </div>
               <div
                 className="flex flex-col font-extrabold brightness-120 gap-2 absolute z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-2/3"
                 style={{
@@ -110,7 +103,6 @@ export default function JiejoeHomePage() {
                   </div>
                 </div>
               </div>
-              <div className="absolute inset-0 z-1">{brightBallJsx}</div>
               <div className="absolute bottom-[8vmin] text-[var(--themeColor)] flex flex-col items-center brightness-120 text-sm z-8 gap-[1vmin]">
                 <VoicePoweredOrb
                   enableScrollControl={true}

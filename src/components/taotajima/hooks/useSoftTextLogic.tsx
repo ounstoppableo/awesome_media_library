@@ -4,7 +4,14 @@ import getVMinInJs from "@/utils/getVMinInJs";
 import { useEffect, useRef } from "react";
 
 export default function useSoftTextLogic(props: any) {
-  const { resizeObserverCb, data, contentRef, shareRef, introduceRef } = props;
+  const {
+    resizeObserverCb,
+    data,
+    contentRef,
+    shareRef,
+    introduceRef,
+    currentRef,
+  } = props;
   const softText = useRef<any>(null);
   const engine = useRef<any>(null);
   const softTextInst = useRef<any>([]);
@@ -165,9 +172,12 @@ export default function useSoftTextLogic(props: any) {
     };
     const cb = () => {
       textGenerate()(
-        `#${(1).toString().padStart(3, "0")}  /  ${data.children[0].tag}`,
-        data.children[0].chineseTitle || data.children[0].englishTitle,
-        data.children[0].introduce
+        `#${(currentRef.current + 1).toString().padStart(3, "0")}  /  ${
+          data.children[currentRef.current].tag
+        }`,
+        data.children[currentRef.current].chineseTitle ||
+          data.children[currentRef.current].englishTitle,
+        data.children[currentRef.current].introduce
       ).toShow("next");
     };
     resizeObserverCb.current.push(cb);

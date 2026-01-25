@@ -64,8 +64,13 @@ export class AnimatedText3D extends Object3D {
     const refCharGeom = new THREE.ShapeGeometry(
       font.generateShapes(refChar, size, 1)
     );
+    const refChineseChar = "国";
+    const refChineseCharGeom = new THREE.ShapeGeometry(
+      font.generateShapes(refChineseChar, size, 1)
+    );
 
     refCharGeom.computeBoundingBox();
+    refChineseCharGeom.computeBoundingBox();
 
     const createMesh = (letter) => {
       const shape = font.generateShapes(letter, size, 1);
@@ -76,14 +81,27 @@ export class AnimatedText3D extends Object3D {
       // threejs char size fit browser char size
       if (/[\u4E00-\u9FFF]/.test(letter)) {
         const realHeight = geom.boundingBox.max.y - geom.boundingBox.min.y;
-        const scale = (size / realHeight) * this.textScaleToFit;
-        geom.scale(scale, scale, 1);
+        const realWidth = geom.boundingBox.max.x - geom.boundingBox.min.x;
+        const minHeight = size * 0.5;
+        if (minHeight < realHeight) {
+          const scale = (size / realHeight) * this.textScaleToFit;
+          geom.scale(scale, scale, 1);
+        } else {
+          const scale = (size / realWidth) * this.textScaleToFit;
+          geom.scale(scale, scale, 1);
+        }
       } else {
         geom.scale(this.textScaleToFit, this.textScaleToFit, 1);
       }
 
       if (/[\u4E00-\u9FFF]/.test(letter)) {
-        geom.translate(0, -geom.boundingBox.max.y, 0);
+        const realHeight = geom.boundingBox.max.y - geom.boundingBox.min.y;
+        const minHeight = size * 0.5;
+        if (minHeight < realHeight) {
+          geom.translate(0, -geom.boundingBox.max.y, 0);
+        } else {
+          geom.translate(0, (-refChineseCharGeom.boundingBox.max.y * 2) / 3, 0);
+        }
       } else {
         geom.translate(0, -refCharGeom.boundingBox.max.y, 0);
       }

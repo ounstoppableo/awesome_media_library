@@ -1,3 +1,4 @@
+import AnoAI from "@/components/ui/shader-background";
 import { SplitText } from "gsap/all";
 import { useEffect, useRef } from "react";
 
@@ -11,7 +12,7 @@ export default function usePortfolioLogic() {
       scrollTrigger: {
         trigger: chineseIntroduceRef.current,
         start: "top bottom",
-        end: "bottom 40%",
+        end: "bottom 60%",
         scrub: true,
       },
     });
@@ -71,12 +72,12 @@ export default function usePortfolioLogic() {
   const portfolioJsx = (
     <>
       <div
-        className="text-[16vmin] leading-[16vmin] font-extrabold text-white mb-[4vmin]"
+        className="text-[16vmin] leading-[16vmin] font-extrabold text-white mb-[4vmin] z-1"
         ref={portfolioRef}
       >
         {"portfolio".toUpperCase()}
       </div>
-      <div className="text-white text-center mb-[3vmin] flex flex-col items-center justify-center gap-[1vmin]">
+      <div className="text-white text-center mb-[3vmin] flex flex-col items-center justify-center gap-[1vmin] z-1">
         <div className="text-[3vmin] leading-[3vmin]" ref={chineseIntroduceRef}>
           Unstoppable840的摄影作品集
         </div>
@@ -85,9 +86,10 @@ export default function usePortfolioLogic() {
         </div>
       </div>
       <div
-        className="h-1/3 w-[2px] absolute bottom-0 bg-linear-to-b from-[var(--themeColor)] to-transparent"
+        className="h-1/3 w-[2px] absolute bottom-0 bg-linear-to-b from-[var(--themeColor)] to-transparent z-1"
         ref={ariseLineRef}
       ></div>
+      <AnoAI></AnoAI>
     </>
   );
   return { portfolioJsx };

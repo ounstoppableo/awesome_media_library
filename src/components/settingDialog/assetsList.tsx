@@ -34,6 +34,7 @@ import { codeMap } from "@/utils/backendStatus";
 import {
   CalendarIcon,
   Delete,
+  Dices,
   Edit,
   Plus,
   Search,
@@ -101,6 +102,7 @@ import {
 } from "@/store/loading/loading-slice";
 import Taotajima from "../taotajima";
 import useAuthLogic from "./hook/useAuthLogic";
+import randomGenerateArticle from "@/utils/randomGenerateArticle";
 
 function TypeField(props: { formData: any; field: any; clean?: boolean }) {
   const { formData, field, clean = false } = props;
@@ -357,8 +359,13 @@ function LocationField(props: { formData: any; field: any; clean?: boolean }) {
     />
   );
 }
-function IntroduceField(props: { formData: any; field: any; clean?: boolean }) {
-  const { formData, field, clean = false } = props;
+function IntroduceField(props: {
+  formData: any;
+  field: any;
+  clean?: boolean;
+  randomGenerateIntroduce?: any;
+}) {
+  const { formData, field, clean = false, randomGenerateIntroduce } = props;
   return (
     <FormField
       control={formData.control}
@@ -369,14 +376,19 @@ function IntroduceField(props: { formData: any; field: any; clean?: boolean }) {
             <></>
           ) : (
             <>
-              <FormLabel>媒体介绍</FormLabel>{" "}
+              <FormLabel>
+                媒体介绍
+                <Dices
+                  onClick={() => randomGenerateIntroduce(field.name)}
+                  className="w-4 h-4 cursor-pointer hover:text-[var(--themeColor)] transition-all"
+                />
+              </FormLabel>
               <FormDescription>描述媒体的相关信息</FormDescription>
             </>
           )}
           <FormControl>
             <Textarea {...field} placeholder="请输入媒体介绍" />
           </FormControl>
-          <FormMessage />
         </FormItem>
       )}
     />
@@ -577,12 +589,25 @@ export default function AssetsList(props: any) {
                   clean={true}
                 ></LocationField>
               </TableCell>
-              <TableCell className="w-100">
+              <TableCell className="w-100 flex flex-col gap-2">
                 <IntroduceField
                   formData={formData}
                   field={`children[${index}].introduce`}
                   clean={true}
                 ></IntroduceField>
+                <Button
+                  className="w-full"
+                  variant={"secondary"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    randomGenerateIntroduce(`children[${index}].introduce`);
+                  }}
+                >
+                  <Dices />
+                  随机生成文案
+                </Button>
+                <FormMessage />
               </TableCell>
               <TableCell align="center">
                 <Button
@@ -697,6 +722,14 @@ export default function AssetsList(props: any) {
     }
   }, [addMediaOpen]);
 
+  const randomGenerateIntroduce = (map: any) => {
+    formData.setValue(map, randomGenerateArticle(), {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -709,7 +742,7 @@ export default function AssetsList(props: any) {
             )}
           >
             <div
-              className="absolute inset-0 translate-x-1/1 z-140 overflow-hidden"
+              className="absolute inset-0 w-[100dvw] h-[100dvh] translate-x-1/1 z-140 overflow-hidden"
               ref={taojimaContainer}
             >
               {taojimaLoading && (
@@ -1216,6 +1249,9 @@ export default function AssetsList(props: any) {
                               <IntroduceField
                                 formData={formData}
                                 field={"introduce"}
+                                randomGenerateIntroduce={
+                                  randomGenerateIntroduce
+                                }
                               ></IntroduceField>
                             </div>
                             {mediaTableJsx(formData.watch("children") as any)}
