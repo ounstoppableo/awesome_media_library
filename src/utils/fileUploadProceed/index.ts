@@ -10,6 +10,7 @@ _worker.postMessage({
     localStorage.getItem("clientFileIdMapServerFileId") || "{}"
   ),
   hostname: location.hostname,
+  protocol: location.protocol,
   token: localStorage.getItem("token"),
 });
 _worker.addEventListener("message", (e) => {

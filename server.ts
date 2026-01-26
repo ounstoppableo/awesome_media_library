@@ -6,7 +6,7 @@ import path from "path";
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
 const wss = new WebSocketServer({
-  port: 10000,
+  port: +(process.env.WS_PORT as string) || 10000,
   maxPayload: 1024 * 1024 * 15,
 });
 wss.on("connection", (ws: WebSocket) => {

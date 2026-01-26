@@ -67,6 +67,7 @@ let _totalChunk = 0;
 let Authorization = "";
 let fileProcessInfo = null;
 let hostname = "";
+let protocol = "";
 
 function clearEffect(stopFlag = false) {
   _processFile = null;
@@ -82,7 +83,9 @@ onmessage = (e) => {
   if (e.data.type === "init") {
     Authorization = e.data.token;
     hostname = e.data.hostname;
-    ws = new WebSocket(`ws://${hostname}:10000`);
+    protocol = e.data.protocol;
+    const wsProtocol = protocol === "https:" ? "wss" : "ws";
+    ws = new WebSocket(`${wsProtocol}://${hostname}:10000`);
     ws.addEventListener("message", async (e) => {
       try {
         const _res = bufferToObject(new Uint8Array(await e.data.arrayBuffer()));

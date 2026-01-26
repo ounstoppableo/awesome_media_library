@@ -8,8 +8,12 @@ export default function useWebsocketLogic() {
   const socketRef = useRef<WebSocket | null>(null);
   const { message } = App.useApp();
   useEffect(() => {
+    const protocol = location.protocol === "https:" ? "wss" : "ws";
+
     // 连接 WebSocket 服务
-    socketRef.current = new WebSocket(`ws://${location.hostname}:10000`);
+    socketRef.current = new WebSocket(
+      `${protocol}://${location.hostname}:10000`
+    );
 
     socketRef.current.onopen = () => {};
     const clear = wsListen(

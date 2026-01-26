@@ -90,6 +90,7 @@ onmessage = (e) => {
       type: "init",
       token: e.data.token,
       hostname: e.data.hostname,
+      protocol: e.data.protocol,
     });
   }
   if (e.data instanceof Array) {
