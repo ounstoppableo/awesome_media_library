@@ -2,7 +2,6 @@ import { Ref, useEffect, useRef, useState } from "react";
 import MediaItem, { MediaStruct } from "../components/mediaItem";
 import { v4 as uuidv4 } from "uuid";
 import dayjs from "dayjs";
-import { message } from "antd";
 import "@ant-design/v5-patch-for-react-19";
 import {
   CircleX,
@@ -38,6 +37,7 @@ import { WsUploadRequestDataType } from "@/wsConstructor/router/uploadRouter";
 import request from "@/utils/fetch";
 import { CommonResponse } from "@/types/response";
 import useLoadingLogic from "@/hooks/useLoadingLogic";
+import { App } from "antd";
 
 export const allowTypes = [
   "image/png",
@@ -57,8 +57,9 @@ export default function useUploadLogic(props: {
   tags?: any;
   setTags?: any;
   isAuth: boolean;
+  resetSearchParams: any;
 }) {
-  const { worker, socketRef, tags, setTags, isAuth } = props;
+  const { worker, socketRef, tags, setTags, isAuth, resetSearchParams } = props;
   const [waitingUploadFiles, _setWaitingUploadFiles] = useState<
     (MediaStruct & {
       file: File;
@@ -71,7 +72,7 @@ export default function useUploadLogic(props: {
       serverFileId?: number;
     })[]
   >([]);
-
+  const { message } = App.useApp();
   const [confirmDisabled, setConfirmDisabled] = useState(true);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -356,7 +357,7 @@ export default function useUploadLogic(props: {
           上传
         </Button>
       </DialogTrigger>
-      <DialogContent className="min-w-[80vw] max-w-[80vw] min-h-[80vh] max-h-[80vh] flex flex-col z-[var(--maxZIndex)]">
+      <DialogContent className="min-w-[80vw] max-w-[80vw] min-h-[80vh] max-h-[80vh] flex flex-col z-[var(--maxZIndex)] overflow-hidden">
         {loadingJsx}
         <DialogHeader>
           <DialogTitle>媒体上传</DialogTitle>
@@ -371,7 +372,10 @@ export default function useUploadLogic(props: {
           <div className="flex-1 flex overflow-hidden flex-col relative">
             <input
               ref={fileUploadRef}
-              onChange={(e) => handleFilesChange(e.target.files)}
+              onChange={(e) => {
+                handleFilesChange(e.target.files);
+                e.target.value = "";
+              }}
               name="file-upload"
               type="file"
               multiple
@@ -596,7 +600,7 @@ export default function useUploadLogic(props: {
                     localStorage.removeItem("clientFileIdMapServerFileId");
                     setDialogOpen(false);
                     setWaitingUploadFiles([]);
-                    location.reload();
+                    resetSearchParams();
                   }
                   setLoading(false);
                 }

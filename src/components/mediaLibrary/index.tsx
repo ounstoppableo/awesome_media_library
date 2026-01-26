@@ -45,10 +45,11 @@ import { codeMap } from "@/utils/backendStatus";
 import MultipleSelector from "../ui/multiselect";
 import { wsSend } from "@/utils/clientWsMethod";
 import { WsOperateRequestDataType } from "@/wsConstructor/router/operateRouter";
-import { message } from "antd";
 import useAuthLogic from "./hooks/useAuthLogic";
 import { useAppDispatch } from "@/store/hooks";
 import { setMediaLibraryLoading } from "@/store/loading/loading-slice";
+import { App } from "antd";
+import VitualScrollList from "./components/vitualScrollList.tsx";
 
 export default function MediaLibrary(props: {
   showSelect?: boolean;
@@ -56,6 +57,7 @@ export default function MediaLibrary(props: {
   setSelectedMedias?: (medias: MediaStruct[]) => any;
 }) {
   const { showSelect, selectedMediaIds, setSelectedMedias } = props;
+
   const listContainerRef = useRef<any>(null);
   const headerRef = useRef<any>(null);
   const filterCardRef = useRef<any>(null);
@@ -100,17 +102,6 @@ export default function MediaLibrary(props: {
     mediaDataRef.current = data;
     _setMediaData(data);
   };
-
-  const { ghostDomHeight, showData } = useVitualScrollLogic({
-    itemHeight: mediaItemHeight,
-    itemGap: mediaGap,
-    rowBaseCount: rowBaseCount,
-    headerHeight: headerHeight,
-    data: mediaData,
-    scrollContainerRef: listContainerRef,
-    setData: setMediaData,
-    tolerateRowCount: 6,
-  });
 
   const defaultSearchParams = {
     type: "all",
@@ -304,6 +295,13 @@ export default function MediaLibrary(props: {
     }
     setResetFlag(false);
   }, [resetFlag]);
+
+  const resetSearchParams = () => {
+    setSearchParams({ ...defaultSearchParams });
+    requestAnimationFrame(() => {
+      setResetFlag(true);
+    });
+  };
   const handleMultiStatusSelectorJsxUpdate = () => {
     setMultiStatusSelectorJsx(
       <Select>
@@ -384,6 +382,7 @@ export default function MediaLibrary(props: {
     socketRef,
     tags,
     isAuth,
+    resetSearchParams,
   });
 
   return (
@@ -489,12 +488,7 @@ export default function MediaLibrary(props: {
                 <Button
                   variant="secondary"
                   className="cursor-pointer"
-                  onClick={() => {
-                    setSearchParams({ ...defaultSearchParams });
-                    requestAnimationFrame(() => {
-                      setResetFlag(true);
-                    });
-                  }}
+                  onClick={resetSearchParams}
                 >
                   <RotateCcwIcon />
                   重置
@@ -503,100 +497,27 @@ export default function MediaLibrary(props: {
               </div>
             </CardContent>
           </Card>
-          {mediaData.length > 0 && showData.length > 0 && (
-            <>
-              <div
-                id="mediaContainer"
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-                style={{
-                  marginTop: ghostDomHeight.up + "px",
-                  marginBottom: ghostDomHeight.down + "px",
-                }}
-              >
-                {showData.map((media) => (
-                  <MediaItem
-                    showSelect={showSelect}
-                    handleSelect={(media) => {
-                      setSelectedMedias?.([
-                        ...mediaData.filter((media) =>
-                          selectedMediaIds?.includes(media.id)
-                        ),
-                        media,
-                      ]);
-                    }}
-                    handleCancelSelected={(media) => {
-                      const selectedIds = selectedMediaIds?.filter(
-                        (id) => id !== media.id
-                      );
-                      setSelectedMedias?.(
-                        mediaData.filter((media) =>
-                          selectedIds?.includes(media.id)
-                        )
-                      );
-                    }}
-                    selected={
-                      selectedMediaIds?.findIndex((id) => id === media.id) !==
-                      -1
-                    }
-                    tags={tags}
-                    media={media}
-                    key={media.id}
-                    deleteConfirm={true}
-                    isAuth={isAuth}
-                    deleteCb={() => {
-                      request("/api/media", {
-                        method: "delete",
-                        body: {
-                          ids: [media.id],
-                        },
-                      }).then((res: CommonResponse) => {
-                        if (res.code === codeMap.success) {
-                          message.success(res.msg);
-                          const index = mediaData.findIndex(
-                            (item) => media.id === item.id
-                          );
-                          setMediaData([
-                            ...mediaData.slice(0, index),
-                            ...mediaData.slice(index + 1),
-                          ]);
-                        }
-                      });
-                    }}
-                    infoChangeCb={(value) => {
-                      socketRef.current &&
-                        wsSend(socketRef.current, {
-                          type: "operate",
-                          data: {
-                            type: "mediaInfoEdit",
-                            mediaId: value.id,
-                            fileInfo: {
-                              title: value.title,
-                              tags: value.tags,
-                              status: value.status,
-                            },
-                          } as WsOperateRequestDataType<"mediaInfoEdit">,
-                        });
-                      requestAnimationFrame(() => {
-                        const mediaIndex = mediaData.findIndex(
-                          (media) => media.id === value.id
-                        );
-                        mediaIndex !== -1 &&
-                          setMediaData([
-                            ...mediaData.slice(0, mediaIndex),
-                            value,
-                            ...mediaData.slice(mediaIndex + 1),
-                          ]);
-                      });
-                    }}
-                  ></MediaItem>
-                ))}
-              </div>
-              {dataLoading && (
-                <div className="flex items-center justify-center w-full p-1">
-                  <div className="border-primary ml-3 h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 ease-linear"></div>
-                </div>
-              )}
-            </>
+          {mediaData.length > 0 && (
+            <VitualScrollList
+              mediaItemHeight={mediaItemHeight}
+              mediaGap={mediaGap}
+              rowBaseCount={rowBaseCount}
+              headerHeight={headerHeight}
+              mediaData={mediaData}
+              listContainerRef={listContainerRef}
+              showSelect={showSelect}
+              setMediaData={setMediaData}
+              setSelectedMedias={setSelectedMedias}
+              selectedMediaIds={selectedMediaIds}
+              isAuth={isAuth}
+              tags={tags}
+              socketRef={socketRef}
+            ></VitualScrollList>
+          )}
+          {dataLoading && (
+            <div className="flex items-center justify-center w-full p-1">
+              <div className="border-primary ml-3 h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 ease-linear"></div>
+            </div>
           )}
 
           {mediaData.length === 0 && (

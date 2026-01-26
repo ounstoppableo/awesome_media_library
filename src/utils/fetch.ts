@@ -1,10 +1,13 @@
 "use client";
 
-import { message } from "antd";
 import { codeMap, codeMapMsg } from "./backendStatus";
 import { CommonResponse } from "@/types/response";
-
-class FetchInterceptor {
+let message: any;
+function initMessageTool(tool: any) {
+  message = tool;
+}
+export { initMessageTool };
+export class FetchInterceptor {
   baseURL: string;
   defaultOptions: any;
   _store: any;
@@ -44,7 +47,7 @@ class FetchInterceptor {
       const errorData = await response
         .json()
         .catch(() => ({ message: "Request Error" }));
-      message.warning(errorData.message);
+      message?.warning?.(errorData.message);
       throw new Error(
         errorData.message || `HTTP error! Status: ${response.status}`
       );
@@ -55,7 +58,7 @@ class FetchInterceptor {
         localStorage.setItem("token", "");
         window.history.replaceState({}, "", window.location.pathname);
       }
-      message.warning(res.msg);
+      message?.warning?.(res.msg);
     }
 
     return Promise.resolve(res);

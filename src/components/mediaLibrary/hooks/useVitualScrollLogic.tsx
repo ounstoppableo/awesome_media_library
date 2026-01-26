@@ -142,7 +142,7 @@ export default function useVitualScrollLogic(props: {
       if (scollAntiShake.current) clearTimeout(scollAntiShake.current);
       scollAntiShake.current = setTimeout(() => {
         smoothGetMessagesInScreenFn.execute();
-      }, 100);
+      }, 16);
     };
 
     scrollContainerRef.current?.addEventListener("scroll", scollCb);

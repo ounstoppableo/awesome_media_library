@@ -1,5 +1,5 @@
 "use client";
-import { ConfigProvider, message, theme } from "antd";
+import { App, ConfigProvider, message, theme } from "antd";
 import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -49,7 +49,7 @@ export default function Home() {
   const dispatch = useAppDispatch();
   const loading = useAppSelector(selectGlobalLoading);
   const darkMode = useAppSelector(selectDarkMode);
-  const mediaLibraruOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
+  const mediaLibraryOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
   const sienaOpenStatus = useAppSelector(selectSienaControlOpenStatus);
   const taojimaOpenStatus = useAppSelector(selectTaojimaControlOpenStatus);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -62,6 +62,7 @@ export default function Home() {
       location.href = location.origin;
     }
   }, []);
+
   return (
     <ThemeProvider>
       <ConfigProvider
@@ -70,41 +71,56 @@ export default function Home() {
           algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
       >
-        {loading && (
-          <div className="fixed inset-0 top-0 z-[var(--maxZIndex)] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
-            <OrbitalLoader />
-          </div>
-        )}
-        <button
-          onClick={() => {
-            dispatch(setSienaOpen({ open: !sienaOpenStatus }));
-          }}
-          className={cn(
-            "transition-all duration-300 hover:bg-white [--stroke:white] hover:[--stroke:black] absolute focus:outline-none top-[6vmin] right-[8vmin] z-120 w-8 h-8 bg-transparent rounded-full flex justify-center items-center cursor-pointer"
+        <App>
+          {loading && (
+            <div className="fixed inset-0 top-0 z-[var(--maxZIndex)] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
+              <OrbitalLoader />
+            </div>
           )}
-        >
-          <MenuToggleIcon
-            open={sienaOpenStatus}
-            className="size-6"
-            duration={500}
-          />
-        </button>
-        <SienaDialog></SienaDialog>
-        {!dialogOpen && <TaotajimaDialog></TaotajimaDialog>}
-        <MedialibraryDialog></MedialibraryDialog>
-        <JiejoeHomePage></JiejoeHomePage>
-        <Settiing
-          setDialogOpen={setDialogOpen}
-          showSetting={!sienaOpenStatus && !taojimaOpenStatus}
-        ></Settiing>
-        <AssetsList
-          open={dialogOpen}
-          handleOpenChange={(value: boolean) => {
-            setDialogOpen(value);
-            dispatch(setCloseScroll({ closeScroll: false }));
-          }}
-          className={"z-160"}
-        ></AssetsList>
+          <button
+            onClick={() => {
+              dispatch(setSienaOpen({ open: !sienaOpenStatus }));
+            }}
+            className={cn(
+              "transition-all duration-300 hover:bg-white [--stroke:white] hover:[--stroke:black] absolute focus:outline-none top-[6vmin] right-[8vmin] z-120 w-8 h-8 bg-transparent rounded-full flex justify-center items-center cursor-pointer"
+            )}
+          >
+            <MenuToggleIcon
+              open={sienaOpenStatus}
+              className="size-6"
+              duration={500}
+            />
+          </button>
+          <SienaDialog></SienaDialog>
+          {!dialogOpen && <TaotajimaDialog></TaotajimaDialog>}
+          <MedialibraryDialog></MedialibraryDialog>
+          <JiejoeHomePage
+            hiddenSilkBackground={
+              sienaOpenStatus ||
+              taojimaOpenStatus ||
+              dialogOpen ||
+              mediaLibraryOpenStatus
+            }
+            hiddenStarBackground={
+              sienaOpenStatus ||
+              taojimaOpenStatus ||
+              dialogOpen ||
+              mediaLibraryOpenStatus
+            }
+          ></JiejoeHomePage>
+          <Settiing
+            setDialogOpen={setDialogOpen}
+            showSetting={!sienaOpenStatus && !taojimaOpenStatus}
+          ></Settiing>
+          <AssetsList
+            open={dialogOpen}
+            handleOpenChange={(value: boolean) => {
+              setDialogOpen(value);
+              dispatch(setCloseScroll({ closeScroll: false }));
+            }}
+            className={"z-160"}
+          ></AssetsList>
+        </App>
       </ConfigProvider>
     </ThemeProvider>
   );

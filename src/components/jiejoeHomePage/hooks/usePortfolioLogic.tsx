@@ -2,12 +2,14 @@ import AnoAI from "@/components/ui/shader-background";
 import { SplitText } from "gsap/all";
 import { useEffect, useRef } from "react";
 
-export default function usePortfolioLogic() {
+export default function usePortfolioLogic(props: any) {
+  const { hiddenStarBackground } = props;
   const portfolioRef = useRef<HTMLDivElement>(null);
   const ariseLineRef = useRef<HTMLDivElement>(null);
   const chineseIntroduceRef = useRef<HTMLDivElement>(null);
   const englishIntroduceRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    const _twines: any = [];
     const tm = gsap.timeline({
       scrollTrigger: {
         trigger: chineseIntroduceRef.current,
@@ -16,6 +18,7 @@ export default function usePortfolioLogic() {
         scrub: true,
       },
     });
+    _twines.push(tm);
     const tm2 = gsap.timeline({
       scrollTrigger: {
         trigger: chineseIntroduceRef.current,
@@ -24,8 +27,15 @@ export default function usePortfolioLogic() {
         scrub: true,
       },
     });
+    _twines.push(tm2);
     const split = SplitText.create(portfolioRef.current);
     split.chars.forEach((char) => {
+      _twines.push(
+        gsap.set(char, {
+          y: "-100%",
+          opacity: 0,
+        })
+      );
       tm.fromTo(
         char,
         {
@@ -37,6 +47,7 @@ export default function usePortfolioLogic() {
       );
     });
 
+    _twines.push(gsap.set(ariseLineRef.current, { scaleY: 0 }));
     tm2.fromTo(
       ariseLineRef.current,
       { scaleY: 0 },
@@ -44,6 +55,9 @@ export default function usePortfolioLogic() {
         scaleY: 1,
       },
       0
+    );
+    _twines.push(
+      gsap.set(chineseIntroduceRef.current, { x: "-100%", opacity: 0 })
     );
     tm2.fromTo(
       chineseIntroduceRef.current,
@@ -53,6 +67,9 @@ export default function usePortfolioLogic() {
         opacity: 1,
       },
       0
+    );
+    _twines.push(
+      gsap.set(englishIntroduceRef.current, { x: "100%", opacity: 0 })
     );
     tm2.fromTo(
       englishIntroduceRef.current,
@@ -64,8 +81,7 @@ export default function usePortfolioLogic() {
       0
     );
     return () => {
-      tm.kill();
-      tm2.kill();
+      _twines.forEach((tw: any) => tw?.kill?.());
       split.revert();
     };
   }, []);
@@ -89,7 +105,7 @@ export default function usePortfolioLogic() {
         className="h-1/3 w-[2px] absolute bottom-0 bg-linear-to-b from-[var(--themeColor)] to-transparent z-1"
         ref={ariseLineRef}
       ></div>
-      <AnoAI></AnoAI>
+      {!hiddenStarBackground && <AnoAI></AnoAI>}
     </>
   );
   return { portfolioJsx };

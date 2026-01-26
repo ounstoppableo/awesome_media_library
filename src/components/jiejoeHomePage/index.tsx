@@ -21,7 +21,8 @@ import { BeamsBackground } from "../ui/beams-background";
 import ShaderBackground from "../ui/shader-background";
 import { SilkBackground } from "../ui/silk-background";
 
-export default function JiejoeHomePage() {
+export default function JiejoeHomePage(props: any) {
+  const { hiddenSilkBackground, hiddenStarBackground } = props;
   const dispatch = useAppDispatch();
   const taojimaOpen = useAppSelector(selectTaojimaControlOpenStatus);
   const handleExplore = (info: any) => {
@@ -39,7 +40,7 @@ export default function JiejoeHomePage() {
     data: randomData,
     resizeObserverCb,
   });
-  const { portfolioJsx } = usePortfolioLogic();
+  const { portfolioJsx } = usePortfolioLogic({ hiddenStarBackground });
 
   return (
     <div className="w-[100dvw] h-[100dvh]">
@@ -48,7 +49,7 @@ export default function JiejoeHomePage() {
           <div className="flex flex-col w-[100dvw] h-fit bg-black select-none noScrollbar overflow-x-hidden">
             <div className="w-full h-[100dvh] flex justify-center items-center relative">
               <div className="absolute inset-0 z-1 after:absolute after:bottom-0 after:h-[50%] after:inset-x-0 after:bg-gradient-to-t after:from-black after:to-transparent after:z-10">
-                <SilkBackground />
+                {!hiddenSilkBackground && <SilkBackground />}
               </div>
               <div
                 className="flex flex-col font-extrabold brightness-120 gap-2 absolute z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-2/3"

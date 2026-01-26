@@ -36,12 +36,20 @@ import {
 } from "@/store/mediaLibrarControl/mediaLibrary-slice";
 import { selectDarkMode, setDarkMode } from "@/store/darkMode/darkMode-slice";
 import { AnimatePresence, motion } from "motion/react";
+import { initMessageTool as fetchInitMessageTool } from "@/utils/fetch";
+import { initMessageTool as wsInitMessageTool } from "@/utils/clientWsMethod";
+import { App } from "antd";
 
 export default function Settiing(props: any) {
   const { setDialogOpen, showSetting } = props;
   const dispatch = useAppDispatch();
-  const mediaLibraruOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
+  const mediaLibraryOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
   const darkMode = useAppSelector(selectDarkMode);
+  const { message } = App.useApp();
+  useEffect(() => {
+    fetchInitMessageTool(message);
+    wsInitMessageTool(message);
+  }, []);
 
   return (
     <AnimatePresence>
@@ -74,10 +82,10 @@ export default function Settiing(props: any) {
               <DropdownMenuItem
                 onClick={() => {
                   dispatch(
-                    setMediaLibraryOpen({ open: !mediaLibraruOpenStatus })
+                    setMediaLibraryOpen({ open: !mediaLibraryOpenStatus })
                   );
                   dispatch(
-                    setCloseScroll({ closeScroll: !mediaLibraruOpenStatus })
+                    setCloseScroll({ closeScroll: !mediaLibraryOpenStatus })
                   );
                 }}
                 className="flex items-center gap-2 rounded-lg py-2 px-2 hover:bg-background/50"
@@ -85,7 +93,7 @@ export default function Settiing(props: any) {
                 <Clapperboard className="w-4 h-4" />
                 媒体库
                 <div className="flex-1"></div>
-                {mediaLibraruOpenStatus ? (
+                {mediaLibraryOpenStatus ? (
                   <Check className="h-4 w-4"></Check>
                 ) : (
                   <></>

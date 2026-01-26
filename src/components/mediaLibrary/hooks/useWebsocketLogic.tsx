@@ -1,11 +1,12 @@
 import { codeMap } from "@/utils/backendStatus";
 import { wsListen } from "@/utils/clientWsMethod";
 import { WsResponseMsgType } from "@/wsConstructor";
-import { message } from "antd";
+import { App } from "antd";
 import { useEffect, useRef } from "react";
 
 export default function useWebsocketLogic() {
   const socketRef = useRef<WebSocket | null>(null);
+  const { message } = App.useApp();
   useEffect(() => {
     // 连接 WebSocket 服务
     socketRef.current = new WebSocket(`ws://${location.hostname}:10000`);

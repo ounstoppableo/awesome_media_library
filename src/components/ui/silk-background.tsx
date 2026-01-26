@@ -2,9 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-export const SilkBackground = () => {
+export const SilkBackground = (props: any) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationCb = useRef<any>(() => {});
   const animationRef = useRef<number>(null);
+  const antiShakeRef = useRef<any>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -34,7 +36,7 @@ export const SilkBackground = () => {
       return (rx * ry * (1 + x)) % 1;
     };
 
-    const animate = () => {
+    animationCb.current = () => {
       const { width, height } = canvas;
 
       // Create gradient background
@@ -111,13 +113,29 @@ export const SilkBackground = () => {
       ctx.fillRect(0, 0, width, height);
 
       time += 1;
-      animationRef.current = requestAnimationFrame(animate);
+      animationRef.current = requestAnimationFrame(animationCb.current);
     };
 
-    animate();
+    animationCb.current();
+
+    const animateControl = () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      if (antiShakeRef.current) clearTimeout(antiShakeRef.current);
+      antiShakeRef.current = setTimeout(() => {
+        if (!canvasRef.current) return;
+        const canvasRect = canvasRef.current.getBoundingClientRect();
+        if (canvasRect.y + canvasRect.height >= 0) {
+          animationCb.current();
+        }
+      }, 1000);
+    };
+    window.addEventListener("scroll", animateControl);
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("scroll", animateControl);
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }

@@ -1,7 +1,10 @@
-import { message } from "antd";
 import { bufferToObject, objectToBuffer } from "./objAndBufferTransform";
 import { WsRequestMsgType, WsResponseMsgType } from "@/wsConstructor";
-
+let message: any;
+function initMessageTool(tool: any) {
+  message = tool;
+}
+export { initMessageTool };
 export const wsSend = (
   socket: WebSocket,
   msg: Omit<WsRequestMsgType<any>, "token">
@@ -38,7 +41,7 @@ export const wsListen = (
         new Uint8Array(await data.arrayBuffer()) as any
       ) as WsResponseMsgType<any>;
       if (_data.type === "error") {
-        message.error({
+        message?.error?.({
           content:
             (_data as WsResponseMsgType<"error">).data.msg || "服务端错误",
         });
@@ -47,7 +50,7 @@ export const wsListen = (
       _cbs.forEach((cb) => cb(_data));
     } catch (err) {
       _errCbs.forEach((errCb) => errCb());
-      message.error({ content: "服务器返回值无法解析" });
+      message?.error?.({ content: "服务器返回值无法解析" });
     }
   };
   socket.addEventListener("message", _listener);

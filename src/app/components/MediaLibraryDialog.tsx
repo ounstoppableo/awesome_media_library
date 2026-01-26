@@ -11,14 +11,14 @@ import { useRef, useState } from "react";
 
 export default function MedialibraryDialog() {
   const dispatch = useAppDispatch();
-  const mediaLibraruOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
+  const mediaLibraryOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
   const mediaLibraryLoading = useAppSelector(selectMediaLibraryLoading);
   const mediaLibraryContainer = useRef<any>(null);
   const [showMediaLibrary, setShowMediaLibrary] = useState(false);
   const { contextSafe: mediaLibrary } = useGSAP(
     () => {
       const tm = gsap.timeline();
-      if (mediaLibraruOpenStatus) {
+      if (mediaLibraryOpenStatus) {
         dispatch(setMediaLibraryLoading({ mediaLibraryLoading: true }));
         tm.to(mediaLibraryContainer.current, {
           x: 0,
@@ -71,7 +71,7 @@ export default function MedialibraryDialog() {
     },
     {
       scope: mediaLibraryContainer,
-      dependencies: [mediaLibraruOpenStatus],
+      dependencies: [mediaLibraryOpenStatus],
     }
   );
   return (

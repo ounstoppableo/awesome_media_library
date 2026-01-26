@@ -11,6 +11,8 @@ import {
 
 const AnoAI = () => {
   const containerRef = useRef<any>(null);
+  const animationRef = useRef<any>(null);
+  const antiShakeRef = useRef<any>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -98,11 +100,10 @@ const AnoAI = () => {
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    let frameId: any;
     const animate = () => {
       material.uniforms.iTime.value += 0.016;
       renderer.render(scene, camera);
-      frameId = requestAnimationFrame(animate);
+      animationRef.current = requestAnimationFrame(animate);
     };
     animate();
 
@@ -115,9 +116,26 @@ const AnoAI = () => {
     };
     window.addEventListener("resize", handleResize);
 
+    const animateControl = () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      if (antiShakeRef.current) clearTimeout(antiShakeRef.current);
+      antiShakeRef.current = setTimeout(() => {
+        if (!containerRef.current) return;
+        const canvasRect = containerRef.current.getBoundingClientRect();
+        if (canvasRect?.y + canvasRect?.height >= 0) {
+          animate();
+        }
+      }, 1000);
+    };
+    window.addEventListener("scroll", animateControl);
     return () => {
-      cancelAnimationFrame(frameId);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", animateControl);
       container?.removeChild?.(renderer.domElement);
       geometry.dispose();
       material.dispose();
