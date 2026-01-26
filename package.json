@@ -9,7 +9,7 @@
     "build": "next build && tsup server.ts --format esm --target node18",
     "build:next": "next build",
     "build:fileUpload": "tsup server.ts --format esm --target node18",
-    "start": "cross-env NODE_ENV=production concurrently \"next start\" \"node dist/server.mjs\""
+    "start": "cross-env NODE_ENV=production concurrently \"next start -p 6789\" \"node dist/server.mjs\""
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.24.0",
