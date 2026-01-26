@@ -420,10 +420,10 @@ export default function MediaLibrary(props: {
           </div>
         </header>
 
-        <main className="w-full flex flex-col gap-[4vmin] flex-1 container mx-auto px-[8vmin] py-[6vmin]">
-          <Card ref={filterCardRef}>
+        <main className="w-full flex flex-col gap-[4vmin] flex-1 items-center px-[8vmin] py-[6vmin]">
+          <Card ref={filterCardRef} className="w-full">
             <CardContent>
-              <div className="flex flex-wrap items-end gap-[2vmin] container mx-auto">
+              <div className="flex flex-wrap items-end gap-[2vmin]">
                 <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     媒体类型
@@ -519,7 +519,6 @@ export default function MediaLibrary(props: {
               <div className="border-primary ml-3 h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 ease-linear"></div>
             </div>
           )}
-
           {mediaData.length === 0 && (
             <div
               id="emptyState"
@@ -537,7 +536,6 @@ export default function MediaLibrary(props: {
               </p>
             </div>
           )}
-
           {mediaData.length !== 0 && isOver && (
             <div className="w-full flex justify-center items-center text-muted-foreground text-sm">
               🥳 到底了~

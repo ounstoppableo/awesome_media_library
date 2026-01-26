@@ -21,15 +21,19 @@ function StackedCircularFooter() {
     <footer className="bg-transparent pb-[4vmin] h-full flex justify-center items-center">
       <div className="container mx-auto px-[2%] md:px-[3%]">
         <div className="flex flex-col items-center gap-[3vmin]">
-          <div className="rounded-full w-[12vmin] overflow-hidden hover:rotate-360 transition-all duration-300">
+          <div
+            className="rounded-full w-[12vmin] overflow-hidden hover:rotate-360 transition-all duration-300 cursor-pointer"
+            onClick={() => {
+              (window as any).scrollSmoother?.scrollTo?.(0, true);
+            }}
+          >
             <img
               src="https://www.unstoppable840.cn/assets/avatar.jpeg"
               className="icon-class w-full"
             />
           </div>
           <nav className="flex flex-wrap justify-center gap-[4vmin] text-[2.5vmin] text-black">
-            <motion.a
-              href="#"
+            <motion.div
               className="flex gap-[1vmin] items-center cursor-pointer"
               whileHover={{
                 scale: 1.2,
@@ -40,9 +44,8 @@ function StackedCircularFooter() {
             >
               <Home className="h-[2vmin] w-[2vmin]"></Home>
               Home
-            </motion.a>
-            <motion.a
-              href="#"
+            </motion.div>
+            <motion.div
               className="flex gap-[1vmin] items-center cursor-pointer"
               whileHover={{
                 scale: 1.2,
@@ -53,9 +56,8 @@ function StackedCircularFooter() {
             >
               <Newspaper className="h-[2vmin] w-[2vmin]"></Newspaper>
               Blog
-            </motion.a>
-            <motion.a
-              href="#"
+            </motion.div>
+            <motion.div
               className="flex gap-[1vmin] items-center cursor-pointer"
               whileHover={{
                 scale: 1.2,
@@ -66,9 +68,8 @@ function StackedCircularFooter() {
             >
               <MessageSquareMore className="h-[2vmin] w-[2vmin]"></MessageSquareMore>
               Chat
-            </motion.a>
-            <motion.a
-              href="#"
+            </motion.div>
+            <motion.div
               className="flex gap-[1vmin] items-center cursor-pointer"
               whileHover={{
                 scale: 1.2,
@@ -79,7 +80,7 @@ function StackedCircularFooter() {
             >
               <Component className="h-[2vmin] w-[2vmin]"></Component>
               Component
-            </motion.a>
+            </motion.div>
           </nav>
           <div className="flex space-x-[4vmin]">
             <motion.div

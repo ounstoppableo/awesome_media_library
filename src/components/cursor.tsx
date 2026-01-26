@@ -34,6 +34,9 @@ export default function Cursor(props: {
       ease: "power3.out",
     });
     cursorRefRect.current = cursorRef.current.getBoundingClientRect();
+    return () => {
+      gsap.killTweensOf(cursorRef.current);
+    };
   }, []);
   useEffect(() => {
     if (cursorVisible) {

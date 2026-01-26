@@ -24,7 +24,7 @@ export default function useSmoothScrollerLogic() {
       !loading &&
       !jiejoeControlCloseScrollStatus
     ) {
-      ScrollSmoother.create({
+      (window as any).scrollSmoother = ScrollSmoother.create({
         wrapper: smoothWrapper.current,
         content: smoothContent.current,
         smooth: 1,
@@ -35,6 +35,7 @@ export default function useSmoothScrollerLogic() {
 
     return () => {
       ScrollSmoother.get()?.kill();
+      (window as any).scrollSmoother = null;
     };
   }, [
     sienaOpenStatus,

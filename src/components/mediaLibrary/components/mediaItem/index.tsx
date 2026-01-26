@@ -306,6 +306,7 @@ export default function MediaItem(props: {
                             width: 100,
                             height: `calc(var(--spacing) * 6)`,
                           }}
+                          listHeight={mediaItemHeight / 2}
                           allowClear
                           defaultOpen
                           showSearch

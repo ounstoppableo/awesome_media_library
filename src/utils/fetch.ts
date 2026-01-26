@@ -46,11 +46,8 @@ export class FetchInterceptor {
     if (!response.ok) {
       const errorData = await response
         .json()
-        .catch(() => ({ message: "Request Error" }));
-      message?.warning?.(errorData.message);
-      throw new Error(
-        errorData.message || `HTTP error! Status: ${response.status}`
-      );
+        .catch(() => ({ message: "请求失败" }));
+      message?.error?.(errorData.message);
     }
     const res = await response.json();
     if (res.code !== codeMap.success) {
