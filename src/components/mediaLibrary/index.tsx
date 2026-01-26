@@ -396,7 +396,7 @@ export default function MediaLibrary(props: {
             bg-size-[var(--bg-size-glow)] animate-glow-flow text-white shadow-lg"
           ref={headerRef}
         >
-          <div className="container mx-auto px-4 py-6">
+          <div className="w-full px-[8vmin] py-[4vmin]">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <h1 className="text-3xl font-bold mb-4 md:mb-0">媒体库</h1>
               <div className="relative w-full md:w-1/3">
