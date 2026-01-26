@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
   publicRuntimeConfig: {
     HOST_NAME: process.env.HOST_NAME,
   },
+  experimental: { serverComponentsExternalPackages: ["pino"] },
 };
 
 export default nextConfig;

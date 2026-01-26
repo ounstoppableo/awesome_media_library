@@ -1,3 +1,4 @@
+"use client";
 import { ImageSwiper } from "@/components/image-swiper";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { CategoryItem } from "@/types/media";
