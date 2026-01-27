@@ -9,6 +9,7 @@ export default function usePortfolioLogic(props: any) {
   const ariseLineRef = useRef<HTMLDivElement>(null);
   const chineseIntroduceRef = useRef<HTMLDivElement>(null);
   const englishIntroduceRef = useRef<HTMLDivElement>(null);
+  const splitRef = useRef<any>(null);
   useEffect(() => {
     const _twines: any = [];
     const tm = gsap.timeline({
@@ -29,8 +30,9 @@ export default function usePortfolioLogic(props: any) {
       },
     });
     _twines.push(tm2);
-    const split = SplitText.create(portfolioRef.current);
-    split.chars.forEach((char) => {
+    splitRef.current?.revert();
+    splitRef.current = SplitText.create(portfolioRef.current);
+    splitRef.current.chars.forEach((char: any) => {
       _twines.push(
         gsap.set(char, {
           y: "-100%",
@@ -83,7 +85,7 @@ export default function usePortfolioLogic(props: any) {
     );
     return () => {
       _twines.forEach((tw: any) => tw?.kill?.());
-      split.revert();
+      splitRef.current?.revert();
     };
   }, []);
   const portfolioJsx = (
