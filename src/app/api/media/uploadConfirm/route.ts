@@ -60,8 +60,10 @@ export async function POST(
         }
       }
 
-      const promises = _fileInfos.map((file) => {
-        return conn.query(
+      await conn.beginTransaction();
+
+      for (const file of _fileInfos) {
+        await conn.query(
           "INSERT INTO media (title, size, tags,type,sourcePath,createTime,updateTime,status,thumbnail) VALUES (?, ?, ?,?,?,?,?,?,?)",
           [
             file.title,
@@ -75,8 +77,8 @@ export async function POST(
             file.thumbnail,
           ]
         );
-      });
-      await Promise.all(promises);
+      }
+      await conn.commit();
       await redisInst.DEL(redisNameSpace.fileInfo(username));
       await redisInst.DEL(redisNameSpace.fileInvariantInfo(username));
       return Response.json({
@@ -95,6 +97,7 @@ export async function POST(
     }
   } catch (err: any) {
     log(errorStringify(err), "error");
+    await conn.rollback();
     return Response.json({
       code: codeMap.serverError,
       msg: codeMapMsg[codeMap.serverError],
