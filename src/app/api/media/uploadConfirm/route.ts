@@ -39,6 +39,7 @@ export async function POST(
       msg: codeMapMsg[codeMap.errorOperate],
     } as CommonResponse);
   confirmLock[username] = true;
+  const conn = await getPool().getConnection();
   try {
     const redisInst = await redisPool.acquire();
     try {
@@ -58,8 +59,9 @@ export async function POST(
           });
         }
       }
+
       const promises = _fileInfos.map((file) => {
-        return getPool().query(
+        return conn.query(
           "INSERT INTO media (title, size, tags,type,sourcePath,createTime,updateTime,status,thumbnail) VALUES (?, ?, ?,?,?,?,?,?,?)",
           [
             file.title,
@@ -99,5 +101,6 @@ export async function POST(
     } as CommonResponse);
   } finally {
     confirmLock[username] = false;
+    conn.release();
   }
 }
