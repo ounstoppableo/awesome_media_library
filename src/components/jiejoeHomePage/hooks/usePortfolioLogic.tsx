@@ -1,4 +1,5 @@
 import AnoAI from "@/components/ui/shader-background";
+import gsap from "gsap";
 import { SplitText } from "gsap/all";
 import { useEffect, useRef } from "react";
 

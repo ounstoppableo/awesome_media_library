@@ -1,5 +1,7 @@
 import { CategoryItem } from "@/types/media";
+import gsap from "gsap";
 import { useEffect, useRef } from "react";
+import Sketch from "@/utils/sketch";
 
 export default function usePhotoChangeLogic(props: any) {
   const { nextCb, prevCb, clearCb, data, togglePageControl } = props;
@@ -12,7 +14,7 @@ export default function usePhotoChangeLogic(props: any) {
       return () => {
         sketch.current?.destroy();
       };
-    sketch.current = new (window as any).Sketch({
+    sketch.current = new Sketch({
       contentId: "taotajimaSliderContent",
       sliderId: "taotajimaSlider",
       duration: 0.8,

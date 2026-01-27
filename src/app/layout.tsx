@@ -33,10 +33,6 @@ export default function RootLayout({
           rel="stylesheet"
           href="/font/YunDuoAiChiMianHuaTang/stylesheet.css"
         ></link>
-        <script src="/3d/three.js"></script>
-        <script src="/3d/dat-gui.js"></script>
-        <script src="/3d/gsap.js"></script>
-        <script src="/3d/sketch.js"></script>
       </head>
 
       <body

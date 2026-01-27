@@ -103,6 +103,7 @@ import {
 import Taotajima from "../taotajima";
 import useAuthLogic from "./hook/useAuthLogic";
 import randomGenerateArticle from "@/utils/randomGenerateArticle";
+import gsap from "gsap";
 
 function TypeField(props: { formData: any; field: any; clean?: boolean }) {
   const { formData, field, clean = false } = props;

@@ -1,5 +1,6 @@
 import { RefObject, useEffect, useRef } from "react";
 import { splitText, animate as animejsAnimate, stagger } from "animejs";
+import gsap from "gsap";
 
 export default function useOtherAnimateLogic(props: any) {
   const { data } = props;

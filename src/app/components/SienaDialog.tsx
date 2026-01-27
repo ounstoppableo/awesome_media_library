@@ -7,6 +7,7 @@ import {
 } from "@/store/loading/loading-slice";
 import { selectSienaControlOpenStatus } from "@/store/sienaControl/sinaControl-slice";
 import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import { useRef, useState } from "react";
 
 export default function SienaDialog() {

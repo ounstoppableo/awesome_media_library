@@ -1,3 +1,6 @@
+import gsap, { Power2 } from "gsap";
+import * as THREE from "three";
+
 function isVideo(url = "") {
   return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
 }
@@ -359,4 +362,4 @@ class Sketch {
   }
 }
 
-window.Sketch = Sketch;
+export default Sketch;

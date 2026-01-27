@@ -24,7 +24,14 @@ export default function Title(props: {
       },
     });
     if (props.useScrollAnimation) {
-      tm.fromTo(brandScroller.current, { x: "-100%" }, { x: 0 }, 0);
+      tm.fromTo(
+        brandScroller.current,
+        { x: "-100%" },
+        {
+          x: 0,
+        },
+        0
+      );
       tm.fromTo(brandScrollerReverse.current, { x: "100%" }, { x: 0 }, 0);
     }
     return () => {
