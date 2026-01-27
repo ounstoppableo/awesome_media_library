@@ -15,6 +15,7 @@ import {
   getThumbnailPath,
   isFileExist,
   tempPath,
+  thumbnailPath,
 } from "@/utils/fileOperate";
 import fs from "fs/promises";
 import {
@@ -115,6 +116,9 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 if (!isFileExist(fileStorePath)) {
   mkdirSync(fileStorePath);
+}
+if (!isFileExist(thumbnailPath)) {
+  mkdirSync(thumbnailPath);
 }
 
 export default async function uploadRouter(
