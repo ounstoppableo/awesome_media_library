@@ -7,6 +7,7 @@ import { selectTaojimaControlOpenStatus } from "@/store/taotajimaControl/taotaji
 import { selectSienaControlOpenStatus } from "@/store/sienaControl/sinaControl-slice";
 import { selectGlobalLoading } from "@/store/loading/loading-slice";
 import { selectJiejoeControlCloseScrollStatus } from "@/store/jiejoeControl/jiejoeControl-slice";
+import { selectMediaLibraryOpenStatus } from "@/store/mediaLibrarControl/mediaLibrary-slice";
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 export default function useSmoothScrollerLogic() {
   const smoothWrapper = useRef<HTMLDivElement>(null);
@@ -14,15 +15,19 @@ export default function useSmoothScrollerLogic() {
   const loading = useAppSelector(selectGlobalLoading);
   const sienaOpenStatus = useAppSelector(selectSienaControlOpenStatus);
   const taotajimaOpenStatus = useAppSelector(selectTaojimaControlOpenStatus);
+  const mediaLibraryOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
   const jiejoeControlCloseScrollStatus = useAppSelector(
-    selectJiejoeControlCloseScrollStatus
+    selectJiejoeControlCloseScrollStatus,
   );
   useEffect(() => {
     if (
-      !sienaOpenStatus &&
-      !taotajimaOpenStatus &&
-      !loading &&
-      !jiejoeControlCloseScrollStatus
+      !(
+        sienaOpenStatus ||
+        taotajimaOpenStatus ||
+        loading ||
+        jiejoeControlCloseScrollStatus ||
+        mediaLibraryOpenStatus
+      )
     ) {
       (window as any).scrollSmoother = ScrollSmoother.create({
         wrapper: smoothWrapper.current,
@@ -42,6 +47,7 @@ export default function useSmoothScrollerLogic() {
     taotajimaOpenStatus,
     loading,
     jiejoeControlCloseScrollStatus,
+    mediaLibraryOpenStatus,
   ]);
   return { smoothWrapper, smoothContent };
 }
