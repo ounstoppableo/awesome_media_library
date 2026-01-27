@@ -17,7 +17,9 @@ export default function RandomContent(props: any) {
   useEffect(() => {
     handleCurrentIndexChange?.(currentIndex);
     charsSplit.current?.revert();
-    charsSplit.current = SplitText.create(titleRef.current);
+    charsSplit.current = SplitText.create(titleRef.current, {
+      type: "lines,chars",
+    });
 
     const tw = gsap.timeline();
     const tw2 = gsap.timeline();
