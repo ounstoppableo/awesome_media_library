@@ -10,8 +10,8 @@ export function getPool(): mysql.Pool {
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       waitForConnections: true,
-      connectionLimit: 3,
-      queueLimit: 0,
+      connectionLimit: 6,
+      queueLimit: 3,
     });
   }
   return pool;
