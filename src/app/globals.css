@@ -475,3 +475,7 @@ body {
     bottom: var(--distance, 10rem);
   }
 }
+
+.ant-message {
+  z-index: var(--maxZIndex);
+}
