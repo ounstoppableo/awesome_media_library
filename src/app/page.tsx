@@ -28,7 +28,6 @@ import { useGSAP } from "@gsap/react";
 
 import { MobileIcon } from "@radix-ui/react-icons";
 import AssetsList from "@/components/settingDialog/assetsList";
-import { setCloseScroll } from "@/store/jiejoeControl/jiejoeControl-slice";
 import { selectDarkMode, setDarkMode } from "@/store/darkMode/darkMode-slice";
 import ThemeProvider from "@/components/themeProvider";
 import { cn } from "@/lib/utils";
@@ -36,13 +35,14 @@ import zhCN from "antd/locale/zh_CN";
 import {
   selectMediaLibraryOpenStatus,
   setOpen as setMediaLibraryOpen,
-} from "@/store/mediaLibrarControl/mediaLibrary-slice";
+} from "@/store/mediaLibraryControl/mediaLibrary-slice";
 import MediaLibrary from "@/components/mediaLibrary";
 import SienaDialog from "./components/SienaDialog";
 import TaotajimaDialog from "./components/TaotajimaDialog";
 import MedialibraryDialog from "./components/MediaLibraryDialog";
 import Settiing from "./components/Setting";
 import { selectTaojimaControlOpenStatus } from "@/store/taotajimaControl/taotajima-slice";
+import AssetsListDialog from "./components/AssetsListDialog";
 
 export default function Home() {
   const router = useRouter();
@@ -52,7 +52,6 @@ export default function Home() {
   const mediaLibraryOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
   const sienaOpenStatus = useAppSelector(selectSienaControlOpenStatus);
   const taojimaOpenStatus = useAppSelector(selectTaojimaControlOpenStatus);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -92,34 +91,20 @@ export default function Home() {
             />
           </button>
           <SienaDialog></SienaDialog>
-          {!dialogOpen && <TaotajimaDialog></TaotajimaDialog>}
+          <TaotajimaDialog></TaotajimaDialog>
           <MedialibraryDialog></MedialibraryDialog>
           <JiejoeHomePage
             hiddenSilkBackground={
-              sienaOpenStatus ||
-              taojimaOpenStatus ||
-              dialogOpen ||
-              mediaLibraryOpenStatus
+              sienaOpenStatus || taojimaOpenStatus || mediaLibraryOpenStatus
             }
             hiddenStarBackground={
-              sienaOpenStatus ||
-              taojimaOpenStatus ||
-              dialogOpen ||
-              mediaLibraryOpenStatus
+              sienaOpenStatus || taojimaOpenStatus || mediaLibraryOpenStatus
             }
           ></JiejoeHomePage>
           <Settiing
-            setDialogOpen={setDialogOpen}
             showSetting={!sienaOpenStatus && !taojimaOpenStatus}
           ></Settiing>
-          <AssetsList
-            open={dialogOpen}
-            handleOpenChange={(value: boolean) => {
-              setDialogOpen(value);
-              dispatch(setCloseScroll({ closeScroll: false }));
-            }}
-            className={"z-160"}
-          ></AssetsList>
+          <AssetsListDialog></AssetsListDialog>
         </App>
       </ConfigProvider>
     </ThemeProvider>

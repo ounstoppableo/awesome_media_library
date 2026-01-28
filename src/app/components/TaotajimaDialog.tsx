@@ -77,7 +77,7 @@ export default function TaotajimaDialog() {
   );
   return (
     <div
-      className="fixed inset-0 w-[100dvw] h-[100dvh] translate-x-1/1 z-140 overflow-hidden"
+      className="fixed inset-0 w-[100dvw] h-[100dvh] translate-x-1/1 z-[var(--maxZIndex)] overflow-hidden"
       ref={taojimaContainer}
     >
       {taojimaLoading && (

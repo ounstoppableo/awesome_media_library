@@ -6,8 +6,8 @@ import { useAppSelector } from "@/store/hooks";
 import { selectTaojimaControlOpenStatus } from "@/store/taotajimaControl/taotajima-slice";
 import { selectSienaControlOpenStatus } from "@/store/sienaControl/sinaControl-slice";
 import { selectGlobalLoading } from "@/store/loading/loading-slice";
-import { selectJiejoeControlCloseScrollStatus } from "@/store/jiejoeControl/jiejoeControl-slice";
-import { selectMediaLibraryOpenStatus } from "@/store/mediaLibrarControl/mediaLibrary-slice";
+import { selectMediaLibraryOpenStatus } from "@/store/mediaLibraryControl/mediaLibrary-slice";
+import { selectAssetsManageOpenStatus } from "@/store/assetsManageControl/assetsManage-slice";
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 export default function useSmoothScrollerLogic() {
   const smoothWrapper = useRef<HTMLDivElement>(null);
@@ -16,16 +16,14 @@ export default function useSmoothScrollerLogic() {
   const sienaOpenStatus = useAppSelector(selectSienaControlOpenStatus);
   const taotajimaOpenStatus = useAppSelector(selectTaojimaControlOpenStatus);
   const mediaLibraryOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
-  const jiejoeControlCloseScrollStatus = useAppSelector(
-    selectJiejoeControlCloseScrollStatus,
-  );
+  const assetsManageOpenStatus = useAppSelector(selectAssetsManageOpenStatus);
   useEffect(() => {
     if (
       !(
         sienaOpenStatus ||
         taotajimaOpenStatus ||
         loading ||
-        jiejoeControlCloseScrollStatus ||
+        assetsManageOpenStatus ||
         mediaLibraryOpenStatus
       )
     ) {
@@ -46,7 +44,7 @@ export default function useSmoothScrollerLogic() {
     sienaOpenStatus,
     taotajimaOpenStatus,
     loading,
-    jiejoeControlCloseScrollStatus,
+    assetsManageOpenStatus,
     mediaLibraryOpenStatus,
   ]);
   return { smoothWrapper, smoothContent };

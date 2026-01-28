@@ -98,6 +98,7 @@ import {
 import { useGSAP } from "@gsap/react";
 import {
   selectTaotajimaLoading,
+  setAssetsManageLoading,
   setTaotajimaLoading,
 } from "@/store/loading/loading-slice";
 import Taotajima from "../taotajima";
@@ -397,7 +398,7 @@ function IntroduceField(props: {
 }
 
 export default function AssetsList(props: any) {
-  const { open, handleOpenChange, className } = props;
+  const { editDialogClassname } = props;
   const [data, setData] = useState<CategoryDetail[]>([]);
   const [assetListloading, setAssetListLoading] = useState(false);
   const [assetDetailLoading, setAssetDetailLoading] = useState(false);
@@ -449,6 +450,7 @@ export default function AssetsList(props: any) {
       })
       .finally(() => {
         setAssetListLoading(false);
+        dispatch(setAssetsManageLoading({ assetsManageLoading: false }));
       });
   };
   useEffect(() => {
@@ -651,70 +653,6 @@ export default function AssetsList(props: any) {
     formData.reset();
   };
 
-  const taojimaOpenStatus = useAppSelector(selectTaojimaControlOpenStatus);
-  const taojimaLoading = useAppSelector(selectTaotajimaLoading);
-  const [showTaojima, setShowTaojima] = useState(false);
-  const taojimaContainer = useRef<any>(null);
-  const { contextSafe: taojima } = useGSAP(
-    () => {
-      const tm = gsap.timeline();
-      if (taojimaOpenStatus) {
-        dispatch(setTaotajimaLoading({ taotajimaLoading: true }));
-        tm.to(taojimaContainer.current, {
-          x: 0,
-          duration: 0.5,
-          ease: "linear",
-        });
-        tm.fromTo(
-          taojimaContainer.current,
-          {
-            borderTopLeftRadius: "20vmin",
-            borderBottomLeftRadius: "20vmin",
-          },
-          {
-            borderTopLeftRadius: 0,
-            borderBottomLeftRadius: 0,
-            duration: 0.5,
-            ease: "linear",
-          }
-        );
-        tm.play().then(() => {
-          setShowTaojima(true);
-        });
-      } else {
-        tm.to(
-          taojimaContainer.current,
-          {
-            x: "100%",
-            duration: 0.5,
-            ease: "linear",
-          },
-          0
-        ).then(() => {
-          setShowTaojima(false);
-        });
-        tm.fromTo(
-          taojimaContainer.current,
-          {
-            borderTopLeftRadius: 0,
-            borderBottomLeftRadius: 0,
-          },
-          {
-            borderTopLeftRadius: "20vmin",
-            borderBottomLeftRadius: "20vmin",
-            duration: 0.1,
-            ease: "linear",
-          },
-          0
-        );
-      }
-    },
-    {
-      scope: taojimaContainer,
-      dependencies: [taojimaOpenStatus],
-    }
-  );
-
   useEffect(() => {
     if (!addMediaOpen) {
       setCurrentStep(1);
@@ -733,285 +671,249 @@ export default function AssetsList(props: any) {
 
   return (
     <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <form>
-          <DialogTrigger asChild></DialogTrigger>
-          <DialogContent
-            className={cn(
-              "w-[100dvw] max-w-[100dvw_!important] h-[100dvh] flex flex-col overflow-hidden rounded-none border-none",
-              className
-            )}
-          >
-            <div
-              className="absolute inset-0 w-[100dvw] h-[100dvh] translate-x-1/1 z-140 overflow-hidden"
-              ref={taojimaContainer}
-            >
-              {taojimaLoading && (
-                <div className="inset-0 top-0 z-[var(--maxZIndex)] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
-                  <OrbitalLoader />
-                </div>
+      <div className="absolute inset-0 flex flex-col gap-[4vmin] px-[4vmin] py-[4vmin]">
+        {assetListloading && (
+          <div className="fixed inset-0 top-0 z-[var(--maxZIndex)] [--foreground:white] bg-black/40 flex justify-center items-center">
+            <OrbitalLoader />
+          </div>
+        )}
+        {data.length === 0 ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Store />
+              </EmptyMedia>
+              <EmptyTitle className="text-foreground">资产列表为空</EmptyTitle>
+              {isAuth && (
+                <EmptyDescription>
+                  添加资产，使其能在其他地方进行服务
+                </EmptyDescription>
               )}
-              {showTaojima && <Taotajima></Taotajima>}
-            </div>
-            {assetListloading && (
-              <div className="fixed inset-0 top-0 z-[var(--maxZIndex)] [--foreground:white] bg-black/40 flex justify-center items-center">
-                <OrbitalLoader />
-              </div>
+            </EmptyHeader>
+            {isAuth && (
+              <EmptyContent>
+                <Button variant="outline" size="sm" onClick={handleAddAsset}>
+                  <Plus></Plus>
+                  添加资产
+                </Button>
+              </EmptyContent>
             )}
-            <DialogHeader className="h-fit">
-              <DialogTitle>资产列表</DialogTitle>
-            </DialogHeader>
-            {data.length === 0 ? (
-              <Empty className="border border-dashed">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Store />
-                  </EmptyMedia>
-                  <EmptyTitle className="text-foreground">
-                    资产列表为空
-                  </EmptyTitle>
-                  <EmptyDescription>
-                    添加资产，使其能在其他地方进行服务
-                  </EmptyDescription>
-                </EmptyHeader>
-                {isAuth && (
-                  <EmptyContent>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleAddAsset}
-                    >
-                      <Plus></Plus>
-                      添加资产
-                    </Button>
-                  </EmptyContent>
-                )}
-              </Empty>
-            ) : (
-              <>
-                <div className="flex gap-[4vmin] max-md:flex-wrap">
-                  {isAuth && (
-                    <Button onClick={handleAddAsset}>
-                      <Plus></Plus>添加资产
-                    </Button>
-                  )}
+          </Empty>
+        ) : (
+          <>
+            <div className="flex gap-[4vmin] max-md:flex-wrap">
+              {isAuth && (
+                <Button onClick={handleAddAsset}>
+                  <Plus></Plus>添加资产
+                </Button>
+              )}
 
-                  <Field orientation="horizontal">
-                    <FieldLabel
-                      htmlFor="chineseTitleSearch"
-                      className="whitespace-nowrap"
-                    >
-                      中文名称
-                    </FieldLabel>
-                    <Input
-                      id="chineseTitleSearch"
-                      placeholder="请输入中文标题进行模糊搜索"
-                      value={searchParams.chineseTitle}
-                      onChange={(e) =>
-                        setSearchParams({
-                          ...searchParams,
-                          chineseTitle: e.target.value,
-                        })
-                      }
-                      onKeyUp={(e) => {
-                        if (e.code === "Enter") {
-                          setPageInfo({ page: 1, limit: 10, total: 0 });
-                          updateList();
-                        }
-                      }}
-                    ></Input>
-                    <Button
-                      variant={"secondary"}
-                      onClick={() => {
-                        setPageInfo({ page: 1, limit: 10, total: 0 });
-                        setSearchParams({ chineseTitle: "" });
-                        updateList();
-                      }}
-                    >
-                      <ResetIcon></ResetIcon>重置
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setPageInfo({ page: 1, limit: 10, total: 0 });
-                        updateList();
-                      }}
-                    >
-                      <Search></Search>查询
-                    </Button>
-                  </Field>
-                </div>
-                <Table className="flex-1">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>缩略图</TableHead>
-                      <TableHead>中文名称</TableHead>
-                      <TableHead>英文名称</TableHead>
-                      <TableHead>拍摄日期</TableHead>
-                      <TableHead>拍摄位置</TableHead>
-                      <TableHead>内容标签</TableHead>
-                      <TableHead>内容介绍</TableHead>
-                      <TableHead className="text-center">操作</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.map((info: CategoryDetail) => (
-                      <TableRow key={info.id}>
-                        <TableCell className="w-30">
-                          <div className="w-20 h-20 overflow-hidden rounded-xl">
-                            <img
-                              src={
-                                info.type === "video"
-                                  ? info.thumbnail
-                                  : info.sourcePath
-                              }
-                              className="w-full h-full object-cover"
-                            ></img>
-                          </div>
-                        </TableCell>
-                        <TableCell>{info.chineseTitle}</TableCell>
-                        <TableCell>{info.englishTitle}</TableCell>
-                        <TableCell>
-                          {dayjs(info.date).format("YYYY-MM-DD")}
-                        </TableCell>
-                        <TableCell>{info.location}</TableCell>
-                        <TableCell>{info.tag}</TableCell>
-                        <TableCell
-                          className="max-w-64 truncate"
-                          title={info.introduce}
-                        >
-                          {info.introduce}
-                        </TableCell>
-                        <TableCell className="w-32">
-                          <div className="w-full h-full flex justify-center items-center gap-[2vmin]">
-                            <Button
-                              variant={"outline"}
-                              className="w-8 h-8 rounded-full"
-                              onClick={() => handleExplore(info)}
-                            >
-                              <ViewIcon></ViewIcon>
-                            </Button>
-                            {isAuth && (
-                              <Button
-                                className="w-8 h-8 rounded-full"
-                                onClick={() => {
-                                  setAddAssetDialogTitle("修改资产");
-                                  setAddMediaOpen(true);
-                                  setCurrentStep(2);
-                                  formData.reset();
-                                  setAssetDetailLoading(true);
-                                  request("/api/category/categoryDetail", {
-                                    method: "post",
-                                    body: { id: info.id },
-                                  })
-                                    .then((res: CommonResponse) => {
-                                      if (res.code === codeMap.success) {
-                                        const data = res.data as CategoryDetail;
-                                        formData.setValue(
-                                          "children",
-                                          data.children as any
-                                        );
-                                        formData.setValue(
-                                          "chineseTitle",
-                                          data.chineseTitle
-                                        );
-                                        formData.setValue(
-                                          "englishTitle",
-                                          data.englishTitle
-                                        );
-                                        formData.setValue("date", data.date);
-                                        formData.setValue(
-                                          "location",
-                                          data.location
-                                        );
-                                        formData.setValue(
-                                          "mediaId",
-                                          data.mediaId
-                                        );
-                                        formData.setValue(
-                                          "introduce",
-                                          data.introduce
-                                        );
-                                        formData.setValue(
-                                          "sourcePath",
-                                          data.sourcePath
-                                        );
-                                        formData.setValue("tag", data.tag);
-                                        formData.setValue("type", data.type);
-                                        formData.setValue(
-                                          "thumbnail",
-                                          data.thumbnail || ""
-                                        );
-                                        formData.setValue(
-                                          "tags",
-                                          data.tags || []
-                                        );
-                                        formData.setValue("id", data.id);
-                                        setSelectedMediaIds(
-                                          data.children.map(
-                                            (item) => item.mediaId
-                                          )
-                                        );
-                                      }
-                                    })
-                                    .finally(() => {
-                                      setAssetDetailLoading(false);
-                                    });
-                                }}
-                              >
-                                <Edit></Edit>
-                              </Button>
-                            )}
-                            {isAuth && (
-                              <Popconfirm
-                                placement="topLeft"
-                                title={"删除资产"}
-                                description={"您确定要删除该资产吗?"}
-                                okText="是"
-                                cancelText="否"
-                                getPopupContainer={(triggerNode) =>
-                                  triggerNode.parentElement!
-                                }
-                                onConfirm={() => {
-                                  request("/api/category/delete", {
-                                    method: "post",
-                                    body: { ids: [info.id] },
-                                  }).then((res) => {
-                                    if (res.code === codeMap.success) {
-                                      message.success("删除成功");
-                                      updateList();
-                                    }
-                                  });
-                                }}
-                              >
-                                <Button
-                                  className="w-8 h-8 rounded-full"
-                                  variant={"destructive"}
-                                >
-                                  <Trash2></Trash2>
-                                </Button>
-                              </Popconfirm>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <Pagination
-                  className="justify-center"
-                  showSizeChanger
-                  defaultCurrent={pageInfo.page}
-                  onChange={(page, limit) => {
-                    setPageInfo({ ...pageInfo, page, limit });
+              <Field orientation="horizontal">
+                <FieldLabel
+                  htmlFor="chineseTitleSearch"
+                  className="whitespace-nowrap"
+                >
+                  中文名称
+                </FieldLabel>
+                <Input
+                  id="chineseTitleSearch"
+                  placeholder="请输入中文标题进行模糊搜索"
+                  value={searchParams.chineseTitle}
+                  onChange={(e) =>
+                    setSearchParams({
+                      ...searchParams,
+                      chineseTitle: e.target.value,
+                    })
+                  }
+                  onKeyUp={(e) => {
+                    if (e.code === "Enter") {
+                      setPageInfo({ page: 1, limit: 10, total: 0 });
+                      updateList();
+                    }
                   }}
-                  total={pageInfo.total}
-                  pageSize={pageInfo.limit}
-                />
-              </>
-            )}
-          </DialogContent>
-        </form>
-      </Dialog>
+                ></Input>
+                <Button
+                  variant={"secondary"}
+                  onClick={() => {
+                    setPageInfo({ page: 1, limit: 10, total: 0 });
+                    setSearchParams({ chineseTitle: "" });
+                    updateList();
+                  }}
+                >
+                  <ResetIcon></ResetIcon>重置
+                </Button>
+                <Button
+                  onClick={() => {
+                    setPageInfo({ page: 1, limit: 10, total: 0 });
+                    updateList();
+                  }}
+                >
+                  <Search></Search>查询
+                </Button>
+              </Field>
+            </div>
+            <Table className="flex-1">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>缩略图</TableHead>
+                  <TableHead>中文名称</TableHead>
+                  <TableHead>英文名称</TableHead>
+                  <TableHead>拍摄日期</TableHead>
+                  <TableHead>拍摄位置</TableHead>
+                  <TableHead>内容标签</TableHead>
+                  <TableHead>内容介绍</TableHead>
+                  <TableHead className="text-center">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((info: CategoryDetail) => (
+                  <TableRow key={info.id}>
+                    <TableCell className="w-30">
+                      <div className="w-20 h-20 overflow-hidden rounded-xl">
+                        <img
+                          src={
+                            info.type === "video"
+                              ? info.thumbnail
+                              : info.sourcePath
+                          }
+                          className="w-full h-full object-cover"
+                        ></img>
+                      </div>
+                    </TableCell>
+                    <TableCell>{info.chineseTitle}</TableCell>
+                    <TableCell>{info.englishTitle}</TableCell>
+                    <TableCell>
+                      {dayjs(info.date).format("YYYY-MM-DD")}
+                    </TableCell>
+                    <TableCell>{info.location}</TableCell>
+                    <TableCell>{info.tag}</TableCell>
+                    <TableCell
+                      className="max-w-64 truncate"
+                      title={info.introduce}
+                    >
+                      {info.introduce}
+                    </TableCell>
+                    <TableCell className="w-32">
+                      <div className="w-full h-full flex justify-center items-center gap-[2vmin]">
+                        <Button
+                          variant={"outline"}
+                          className="w-8 h-8 rounded-full"
+                          onClick={() => handleExplore(info)}
+                        >
+                          <ViewIcon></ViewIcon>
+                        </Button>
+                        {isAuth && (
+                          <Button
+                            className="w-8 h-8 rounded-full"
+                            onClick={() => {
+                              setAddAssetDialogTitle("修改资产");
+                              setAddMediaOpen(true);
+                              setCurrentStep(2);
+                              formData.reset();
+                              setAssetDetailLoading(true);
+                              request("/api/category/categoryDetail", {
+                                method: "post",
+                                body: { id: info.id },
+                              })
+                                .then((res: CommonResponse) => {
+                                  if (res.code === codeMap.success) {
+                                    const data = res.data as CategoryDetail;
+                                    formData.setValue(
+                                      "children",
+                                      data.children as any
+                                    );
+                                    formData.setValue(
+                                      "chineseTitle",
+                                      data.chineseTitle
+                                    );
+                                    formData.setValue(
+                                      "englishTitle",
+                                      data.englishTitle
+                                    );
+                                    formData.setValue("date", data.date);
+                                    formData.setValue(
+                                      "location",
+                                      data.location
+                                    );
+                                    formData.setValue("mediaId", data.mediaId);
+                                    formData.setValue(
+                                      "introduce",
+                                      data.introduce
+                                    );
+                                    formData.setValue(
+                                      "sourcePath",
+                                      data.sourcePath
+                                    );
+                                    formData.setValue("tag", data.tag);
+                                    formData.setValue("type", data.type);
+                                    formData.setValue(
+                                      "thumbnail",
+                                      data.thumbnail || ""
+                                    );
+                                    formData.setValue("tags", data.tags || []);
+                                    formData.setValue("id", data.id);
+                                    setSelectedMediaIds(
+                                      data.children.map((item) => item.mediaId)
+                                    );
+                                  }
+                                })
+                                .finally(() => {
+                                  setAssetDetailLoading(false);
+                                });
+                            }}
+                          >
+                            <Edit></Edit>
+                          </Button>
+                        )}
+                        {isAuth && (
+                          <Popconfirm
+                            placement="topLeft"
+                            title={"删除资产"}
+                            description={"您确定要删除该资产吗?"}
+                            okText="是"
+                            cancelText="否"
+                            getPopupContainer={(triggerNode) =>
+                              triggerNode.parentElement!
+                            }
+                            onConfirm={() => {
+                              request("/api/category/delete", {
+                                method: "post",
+                                body: { ids: [info.id] },
+                              }).then((res) => {
+                                if (res.code === codeMap.success) {
+                                  message.success("删除成功");
+                                  updateList();
+                                }
+                              });
+                            }}
+                          >
+                            <Button
+                              className="w-8 h-8 rounded-full"
+                              variant={"destructive"}
+                            >
+                              <Trash2></Trash2>
+                            </Button>
+                          </Popconfirm>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <Pagination
+              className="justify-center"
+              showSizeChanger
+              defaultCurrent={pageInfo.page}
+              onChange={(page, limit) => {
+                setPageInfo({ ...pageInfo, page, limit });
+              }}
+              total={pageInfo.total}
+              pageSize={pageInfo.limit}
+            />
+          </>
+        )}
+      </div>
       <Dialog
         open={addMediaOpen}
         onOpenChange={(value) => {
@@ -1021,7 +923,7 @@ export default function AssetsList(props: any) {
         <DialogContent
           className={cn(
             "w-[80dvw] max-w-[80dvw_!important] h-[80dvh] flex flex-col overflow-hidden border-none",
-            className
+            editDialogClassname
           )}
         >
           {assetDetailLoading && (

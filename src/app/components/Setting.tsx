@@ -28,22 +28,26 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setCloseScroll } from "@/store/jiejoeControl/jiejoeControl-slice";
 import { setOpen as setTaotajimaOpen } from "@/store/taotajimaControl/taotajima-slice";
 import {
   selectMediaLibraryOpenStatus,
   setOpen as setMediaLibraryOpen,
-} from "@/store/mediaLibrarControl/mediaLibrary-slice";
+} from "@/store/mediaLibraryControl/mediaLibrary-slice";
 import { selectDarkMode, setDarkMode } from "@/store/darkMode/darkMode-slice";
 import { AnimatePresence, motion } from "motion/react";
 import { initMessageTool as fetchInitMessageTool } from "@/utils/fetch";
 import { initMessageTool as wsInitMessageTool } from "@/utils/clientWsMethod";
 import { App } from "antd";
+import {
+  selectAssetsManageOpenStatus,
+  setOpen as setAssetsManangeOpen,
+} from "@/store/assetsManageControl/assetsManage-slice";
 
 export default function Settiing(props: any) {
-  const { setDialogOpen, showSetting } = props;
+  const { showSetting } = props;
   const dispatch = useAppDispatch();
   const mediaLibraryOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
+  const assetsManageOpenStatus = useAppSelector(selectAssetsManageOpenStatus);
   const darkMode = useAppSelector(selectDarkMode);
   const { message } = App.useApp();
   useEffect(() => {
@@ -59,7 +63,7 @@ export default function Settiing(props: any) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 8 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="fixed bottom-[6vmin] right-[6vmin] z-150"
+          className="fixed bottom-[6vmin] right-[6vmin] z-[calc(var(--maxZIndex)_-_1)]"
         >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -67,26 +71,32 @@ export default function Settiing(props: any) {
                 <Settings className="size-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48 z-150">
+            <DropdownMenuContent className="w-48 z-[calc(var(--maxZIndex)_-_1)]">
               <DropdownMenuItem
                 onClick={() => {
-                  setDialogOpen(true);
+                  dispatch(
+                    setAssetsManangeOpen({ open: !assetsManageOpenStatus })
+                  );
+                  dispatch(setMediaLibraryOpen({ open: false }));
                   dispatch(setTaotajimaOpen({ open: false, id: "" }));
-                  dispatch(setCloseScroll({ closeScroll: true }));
                 }}
                 className="flex items-center gap-2 rounded-lg py-2 px-2 hover:bg-background/50"
               >
                 <FolderKanban className="w-4 h-4" />
-                资产管理
+                资产管理 <div className="flex-1"></div>
+                {assetsManageOpenStatus ? (
+                  <Check className="h-4 w-4"></Check>
+                ) : (
+                  <></>
+                )}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
                   dispatch(
                     setMediaLibraryOpen({ open: !mediaLibraryOpenStatus })
                   );
-                  dispatch(
-                    setCloseScroll({ closeScroll: !mediaLibraryOpenStatus })
-                  );
+                  dispatch(setAssetsManangeOpen({ open: false }));
+                  dispatch(setTaotajimaOpen({ open: false, id: "" }));
                 }}
                 className="flex items-center gap-2 rounded-lg py-2 px-2 hover:bg-background/50"
               >
