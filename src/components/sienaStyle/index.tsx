@@ -7,7 +7,6 @@ import SvgIcon from "../svgIcon";
 import useWheelLogic from "./hooks/useWheelLogic";
 import useBaseLogic from "./hooks/useBaseLogic";
 import useDraggableLogic from "./hooks/useDraggableLogic";
-import { Transition } from "@headlessui/react";
 import clsx from "clsx";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setSienaLoading } from "@/store/loading/loading-slice";
@@ -21,6 +20,7 @@ import PhotoItem from "./components/photoItem";
 import Coordiation from "./components/coordiation";
 import DaulScrollItem from "./components/daulScrollItem";
 import Cursor from "../cursor";
+import { AnimatePresence, motion } from "motion/react";
 
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
@@ -138,100 +138,104 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
             : "after:bg-[linear-gradient(to_right,#000_0%,transparent_10%,transparent_90%,#000_100%)] py-[6vmin]"
         }`}
       >
-        <Transition show={init && currentDirection === "x"}>
-          <Tabs
-            defaultValue="tab-1"
-            className={clsx([
-              "self-center dark z-20",
-              "data-closed:opacity-0 data-enter:duration-300 data-leave:duration-300",
-              "data-enter:data-closed:-translate-y-full",
-              "data-leave:data-closed:-translate-y-full",
-            ])}
-            value={tabValue}
-            onValueChange={(value) => {
-              setTabValue(value);
-              if (tabValue === value) return;
-              if (value === "horizontalSingleScroll") {
-                toggleToHorizontal();
-              }
-              if (value === "dualScroll") {
-                toggleToHorizontal();
-                setCurrentReadPhotoId(
-                  generateKey(
-                    Array.from({ length: repeatCount }, (_, i) => data).flat()[
-                      currentIndex
-                    ].id as any,
-                    currentIndex
-                  )
-                );
-                setRepeatCount(
-                  Math.floor(
-                    (5 * innerWidth) /
-                      scrollContainerItems.current[0].offsetWidth
-                  )
-                );
-              }
-            }}
-          >
-            <TabsList>
-              <TabsTrigger value="horizontalSingleScroll">
-                <div
-                  className={`cursor-pointer w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
-                    tabValue === "horizontalSingleScroll"
-                      ? "after:bg-[radial-gradient(transparent_0%,transparent_20%,#0a0a0a_100%)]"
-                      : "after:bg-[radial-gradient(transparent_0%,transparent_20%,#262626_100%)]"
-                  }`}
-                >
-                  <SvgIcon
-                    path={"/siena/horizontalSingleScroll.svg"}
-                    className="w-8 h-8 text-yellow-400"
-                  ></SvgIcon>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger value="dualScroll">
-                <div
-                  className={`cursor-pointer w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
-                    tabValue === "dualScroll"
-                      ? "after:bg-[radial-gradient(transparent_0%,transparent_20%,#0a0a0a_100%)]"
-                      : "after:bg-[radial-gradient(transparent_0%,transparent_20%,#262626_100%)]"
-                  }`}
-                >
-                  <SvgIcon
-                    path={"/siena/dualScroll.svg"}
-                    className="w-8 h-8 text-yellow-400"
-                  ></SvgIcon>
-                </div>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </Transition>
+        <AnimatePresence>
+          {init && currentDirection === "x" && (
+            <motion.div
+              initial={{ opacity: 0, y: "-100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "-100%" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className={clsx(["self-center dark z-20"])}
+            >
+              <Tabs
+                defaultValue="tab-1"
+                value={tabValue}
+                onValueChange={(value) => {
+                  setTabValue(value);
+                  if (tabValue === value) return;
+                  if (value === "horizontalSingleScroll") {
+                    toggleToHorizontal();
+                  }
+                  if (value === "dualScroll") {
+                    toggleToHorizontal();
+                    setCurrentReadPhotoId(
+                      generateKey(
+                        Array.from(
+                          { length: repeatCount },
+                          (_, i) => data
+                        ).flat()[currentIndex].id as any,
+                        currentIndex
+                      )
+                    );
+                    setRepeatCount(
+                      Math.floor(
+                        (5 * innerWidth) /
+                          scrollContainerItems.current[0].offsetWidth
+                      )
+                    );
+                  }
+                }}
+              >
+                <TabsList>
+                  <TabsTrigger value="horizontalSingleScroll">
+                    <div
+                      className={`cursor-pointer w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
+                        tabValue === "horizontalSingleScroll"
+                          ? "after:bg-[radial-gradient(transparent_0%,transparent_20%,#0a0a0a_100%)]"
+                          : "after:bg-[radial-gradient(transparent_0%,transparent_20%,#262626_100%)]"
+                      }`}
+                    >
+                      <SvgIcon
+                        path={"/siena/horizontalSingleScroll.svg"}
+                        className="w-8 h-8 text-yellow-400"
+                      ></SvgIcon>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="dualScroll">
+                    <div
+                      className={`cursor-pointer w-6 h-8 overflow-hidden flex justify-center items-center relative after:absolute after:inset-0 after:pointer-events-none after:z-10 after:transition-all ${
+                        tabValue === "dualScroll"
+                          ? "after:bg-[radial-gradient(transparent_0%,transparent_20%,#0a0a0a_100%)]"
+                          : "after:bg-[radial-gradient(transparent_0%,transparent_20%,#262626_100%)]"
+                      }`}
+                    >
+                      <SvgIcon
+                        path={"/siena/dualScroll.svg"}
+                        className="w-8 h-8 text-yellow-400"
+                      ></SvgIcon>
+                    </div>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <Transition show={init && (!currentReadPhotoId as any)}>
-          {
-            <div
-              className={clsx([
-                "absolute top-[6vmin] left-[8vmin] text-white text-[4vmin] font-semibold cursor-pointer z-20 [@media(min-aspect-ratio:1.4/1)]:block hidden",
-                "data-closed:opacity-0 data-enter:duration-300 data-leave:duration-300",
-                "data-enter:data-closed:-translate-x-full",
-                "data-leave:data-closed:-translate-x-full",
-              ])}
+        <AnimatePresence>
+          {init && (!currentReadPhotoId as any) && (
+            <motion.div
+              initial={{ opacity: 0, x: "-100%" }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: "-100%" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
               onClick={() => {
                 setCurrentDirection(currentDirection === "y" ? "x" : "y");
               }}
+              className="absolute top-[6vmin] left-[8vmin] text-white text-[4vmin] leading-[4vmin] font-semibold cursor-pointer z-20 [@media(min-aspect-ratio:1.4/1)]:flex hidden flex-col gap-[1vmin]"
             >
               {(currentDirection === "y"
                 ? "vertical"
                 : "horizontal"
               ).toUpperCase()}
               <div
-                className="text-[2vmin] font-thin w-full"
+                className="text-[2vmin] leading-[2vmin] font-thin w-full"
                 style={{ textAlign: "justify", textAlignLast: "justify" }}
               >
                 C l i c k T o T o g g l e
               </div>
-            </div>
-          }
-        </Transition>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {data.length >= 3 ? (
           !currentReadPhotoId && (
@@ -387,32 +391,33 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
           <></>
         )}
 
-        <Transition show={currentReadPhotoId as any}>
-          <div
-            className={clsx([
-              "absolute h-[10vmin] flex w-[50dvw] z-20 transition ease-in-out bottom-[6vmin] left-[8vmin] translate-0 gap-[2vmin]",
-              "data-closed:opacity-0 data-enter:duration-300 data-leave:duration-300",
-              "data-enter:data-closed:-translate-x-full",
-              "data-leave:data-closed:-translate-x-full",
-            ])}
-          >
-            <PhotoItem
-              ref={imageContainerItems}
-              currentDirection={currentDirection}
-              init={init}
-              info={
-                data.find(
-                  (item: any) => item.id === getIdFromKey(currentReadPhotoId)
-                ) ||
-                Array.from({ length: repeatCount }, (_, i) => data).flat()[
-                  currentIndex
-                ]
-              }
-              index={0}
-              type={"small"}
-            ></PhotoItem>
-          </div>
-        </Transition>
+        <AnimatePresence>
+          {init && currentDirection === "x" && (
+            <motion.div
+              initial={{ opacity: 0, x: "-100%" }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: "-100%" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="absolute h-[10vmin] flex w-[50dvw] z-20 transition ease-in-out bottom-[6vmin] left-[8vmin] translate-0 gap-[2vmin]"
+            >
+              <PhotoItem
+                ref={imageContainerItems}
+                currentDirection={currentDirection}
+                init={init}
+                info={
+                  data.find(
+                    (item: any) => item.id === getIdFromKey(currentReadPhotoId)
+                  ) ||
+                  Array.from({ length: repeatCount }, (_, i) => data).flat()[
+                    currentIndex
+                  ]
+                }
+                index={0}
+                type={"small"}
+              ></PhotoItem>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {currentDirection === "x" && init && (
           <>

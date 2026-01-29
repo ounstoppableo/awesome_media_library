@@ -137,7 +137,7 @@ class Sketch {
   }
 
   initiate(cb) {
-    Promise.all([this.updateImages()]).then(() => {
+    return Promise.all([this.updateImages()]).then(() => {
       if (this.destroyFlag) return;
       this.videoPlay();
       this.eventRigister();

@@ -28,7 +28,7 @@ import request from "@/utils/fetch";
 import ContentInsufficient from "../contentInsufficient";
 import { CommonResponse } from "@/types/response";
 import { codeMap } from "@/utils/backendStatus";
-import { CategoryDetail } from "@/types/media";
+import { CategoryDetail, CategoryItem } from "@/types/media";
 
 /**
  * 操作量：图片尺寸、canvas尺寸(坐标轴尺度)、缩放比例
@@ -140,9 +140,17 @@ export default function Taotajima() {
       request("/api/category/categoryDetail", {
         method: "post",
         body: { id: currentId },
-      }).then((res: CommonResponse) => {
+      }).then(async (res: CommonResponse) => {
         if (res.code === codeMap.success) {
-          setData(res.data);
+          const data: CategoryDetail = res.data;
+          if (!res.data || !res.data.children) return;
+          const coverIndex = data.children.findIndex(
+            (item: CategoryItem) => item.mediaId === data.mediaId
+          );
+          const cover = data.children.splice(coverIndex, 1);
+          data.children = [...cover, ...data.children];
+          await fetch(data.sourcePath);
+          setData(data);
           dispatch(setTaotajimaLoading({ taotajimaLoading: false }));
         }
       });

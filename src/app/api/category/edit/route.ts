@@ -60,27 +60,66 @@ export async function POST(_req: NextRequest) {
       ]
     );
 
+    const [originalChildren]: any = await conn.query(
+      "select mediaId from subCategory where categoryId = ?",
+      [body.id]
+    );
+
+    await Promise.all(
+      originalChildren.map((item: any) => {
+        const flag = body.children.findIndex(
+          (subCategory) => subCategory.mediaId === item.mediaId
+        );
+        if (flag === -1) {
+          return conn.query(
+            "delete from subCategory where mediaId=? and categoryId=?",
+            [item.mediaId, body.id]
+          );
+        } else {
+          return Promise.resolve();
+        }
+      })
+    );
+
     const promises = body.children.map((subCategory) => {
-      return conn.query(
-        `UPDATE subCategory
-         SET
-           englishTitle = ?,
-           chineseTitle = ?,
-           introduce = ?,
-           location = ?,
-           tag = ?
-         WHERE categoryId = ?
-           AND mediaId = ?;`,
-        [
-          subCategory.englishTitle,
-          subCategory.chineseTitle,
-          subCategory.introduce,
-          subCategory.location,
-          subCategory.tag,
-          body.id,
-          subCategory.mediaId,
-        ]
+      const flag = originalChildren?.findIndex(
+        (item: any) => subCategory.mediaId === item.mediaId
       );
+      if (flag === -1) {
+        return conn.query(
+          "INSERT INTO subCategory (categoryId,mediaId,englishTitle,chineseTitle,introduce,location,tag) VALUES (?,?,?,?,?,?,?)",
+          [
+            body.id,
+            subCategory.mediaId,
+            subCategory.englishTitle,
+            subCategory.chineseTitle,
+            subCategory.introduce,
+            subCategory.location,
+            subCategory.tag,
+          ]
+        );
+      } else {
+        return conn.query(
+          `UPDATE subCategory
+           SET
+             englishTitle = ?,
+             chineseTitle = ?,
+             introduce = ?,
+             location = ?,
+             tag = ?
+           WHERE categoryId = ?
+             AND mediaId = ?;`,
+          [
+            subCategory.englishTitle,
+            subCategory.chineseTitle,
+            subCategory.introduce,
+            subCategory.location,
+            subCategory.tag,
+            body.id,
+            subCategory.mediaId,
+          ]
+        );
+      }
     });
     await Promise.all(promises);
     await conn.commit();

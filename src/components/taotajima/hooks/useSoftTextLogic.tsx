@@ -20,6 +20,7 @@ export default function useSoftTextLogic(props: any) {
   // 文字飘动
   useEffect(() => {
     if (!data || !data.children || data.children.length === 0) return;
+    if (!softText.current) return;
     const textGenerate = () => {
       engine.current?.destroy();
       engine.current = new Engine(

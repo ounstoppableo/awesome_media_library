@@ -281,7 +281,7 @@ export default function MediaItem(props: {
                   {media.tags?.map((tag, index) => (
                     <div
                       key={index}
-                      className="px-2 py-1 bg-gray-100 rounded-full text-xs capitalize flex gap-2 items-center h-6"
+                      className="px-2 py-1 bg-gray-100 rounded-full text-xs capitalize flex gap-2 items-center h-6 whitespace-nowrap"
                     >
                       {tag}
                       {media.tags.length > 1 && (
