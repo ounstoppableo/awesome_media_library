@@ -2,10 +2,13 @@ import { CategoryItem } from "@/types/media";
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
 import Sketch from "@/utils/sketch";
+import { setTaotajimaLoading } from "@/store/loading/loading-slice";
+import { useAppDispatch } from "@/store/hooks";
 
 export default function usePhotoChangeLogic(props: any) {
   const { nextCb, prevCb, clearCb, data, togglePageControl } = props;
   const sketch = useRef<any>(null);
+  const dispatch = useAppDispatch();
 
   // 照片翻页
   useEffect(() => {
@@ -88,6 +91,9 @@ export default function usePhotoChangeLogic(props: any) {
         },
       ],
       noiseAngle: Math.PI * 0.75,
+      imagesLoadedCb: () => {
+        dispatch(setTaotajimaLoading({ taotajimaLoading: false }));
+      },
     });
     return () => {
       sketch.current.destroy();

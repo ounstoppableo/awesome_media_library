@@ -21,7 +21,7 @@ class Engine {
       this.fov,
       this.width / this.height,
       1,
-      1000
+      1000,
     );
     this.camera.position.set(0, 0, z);
 

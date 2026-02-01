@@ -1,7 +1,7 @@
 const smoothDisposeArrayUnitFactory = <T extends any[]>(
   getter: () => T,
   judgeCond: (currentItem: T[number], index: number) => boolean,
-  cb: (resultItem: T[number], index: number) => any
+  cb: (resultItem: T[number], index: number) => any,
 ) => {
   let singletonController: any = null;
   const clearController = () => {
@@ -17,7 +17,6 @@ const smoothDisposeArrayUnitFactory = <T extends any[]>(
       cb(getter()[midIndex], midIndex);
       return;
     }
-
     requestAnimationFrame(() => {
       binaryFind(startIndex, midIndex);
       binaryFind(midIndex + 1, endIndex);

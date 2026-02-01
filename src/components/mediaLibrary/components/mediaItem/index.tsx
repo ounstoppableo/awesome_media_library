@@ -23,7 +23,9 @@ import { Tooltip } from "antd";
 import request from "@/utils/fetch";
 import { CommonResponse } from "@/types/response";
 import { codeMap } from "@/utils/backendStatus";
-import { isEqual } from "lodash";
+import { isEqual, omit, pick } from "lodash";
+import { useAppSelector } from "@/store/hooks";
+import { selectDarkMode } from "@/store/darkMode/darkMode-slice";
 
 export type MediaStruct = {
   id: string;
@@ -36,6 +38,7 @@ export type MediaStruct = {
   tags: string[];
   status: string[];
   thumbnail?: string;
+  loadError?: boolean;
 };
 
 export default function MediaItem(props: {
@@ -51,6 +54,7 @@ export default function MediaItem(props: {
   handleSelect?: (media: MediaStruct) => any;
   handleCancelSelected?: (media: MediaStruct) => any;
   infoChangeCb?: (params: any) => any;
+  onLoadError?: (params?: any) => any;
 }) {
   const {
     selected,
@@ -64,7 +68,9 @@ export default function MediaItem(props: {
     isAuth = false,
     handleSelect,
     handleCancelSelected,
+    onLoadError,
   } = props;
+  const darkMode = useAppSelector(selectDarkMode);
 
   const [defaultTags, setDefaultTags] = useState(props.tags);
   const [tags, setTags] = useState(props.tags || []);
@@ -93,12 +99,14 @@ export default function MediaItem(props: {
   const updateLock = useRef<any>(null);
   const mediaPrevious = useRef<any>(defaultMediaData);
   useEffect(() => {
-    if (isEqual(mediaPrevious.current, media)) return;
+    const prev = pick(mediaPrevious.current, ["status", "tags", "title"]);
+    const curr = pick(media, ["status", "tags", "title"]);
+    if (isEqual(prev, curr)) return;
     if (updateLock.current) clearTimeout(updateLock.current);
     updateLock.current = setTimeout(() => {
       infoChangeCb && infoChangeCb(media);
     }, 300);
-    mediaPrevious.current = media;
+    mediaPrevious.current = curr;
   }, [media]);
   const mediaContent = () => {
     if (media.type === "video") {
@@ -123,6 +131,10 @@ export default function MediaItem(props: {
                       }
                     }}
                     src={media.sourcePath}
+                    onError={() => {
+                      onLoadError?.();
+                      setMedia({ ...media, loadError: true });
+                    }}
                     className="w-full h-full object-cover transition-transform duration-500 "
                   />
                 </>
@@ -132,6 +144,10 @@ export default function MediaItem(props: {
                     src={media.thumbnail}
                     alt=""
                     className="w-full h-full object-cover transition-transform duration-500"
+                    onError={() => {
+                      onLoadError?.();
+                      setMedia({ ...media, loadError: true });
+                    }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
@@ -172,6 +188,10 @@ export default function MediaItem(props: {
               src={media.sourcePath}
               alt={media.title}
               className="w-full h-full object-cover"
+              onError={() => {
+                onLoadError?.();
+                setMedia({ ...media, loadError: true });
+              }}
             />
           </div>
         </div>
@@ -214,7 +234,15 @@ export default function MediaItem(props: {
         style={{ height: mediaItemHeight + "px" }}
       >
         <div className="relative flex-1 flex flex-col overflow-hidden">
-          {mediaContent()}
+          {media.loadError ? (
+            darkMode ? (
+              <img src="/imgLoadErrorDark.gif" className="object-cover"></img>
+            ) : (
+              <img src="/imgLoadErrorLight.gif" className="object-cover"></img>
+            )
+          ) : (
+            mediaContent()
+          )}
           {imgUploadMask}
         </div>
         <div className="p-4 flex flex-col gap-2">
@@ -315,8 +343,8 @@ export default function MediaItem(props: {
                           onSearch={(value) => {
                             setTags(
                               Array.from(
-                                new Set([...(defaultTags || []), value])
-                              )
+                                new Set([...(defaultTags || []), value]),
+                              ),
                             );
                           }}
                           ref={mediaTagRef}
@@ -334,13 +362,13 @@ export default function MediaItem(props: {
                                 setMedia({
                                   ...media,
                                   tags: Array.from(
-                                    new Set([...media.tags, value])
+                                    new Set([...media.tags, value]),
                                   ).slice(0, 3),
                                 });
                                 setDefaultTags(
                                   Array.from(
-                                    new Set([...(defaultTags || []), value])
-                                  )
+                                    new Set([...(defaultTags || []), value]),
+                                  ),
                                 );
                               }
                             });
@@ -371,13 +399,13 @@ export default function MediaItem(props: {
                                         !defaultTags
                                           ? []
                                           : defaultTags.filter(
-                                              (tag) => tag !== option.value
-                                            )
+                                              (tag) => tag !== option.value,
+                                            ),
                                       );
                                       setTags(
                                         tags.filter(
-                                          (tag) => tag !== option.value
-                                        )
+                                          (tag) => tag !== option.value,
+                                        ),
                                       );
                                     }
                                   });

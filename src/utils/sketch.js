@@ -1,5 +1,6 @@
 import gsap, { Power2 } from "gsap";
 import * as THREE from "three";
+import { checkIsNone } from "./convention";
 
 function isVideo(url = "") {
   return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
@@ -34,12 +35,15 @@ class Sketch {
     this.width = this.slider.offsetWidth;
     this.height = this.slider.offsetHeight;
     this.slider.appendChild(this.renderer.domElement);
+    this.currentRequestAnimation;
+    this.imagesLoadedCb = opts.imagesLoadedCb;
+    this.texturesSize = [];
 
     this.camera = new THREE.PerspectiveCamera(
       70,
       window.innerWidth / window.innerHeight,
       0.001,
-      1000
+      1000,
     );
 
     this.camera.position.set(0, 0, 2);
@@ -57,7 +61,6 @@ class Sketch {
     });
   }
 
-  canvasDom = [];
   videoDoms = [];
   eventClear = [];
   videoPlay() {
@@ -89,25 +92,10 @@ class Sketch {
       this.videoDoms[textureIndex] = video;
 
       const onReady = () => {
-        const canvas = document.createElement("canvas");
-        this.canvasDom.push(canvas);
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        const texture = new THREE.CanvasTexture(canvas);
+        const texture = new THREE.VideoTexture(video);
         texture.minFilter = THREE.LinearFilter;
-        texture.generateMipmaps = false;
-        texture.flipY = true;
-        texture.colorSpace = THREE.SRGBColorSpace;
-        const update = () => {
-          if (video.readyState >= video.HAVE_CURRENT_DATA) {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            texture.needsUpdate = true;
-          }
-        };
-        this.videoUpdaters ??= [];
-        this.videoUpdaters.push(update);
-
+        texture.magFilter = THREE.LinearFilter;
+        texture.format = THREE.RGBAFormat;
         this.textures[textureIndex] = texture;
         resolve(texture);
       };
@@ -133,7 +121,12 @@ class Sketch {
           this.textures[i] = new THREE.TextureLoader().load(url, resolve);
         }
       });
+      this.texturesSize.push({
+        width: this.textures[i].width,
+        height: this.textures[i].height,
+      });
     }
+    this.imagesLoadedCb?.();
   }
 
   initiate(cb) {
@@ -173,7 +166,7 @@ class Sketch {
           item,
           this.uniforms[item].min,
           this.uniforms[item].max,
-          0.01
+          0.01,
         );
     });
   }
@@ -182,30 +175,43 @@ class Sketch {
     window.addEventListener("resize", this.resize.bind(this));
   }
 
+  // cover
+  computedImageFit(prevIndex, currentIndex) {
+    const prevSize = this.texturesSize[prevIndex];
+    const currentSize =
+      this.texturesSize[
+        checkIsNone(currentIndex) ? this.current : currentIndex
+      ];
+    if (
+      !prevSize ||
+      currentSize.width !== prevSize.height ||
+      currentSize.height !== prevSize.height
+    ) {
+      this.imageAspect = currentSize.height / currentSize.width;
+      let a1;
+      let a2;
+      if (this.height / this.width > this.imageAspect) {
+        a1 = (this.width / this.height) * this.imageAspect;
+        a2 = 1;
+      } else {
+        a1 = 1;
+        a2 = this.height / this.width / this.imageAspect;
+      }
+
+      this.material.uniforms.resolution.value.x = this.width;
+      this.material.uniforms.resolution.value.y = this.height;
+      this.material.uniforms.resolution.value.z = a1;
+      this.material.uniforms.resolution.value.w = a2;
+    }
+  }
+
   resize() {
     this.width = this.slider.offsetWidth;
     this.height = this.slider.offsetHeight;
     this.renderer.setSize(this.width, this.height);
     this.camera.aspect = this.width / this.height;
 
-    // image cover
-    this.imageAspect =
-      this.textures[0].image.height / this.textures[0].image.width;
-    let a1;
-    let a2;
-    if (this.height / this.width > this.imageAspect) {
-      a1 = (this.width / this.height) * this.imageAspect;
-      a2 = 1;
-    } else {
-      a1 = 1;
-      a2 = this.height / this.width / this.imageAspect;
-    }
-
-    this.material.uniforms.resolution.value.x = this.width;
-    this.material.uniforms.resolution.value.y = this.height;
-    this.material.uniforms.resolution.value.z = a1;
-    this.material.uniforms.resolution.value.w = a2;
-
+    this.computedImageFit();
     const dist = this.camera.position.z;
     const height = 1;
     this.camera.fov = 2 * (180 / Math.PI) * Math.atan(height / (2 * dist));
@@ -274,6 +280,7 @@ class Sketch {
     if (this.isRunning) return this.isRunning;
     const len = this.textures.length;
     const nextIndex = (this.current - 1 + len) % len;
+    this.computedImageFit(this.current, nextIndex);
     this.material.uniforms.direction.value = 1;
     const nextTexture = this.textures[nextIndex];
     this.material.uniforms.texture2.value = nextTexture;
@@ -305,6 +312,7 @@ class Sketch {
     const len = this.textures.length;
     this.material.uniforms.direction.value = -1;
     const nextIndex = (this.current + 1) % len;
+    this.computedImageFit(this.current, nextIndex);
     const nextTexture = this.textures[nextIndex];
     this.material.uniforms.texture2.value = nextTexture;
 
@@ -343,8 +351,9 @@ class Sketch {
     // this.camera.position.z = 3;
     // this.plane.rotation.y = 0.4*Math.sin(this.time)
     // this.plane.rotation.x = 0.5*Math.sin(0.4*this.time)
-    this.videoUpdaters?.forEach((fn) => fn());
-    requestAnimationFrame(this.render.bind(this));
+    this.currentRequestAnimation = requestAnimationFrame(
+      this.render.bind(this),
+    );
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -354,11 +363,9 @@ class Sketch {
     this.videoDoms.forEach((video) => {
       video.remove();
     });
-    this.canvasDom.forEach((canvas) => {
-      canvas.remove();
-    });
     this.renderer.domElement.remove();
     this.renderer.dispose();
+    cancelAnimationFrame(this.currentRequestAnimation);
   }
 }
 

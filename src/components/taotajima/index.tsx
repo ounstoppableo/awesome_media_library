@@ -19,7 +19,6 @@ import useResizeLogic from "./hooks/useResizeLogic";
 import usePhotoChangeLogic from "./hooks/usePhotoChangeLogic";
 import useOtherAnimateLogic from "./hooks/useOtherAnimateLogic";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setTaotajimaLoading } from "@/store/loading/loading-slice";
 import {
   selectTaojimaCurrentId,
   setOpen,
@@ -97,7 +96,7 @@ export default function Taotajima() {
           data.children[current].chineseTitle ||
             data.children[current].englishTitle,
           data.children[current].introduce,
-          "prev"
+          "prev",
         )
         .toShow("prev")
         .then(() => {
@@ -123,7 +122,7 @@ export default function Taotajima() {
           data.children[current].chineseTitle ||
             data.children[current].englishTitle,
           data.children[current].introduce,
-          "next"
+          "next",
         )
         .toShow("next")
         .then(() => {
@@ -145,13 +144,11 @@ export default function Taotajima() {
           const data: CategoryDetail = res.data;
           if (!res.data || !res.data.children) return;
           const coverIndex = data.children.findIndex(
-            (item: CategoryItem) => item.mediaId === data.mediaId
+            (item: CategoryItem) => item.mediaId === data.mediaId,
           );
           const cover = data.children.splice(coverIndex, 1);
           data.children = [...cover, ...data.children];
-          await fetch(data.sourcePath);
           setData(data);
-          dispatch(setTaotajimaLoading({ taotajimaLoading: false }));
         }
       });
   }, []);
@@ -188,13 +185,13 @@ export default function Taotajima() {
                     null,
                     backBtnRef,
                     "left",
-                    "enter"
+                    "enter",
                   )}
                   onMouseLeave={animatePageToggleBtn.bind(
                     null,
                     backBtnRef,
                     "left",
-                    "leave"
+                    "leave",
                   )}
                 >
                   <svg
@@ -293,7 +290,7 @@ export default function Taotajima() {
                           location.origin +
                             "/" +
                             data.children[current].sourcePath,
-                          "_blank"
+                          "_blank",
                         );
                       }}
                     />
@@ -329,7 +326,7 @@ export default function Taotajima() {
                           async (current: number) => {
                             await prevCb(current);
                             togglePageControl.current = null;
-                          }
+                          },
                         );
                       }}
                     >
@@ -387,7 +384,7 @@ export default function Taotajima() {
                           async (current: number) => {
                             await nextCb(current);
                             togglePageControl.current = null;
-                          }
+                          },
                         );
                       }}
                     >

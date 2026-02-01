@@ -507,7 +507,6 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
         }
       };
     } catch (error) {
-      console.error("Error initializing Voice Powered Orb:", error);
       if (container && container.firstChild) {
         container.removeChild(container.firstChild);
       }
