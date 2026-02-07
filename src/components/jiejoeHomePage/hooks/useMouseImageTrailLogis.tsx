@@ -7,7 +7,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { FiMousePointer } from "react-icons/fi";
 
 export default function useMouseImageTrailLogis(props: any) {
-  const { data, resizeObserverCb } = props;
+  const { data, resizeObserverCb, addScrollCb, removeScrollCb } = props;
   const runRef = useRef<HTMLDivElement>(null);
   const pathRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(-1);
@@ -46,7 +46,7 @@ export default function useMouseImageTrailLogis(props: any) {
           duration: baseDuration / runAspect,
           ease: "linear",
         },
-        "<"
+        "<",
       );
       _tm.to(runRef.current, {
         rotate: 180,
@@ -61,7 +61,7 @@ export default function useMouseImageTrailLogis(props: any) {
           duration: baseDuration,
           ease: "linear",
         },
-        "<"
+        "<",
       );
       _tm.to(runRef.current, {
         rotate: 270,
@@ -76,7 +76,7 @@ export default function useMouseImageTrailLogis(props: any) {
           duration: baseDuration / runAspect,
           ease: "linear",
         },
-        "<"
+        "<",
       );
       _tm.to(runRef.current, {
         x: 0,
@@ -91,7 +91,7 @@ export default function useMouseImageTrailLogis(props: any) {
     return () => {
       _tm?.kill();
       resizeObserverCb.current = resizeObserverCb.current.filter(
-        (c: any) => c !== cb
+        (c: any) => c !== cb,
       );
     };
   }, []);
@@ -233,9 +233,11 @@ export default function useMouseImageTrailLogis(props: any) {
               rotationRange={25}
               images={
                 data[currentIndex]?.children?.map((item: CategoryItem) =>
-                  item.type === "video" ? item.thumbnail : item.sourcePath
+                  item.type === "video" ? item.thumbnail : item.sourcePath,
                 ) || []
               }
+              addScrollCb={addScrollCb}
+              removeScrollCb={removeScrollCb}
             >
               <section className="grid h-full w-full place-content-center bg-black">
                 <p className="flex items-center gap-2 text-3xl font-bold uppercase text-white">

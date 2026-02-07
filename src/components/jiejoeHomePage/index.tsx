@@ -30,7 +30,8 @@ export default function JiejoeHomePage(props: any) {
   };
 
   const { resizeObserver, resizeObserverCb } = useResizeLogic();
-  const { smoothWrapper, smoothContent } = useSmoothScrollerLogic();
+  const { smoothWrapper, smoothContent, addScrollCb, removeScrollCb } =
+    useSmoothScrollerLogic();
   const { funBoardJsx } = useFunBoardLogic();
   const { avatarJsx } = useAvatarLogic({ resizeObserverCb });
 
@@ -39,6 +40,8 @@ export default function JiejoeHomePage(props: any) {
   const { mouseImageTrailJsx, setCurrentIndex } = useMouseImageTrailLogis({
     data: randomData,
     resizeObserverCb,
+    addScrollCb,
+    removeScrollCb,
   });
   const { portfolioJsx } = usePortfolioLogic({ hiddenStarBackground });
 

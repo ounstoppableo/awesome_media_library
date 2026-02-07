@@ -17,6 +17,13 @@ export default function useSmoothScrollerLogic() {
   const taotajimaOpenStatus = useAppSelector(selectTaojimaControlOpenStatus);
   const mediaLibraryOpenStatus = useAppSelector(selectMediaLibraryOpenStatus);
   const assetsManageOpenStatus = useAppSelector(selectAssetsManageOpenStatus);
+  const _scrollCbs = useRef<((params?: any) => any)[]>([]);
+  const addScrollCb = (cb: (params?: any) => any) => {
+    _scrollCbs.current.push(cb);
+  };
+  const removeScrollCb = (cb: (params?: any) => any) => {
+    _scrollCbs.current = _scrollCbs.current.filter((_cb) => _cb !== cb);
+  };
   useEffect(() => {
     if (
       !(
@@ -33,6 +40,9 @@ export default function useSmoothScrollerLogic() {
         smooth: 1,
         effects: true,
         normalizeScroll: true,
+        onUpdate: () => {
+          _scrollCbs.current.forEach((cb: any) => cb?.());
+        },
       });
     }
 
@@ -47,5 +57,5 @@ export default function useSmoothScrollerLogic() {
     assetsManageOpenStatus,
     mediaLibraryOpenStatus,
   ]);
-  return { smoothWrapper, smoothContent };
+  return { smoothWrapper, smoothContent, addScrollCb, removeScrollCb };
 }

@@ -11,6 +11,8 @@ const MouseImageTrail = ({
   // images will be rotated at a random number between zero and rotationRange,
   // alternating between a positive and negative rotation
   rotationRange,
+  addScrollCb,
+  removeScrollCb,
 }: any) => {
   const [scope, animate] = useAnimate();
 
@@ -24,9 +26,9 @@ const MouseImageTrail = ({
         scopeRect.current = scope.current.getBoundingClientRect();
       });
     };
-    window.addEventListener("scroll", cb);
+    addScrollCb(cb);
     return () => {
-      window.removeEventListener("scroll", cb);
+      removeScrollCb(cb);
     };
   }, []);
   const handleMouseMove = (e: any) => {
@@ -37,7 +39,7 @@ const MouseImageTrail = ({
       _clientX,
       _clientY,
       lastRenderPosition.current.x,
-      lastRenderPosition.current.y
+      lastRenderPosition.current.y,
     );
 
     if (distance >= renderImageBuffer) {
@@ -87,7 +89,7 @@ const MouseImageTrail = ({
           }`,
         ],
       },
-      { type: "spring", damping: 15, stiffness: 200 }
+      { type: "spring", damping: 15, stiffness: 200 },
     );
 
     animate(
@@ -95,7 +97,7 @@ const MouseImageTrail = ({
       {
         opacity: [1, 0],
       },
-      { ease: "linear", duration: 0.5, delay: 5 }
+      { ease: "linear", duration: 0.5, delay: 5 },
     );
 
     imageRenderCount.current = imageRenderCount.current + 1;
