@@ -15,6 +15,7 @@ import {
   Twitter,
 } from "lucide-react";
 import { BsTelegram, BsTiktok, BsWechat } from "react-icons/bs";
+import { toast } from "sonner";
 
 function StackedCircularFooter() {
   return (
@@ -41,9 +42,12 @@ function StackedCircularFooter() {
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
+              onClick={() => {
+                window.open(`${location.protocol}//${location.hostname}`);
+              }}
             >
               <Home className="h-[2vmin] w-[2vmin]"></Home>
-              Home
+              Navg
             </motion.div>
             <motion.div
               className="flex gap-[1vmin] items-center cursor-pointer"
@@ -53,6 +57,11 @@ function StackedCircularFooter() {
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
+              onClick={() => {
+                window.open(
+                  `${location.protocol}//${location.hostname}:${5555}`,
+                );
+              }}
             >
               <Newspaper className="h-[2vmin] w-[2vmin]"></Newspaper>
               Blog
@@ -65,6 +74,11 @@ function StackedCircularFooter() {
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
+              onClick={() => {
+                window.open(
+                  `${location.protocol}//${location.hostname}:${6666}`,
+                );
+              }}
             >
               <MessageSquareMore className="h-[2vmin] w-[2vmin]"></MessageSquareMore>
               Chat
@@ -77,9 +91,14 @@ function StackedCircularFooter() {
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
+              onClick={() => {
+                window.open(
+                  `${location.protocol}//${location.hostname}:${7777}`,
+                );
+              }}
             >
               <Component className="h-[2vmin] w-[2vmin]"></Component>
-              Component
+              Comp
             </motion.div>
           </nav>
           <div className="flex space-x-[4vmin]">
@@ -90,6 +109,18 @@ function StackedCircularFooter() {
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
+              onClick={() => {
+                navigator.clipboard.writeText("unstoppable840");
+                toast("Add Friend", {
+                  description: "您已成功复制博主微信号🎉",
+                  action: {
+                    label: "跳转",
+                    onClick: () => {
+                      window.open("weixin://");
+                    },
+                  },
+                });
+              }}
             >
               <BsWechat className="h-[3vmin_!important] w-[3vmin_!important] hover:text-[var(--themeColor)] transition-all duration-300 text-black" />
               <span className="sr-only">WeChat</span>
@@ -102,6 +133,20 @@ function StackedCircularFooter() {
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
+              onClick={() => {
+                navigator.clipboard.writeText("Uns0000000");
+                toast("Add Friend", {
+                  description: "您已成功复制博主抖音号🎉",
+                  action: {
+                    label: "跳转",
+                    onClick: () => {
+                      window.open(
+                        "https://www.douyin.com/user/MS4wLjABAAAAMGRrZUXRe73YTqqyHcSIM--FWZthFME5nD7xZsGt2d4?from_tab_name=main",
+                      );
+                    },
+                  },
+                });
+              }}
             >
               <BsTiktok className="h-[3vmin_!important] w-[3vmin_!important] hover:text-[var(--themeColor)] transition-all duration-300 text-black" />
               <span className="sr-only">TikTok</span>
@@ -113,6 +158,18 @@ function StackedCircularFooter() {
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
+              onClick={() => {
+                navigator.clipboard.writeText("oUnstoppable840o");
+                toast("Add Friend", {
+                  description: "您已成功复制博主飞机号🎉",
+                  action: {
+                    label: "跳转",
+                    onClick: () => {
+                      window.open("https://t.me/oUnstoppable840o");
+                    },
+                  },
+                });
+              }}
             >
               <BsTelegram className="h-[3vmin_!important] w-[3vmin_!important] hover:text-[var(--themeColor)] transition-all duration-300 text-black" />
               <span className="sr-only">Telegram</span>
@@ -124,6 +181,20 @@ function StackedCircularFooter() {
                 transition: { duration: 0.1 },
               }}
               transition={{ duration: 0.5 }}
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  "https://github.com/ounstoppableo",
+                );
+                toast("Add Friend", {
+                  description: "您已成功复制博主Github网址🎉",
+                  action: {
+                    label: "跳转",
+                    onClick: () => {
+                      window.open("https://github.com/ounstoppableo");
+                    },
+                  },
+                });
+              }}
             >
               <Github className="h-[3vmin_!important] w-[3vmin_!important] hover:text-[var(--themeColor)] transition-all duration-300" />
               <span className="sr-only">Github</span>

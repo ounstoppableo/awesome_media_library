@@ -28,6 +28,9 @@ import ContentInsufficient from "../contentInsufficient";
 import { CommonResponse } from "@/types/response";
 import { codeMap } from "@/utils/backendStatus";
 import { CategoryDetail, CategoryItem } from "@/types/media";
+import { App } from "antd";
+import { toast } from "sonner";
+import { RiTiktokLine, RiTwitterXLine } from "@remixicon/react";
 
 /**
  * 操作量：图片尺寸、canvas尺寸(坐标轴尺度)、缩放比例
@@ -54,6 +57,7 @@ export default function Taotajima() {
   const introduceRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState<CategoryDetail | null>(null);
   const { resizeObserverCb } = useResizeLogic();
+  const { message } = App.useApp();
 
   const {
     animateOpacity,
@@ -142,13 +146,20 @@ export default function Taotajima() {
       }).then(async (res: CommonResponse) => {
         if (res.code === codeMap.success) {
           const data: CategoryDetail = res.data;
-          if (!res.data || !res.data.children) return;
+          if (!res.data || !res.data.children) {
+            back();
+            message.warning("打开摄影集时似乎出现了一点问题😇");
+            return;
+          }
           const coverIndex = data.children.findIndex(
             (item: CategoryItem) => item.mediaId === data.mediaId,
           );
           const cover = data.children.splice(coverIndex, 1);
           data.children = [...cover, ...data.children];
           setData(data);
+        } else {
+          back();
+          message.warning("打开摄影集时似乎出现了一点问题😇");
         }
       });
   }, []);
@@ -255,7 +266,23 @@ export default function Taotajima() {
                           }}
                           transition={{ duration: 0.5 }}
                         >
-                          <Twitter className="cursor-pointer w-[3vmin] hover:text-[var(--themeColor)] transition-all duration-300" />
+                          <RiTiktokLine
+                            className="cursor-pointer w-[3vmin] hover:text-[var(--themeColor)] transition-all duration-300"
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                `请欣赏unstoppable840的摄影作品「${data.chineseTitle || data.englishTitle}」\n网址:${`${window.origin}/?categoryId=${currentId}`}`,
+                              );
+                              toast("Share", {
+                                description: "您已成功复制文案🎉",
+                                action: {
+                                  label: "跳转",
+                                  onClick: () => {
+                                    window.open(`https://www.douyin.com/`);
+                                  },
+                                },
+                              });
+                            }}
+                          />
                         </motion.div>
                         <motion.div
                           whileHover={{
@@ -265,7 +292,25 @@ export default function Taotajima() {
                           }}
                           transition={{ duration: 0.5 }}
                         >
-                          <Instagram className="cursor-pointer w-[3vmin] hover:text-[var(--themeColor)] transition-all duration-300" />
+                          <RiTwitterXLine
+                            className="cursor-pointer w-[3vmin] hover:text-[var(--themeColor)] transition-all duration-300"
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                `请欣赏unstoppable840的摄影作品「${data.chineseTitle || data.englishTitle}」\n网址:${`${window.origin}/?categoryId=${currentId}`}`,
+                              );
+                              toast("Share", {
+                                description: "您已成功复制文案🎉",
+                                action: {
+                                  label: "跳转",
+                                  onClick: () => {
+                                    window.open(
+                                      `https://twitter.com/intent/tweet?url=${`${window.origin}/?categoryId=${currentId}`}&text=${`请欣赏unstoppable840的摄影作品「${data.chineseTitle || data.englishTitle}」`}`,
+                                    );
+                                  },
+                                },
+                              });
+                            }}
+                          />
                         </motion.div>
                       </div>
                     </div>

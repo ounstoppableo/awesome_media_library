@@ -17,7 +17,7 @@ export const taotajimaControlSlice = createSlice({
   reducers: {
     setOpen(
       state,
-      action: PayloadAction<Omit<taotajimaControlState, "closeScroll">>
+      action: PayloadAction<Omit<taotajimaControlState, "closeScroll">>,
     ) {
       state.open = action.payload.open;
       state.id = action.payload.id;

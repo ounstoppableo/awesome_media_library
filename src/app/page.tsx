@@ -1,7 +1,12 @@
 "use client";
-import { App, ConfigProvider, message, theme } from "antd";
+import { App, ConfigProvider, theme } from "antd";
 import Image from "next/image";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import "@ant-design/v5-patch-for-react-19";
 import SienaStyle from "@/components/sienaStyle";
@@ -41,8 +46,12 @@ import SienaDialog from "./components/SienaDialog";
 import TaotajimaDialog from "./components/TaotajimaDialog";
 import MedialibraryDialog from "./components/MediaLibraryDialog";
 import Settiing from "./components/Setting";
-import { selectTaojimaControlOpenStatus } from "@/store/taotajimaControl/taotajima-slice";
+import {
+  selectTaojimaControlOpenStatus,
+  setOpen as setTaotajimaOpen,
+} from "@/store/taotajimaControl/taotajima-slice";
 import AssetsListDialog from "./components/AssetsListDialog";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function Home() {
   const router = useRouter();
@@ -53,12 +62,18 @@ export default function Home() {
   const sienaOpenStatus = useAppSelector(selectSienaControlOpenStatus);
   const taojimaOpenStatus = useAppSelector(selectTaojimaControlOpenStatus);
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   useEffect(() => {
     const token = searchParams.get("token");
+    const categoryId = searchParams.get("categoryId");
     if (token) {
       localStorage.setItem("token", token);
       location.href = location.origin;
+    }
+    if (categoryId) {
+      dispatch(setTaotajimaOpen({ id: categoryId, open: true }));
+      router.replace(pathname);
     }
   }, []);
 
@@ -70,7 +85,7 @@ export default function Home() {
           algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
       >
-        <App>
+        <App message={{ maxCount: 1 }}>
           {loading && (
             <div className="fixed inset-0 top-0 z-[var(--maxZIndex)] w-[100dvw] h-[100dvh] [--foreground:white] bg-black flex justify-center items-center">
               <OrbitalLoader />
@@ -81,7 +96,7 @@ export default function Home() {
               dispatch(setSienaOpen({ open: !sienaOpenStatus }));
             }}
             className={cn(
-              "transition-all duration-300 hover:bg-white [--stroke:white] hover:[--stroke:black] absolute focus:outline-none top-[6vmin] right-[8vmin] z-120 w-8 h-8 bg-transparent rounded-full flex justify-center items-center cursor-pointer"
+              "transition-all duration-300 hover:bg-white [--stroke:white] hover:[--stroke:black] absolute focus:outline-none top-[6vmin] right-[8vmin] z-120 w-8 h-8 bg-transparent rounded-full flex justify-center items-center cursor-pointer",
             )}
           >
             <MenuToggleIcon
@@ -105,6 +120,7 @@ export default function Home() {
             showSetting={!sienaOpenStatus && !taojimaOpenStatus}
           ></Settiing>
           <AssetsListDialog></AssetsListDialog>
+          <Toaster position="top-center" duration={1000} />
         </App>
       </ConfigProvider>
     </ThemeProvider>

@@ -75,7 +75,7 @@ export default function Settiing(props: any) {
               <DropdownMenuItem
                 onClick={() => {
                   dispatch(
-                    setAssetsManangeOpen({ open: !assetsManageOpenStatus })
+                    setAssetsManangeOpen({ open: !assetsManageOpenStatus }),
                   );
                   dispatch(setMediaLibraryOpen({ open: false }));
                   dispatch(setTaotajimaOpen({ open: false, id: "" }));
@@ -93,7 +93,7 @@ export default function Settiing(props: any) {
               <DropdownMenuItem
                 onClick={() => {
                   dispatch(
-                    setMediaLibraryOpen({ open: !mediaLibraryOpenStatus })
+                    setMediaLibraryOpen({ open: !mediaLibraryOpenStatus }),
                   );
                   dispatch(setAssetsManangeOpen({ open: false }));
                   dispatch(setTaotajimaOpen({ open: false, id: "" }));
