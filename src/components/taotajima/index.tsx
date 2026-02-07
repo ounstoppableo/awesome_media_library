@@ -272,7 +272,7 @@ export default function Taotajima() {
                               navigator.clipboard.writeText(
                                 `请欣赏unstoppable840的摄影作品「${data.chineseTitle || data.englishTitle}」\n网址:${`${window.origin}/?categoryId=${currentId}`}`,
                               );
-                              toast("Share", {
+                              toast("分享作品💌", {
                                 description: "您已成功复制文案🎉",
                                 action: {
                                   label: "跳转",
@@ -298,7 +298,7 @@ export default function Taotajima() {
                               navigator.clipboard.writeText(
                                 `请欣赏unstoppable840的摄影作品「${data.chineseTitle || data.englishTitle}」\n网址:${`${window.origin}/?categoryId=${currentId}`}`,
                               );
-                              toast("Share", {
+                              toast("分享作品💌", {
                                 description: "您已成功复制文案🎉",
                                 action: {
                                   label: "跳转",

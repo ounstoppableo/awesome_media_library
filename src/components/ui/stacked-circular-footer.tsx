@@ -111,7 +111,7 @@ function StackedCircularFooter() {
               transition={{ duration: 0.5 }}
               onClick={() => {
                 navigator.clipboard.writeText("unstoppable840");
-                toast("Add Friend", {
+                toast("交个朋友😘", {
                   description: "您已成功复制博主微信号🎉",
                   action: {
                     label: "跳转",
@@ -135,7 +135,7 @@ function StackedCircularFooter() {
               transition={{ duration: 0.5 }}
               onClick={() => {
                 navigator.clipboard.writeText("Uns0000000");
-                toast("Add Friend", {
+                toast("交个朋友😘", {
                   description: "您已成功复制博主抖音号🎉",
                   action: {
                     label: "跳转",
@@ -160,7 +160,7 @@ function StackedCircularFooter() {
               transition={{ duration: 0.5 }}
               onClick={() => {
                 navigator.clipboard.writeText("oUnstoppable840o");
-                toast("Add Friend", {
+                toast("交个朋友😘", {
                   description: "您已成功复制博主飞机号🎉",
                   action: {
                     label: "跳转",
@@ -185,7 +185,7 @@ function StackedCircularFooter() {
                 navigator.clipboard.writeText(
                   "https://github.com/ounstoppableo",
                 );
-                toast("Add Friend", {
+                toast("交个朋友😘", {
                   description: "您已成功复制博主Github网址🎉",
                   action: {
                     label: "跳转",

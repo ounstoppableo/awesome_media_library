@@ -65,7 +65,7 @@ export default function Settiing(props: any) {
           transition={{ duration: 0.2, ease: "easeOut" }}
           className="fixed bottom-[6vmin] right-[6vmin] z-[calc(var(--maxZIndex)_-_1)]"
         >
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon" className="rounded-full">
                 <Settings className="size-5" />
