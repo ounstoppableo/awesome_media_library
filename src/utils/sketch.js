@@ -114,10 +114,9 @@ class Sketch {
     });
   }
 
-  async updateImages() {
-    for (let i = 0; i < this.images.length; i++) {
-      const url = this.images[i];
-      await new Promise(async (resolve, reject) => {
+  updateImages() {
+    return this.images.map((url, i) => {
+      const promise = new Promise(async (resolve, reject) => {
         if (isVideo(url)) {
           await this.loadVideoTexture(url, i);
           resolve(1);
@@ -129,19 +128,21 @@ class Sketch {
             reject,
           );
         }
+      }).then(() => {
+        this.texturesSize.push({
+          width: this.textures[i].width,
+          height: this.textures[i].height,
+        });
       });
-      this.texturesSize.push({
-        width: this.textures[i].width,
-        height: this.textures[i].height,
-      });
-    }
-    this.imagesLoadedCb?.();
+      return promise;
+    });
   }
 
   async initiate(cb) {
     try {
-      await Promise.all([this.updateImages()]).then(() => {
+      await Promise.all(this.updateImages()).then(() => {
         if (this.destroyFlag) return;
+        this.imagesLoadedCb?.();
         this.videoPlay();
         this.eventRigister();
         cb();

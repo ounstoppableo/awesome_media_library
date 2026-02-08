@@ -477,5 +477,8 @@ body {
 }
 
 .ant-message {
+  width: 100dvw;
+  left: 0 !important;
+  transform: none !important;
   z-index: var(--maxZIndex);
 }
