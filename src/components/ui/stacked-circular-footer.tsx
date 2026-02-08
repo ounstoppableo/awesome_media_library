@@ -59,7 +59,7 @@ function StackedCircularFooter() {
               transition={{ duration: 0.5 }}
               onClick={() => {
                 window.open(
-                  `${location.protocol}//${location.hostname}:${5555}`,
+                  `${location.protocol}//${location.hostname}:${5005}`,
                 );
               }}
             >
@@ -76,7 +76,7 @@ function StackedCircularFooter() {
               transition={{ duration: 0.5 }}
               onClick={() => {
                 window.open(
-                  `${location.protocol}//${location.hostname}:${6666}`,
+                  `${location.protocol}//${location.hostname}:${5115}`,
                 );
               }}
             >
@@ -93,7 +93,7 @@ function StackedCircularFooter() {
               transition={{ duration: 0.5 }}
               onClick={() => {
                 window.open(
-                  `${location.protocol}//${location.hostname}:${7777}`,
+                  `${location.protocol}//${location.hostname}:${5225}`,
                 );
               }}
             >
