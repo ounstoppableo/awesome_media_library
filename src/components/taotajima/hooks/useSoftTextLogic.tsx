@@ -25,33 +25,33 @@ export default function useSoftTextLogic(props: any) {
       engine.current?.destroy();
       engine.current = new Engine(
         softText.current.offsetWidth,
-        softText.current.offsetHeight
+        softText.current.offsetHeight,
       );
 
       return (generateSoftText.current = (
         pageCountText: string,
         titleText: string,
-        contentText: string
+        contentText: string,
       ) => {
         engine.current.clear();
         engine.current.updateSize(
           softText.current.clientWidth,
-          softText.current.clientHeight
+          softText.current.clientHeight,
         );
         const _base = pxToWorld(
           getVMinInJs() * 2,
           engine.current.camera,
-          softText.current
+          softText.current,
         );
         const _sequence = pxToWorld(
           getVMinInJs() * 3,
           engine.current.camera,
-          softText.current
+          softText.current,
         );
         const _title = pxToWorld(
           getVMinInJs() * 5,
           engine.current.camera,
-          softText.current
+          softText.current,
         );
 
         const contentRect = contentRef.current.getBoundingClientRect();
@@ -60,16 +60,16 @@ export default function useSoftTextLogic(props: any) {
         };
         const introduceRect = introduceRef.current.getBoundingClientRect();
         const centerToLeftEdge = pxToWorld(
-          contentRect.x,
+          softText.current.clientWidth / 2 - contentRect.x,
           engine.current.camera,
-          softText.current
+          softText.current,
         );
 
         const _gap = getVMinInJs() * 2;
         const centerToTopEdge = pxToWorld(
           (contentRect.height + _gap + shareRect.height) / 2,
           engine.current.camera,
-          softText.current
+          softText.current,
         );
         engine.current.camera.position.x = centerToLeftEdge;
         softTextInst.current.forEach((item: any) => {
@@ -86,7 +86,7 @@ export default function useSoftTextLogic(props: any) {
           floatX: pxToWorld(
             contentRect.width,
             engine.current.camera,
-            softText.current
+            softText.current,
           ),
         });
         const title = new AnimatedText3D(titleText, {
@@ -97,7 +97,7 @@ export default function useSoftTextLogic(props: any) {
           floatX: pxToWorld(
             contentRect.width,
             engine.current.camera,
-            softText.current
+            softText.current,
           ),
         });
         const content = new AnimatedText3D(contentText, {
@@ -106,17 +106,17 @@ export default function useSoftTextLogic(props: any) {
           xEdge: pxToWorld(
             contentRect.width,
             engine.current.camera,
-            softText.current
+            softText.current,
           ),
           yEdge: pxToWorld(
             introduceRect.height,
             engine.current.camera,
-            softText.current
+            softText.current,
           ),
           floatX: pxToWorld(
             contentRect.width,
             engine.current.camera,
-            softText.current
+            softText.current,
           ),
           lineHeight: _base * 1.8,
           basicY: centerToTopEdge - _sequence - _title - 2 * gap + _base * 0.35,
@@ -178,7 +178,7 @@ export default function useSoftTextLogic(props: any) {
         }`,
         data.children[currentRef.current].chineseTitle ||
           data.children[currentRef.current].englishTitle,
-        data.children[currentRef.current].introduce
+        data.children[currentRef.current].introduce,
       ).toShow("next");
     };
     resizeObserverCb.current.push(cb);
@@ -186,7 +186,7 @@ export default function useSoftTextLogic(props: any) {
     return () => {
       engine.current?.destroy();
       resizeObserverCb.current = resizeObserverCb.current.filter(
-        (c: any) => c !== cb
+        (c: any) => c !== cb,
       );
     };
   }, [data]);

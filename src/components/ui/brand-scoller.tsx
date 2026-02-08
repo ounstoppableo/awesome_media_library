@@ -22,6 +22,7 @@ export const BrandScroller = (props: any) => {
       setRepeatCount(Math.floor(containerWidth / itemWidth / 4) * 2);
     };
     const resizeObserver = new ResizeObserver(cb);
+    resizeObserver.observe(container.current);
     cb();
     return () => {
       resizeObserver.disconnect();
@@ -41,7 +42,7 @@ export const BrandScroller = (props: any) => {
           duration: 10,
           repeat: -1,
         },
-        0
+        0,
       );
     });
     tm.play();
@@ -58,7 +59,7 @@ export const BrandScroller = (props: any) => {
         }}
         className={cn(
           "border-4 border-black bg-white group flex overflow-hidden py-2 [--gap:2rem] flex-row max-w-full [mask-image:linear-gradient(to_right,_rgba(0,_0,_0,_0),rgba(0,_0,_0,_1)_10%,rgba(0,_0,_0,_1)_90%,rgba(0,_0,_0,_0))]",
-          className
+          className,
         )}
       >
         {Array(repeatCount)
@@ -105,6 +106,7 @@ export const BrandScrollerReverse = (props: any) => {
       setRepeatCount(Math.floor(containerWidth / itemWidth / 4) * 2);
     };
     const resizeObserver = new ResizeObserver(cb);
+    resizeObserver.observe(container.current);
     cb();
     return () => {
       resizeObserver.disconnect();
@@ -124,7 +126,7 @@ export const BrandScrollerReverse = (props: any) => {
           duration: 10,
           repeat: -1,
         },
-        0
+        0,
       );
     });
     tm.play();
@@ -141,7 +143,7 @@ export const BrandScrollerReverse = (props: any) => {
         }}
         className={cn(
           "border-4 border-black bg-white group flex overflow-hidden py-2 [--gap:2rem] flex-row max-w-full [--duration:40s] [mask-image:linear-gradient(to_right,_rgba(0,_0,_0,_0),rgba(0,_0,_0,_1)_10%,rgba(0,_0,_0,_1)_90%,rgba(0,_0,_0,_0))]",
-          className
+          className,
         )}
       >
         {Array(repeatCount)

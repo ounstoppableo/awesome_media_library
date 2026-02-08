@@ -26,7 +26,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
 
   const imageList = images.slice(0, 10); // Limit to first 10 images
   const [cardOrder, setCardOrder] = useState<number[]>(() =>
-    Array.from({ length: imageList.length }, (_, i) => i)
+    Array.from({ length: imageList.length }, (_, i) => i),
   );
 
   const getDurationFromCSS = useCallback(
@@ -40,7 +40,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
       if (value.endsWith("s")) return parseFloat(value) * 1000;
       return parseFloat(value) || 0;
     },
-    []
+    [],
   );
 
   const getCards = useCallback((): HTMLElement[] => {
@@ -71,7 +71,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
       card.style.setProperty("--swipe-x", `${deltaX}px`);
       card.style.setProperty("--swipe-rotate", `${deltaX * 0.2}deg`);
     },
-    [getActiveCard]
+    [getActiveCard],
   );
 
   const handleStart = useCallback(
@@ -83,7 +83,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
       const card = getActiveCard();
       if (card) card.style.transition = "none";
     },
-    [getActiveCard]
+    [getActiveCard],
   );
 
   // ***** MOVED handleEnd DEFINITION BEFORE handleMove *****
@@ -98,7 +98,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
     const threshold = 50;
     const duration = getDurationFromCSS(
       "--card-swap-duration",
-      cardStackRef.current
+      cardStackRef.current,
     );
     const card = getActiveCard();
 
@@ -107,7 +107,10 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
 
       if (Math.abs(deltaX) > threshold) {
         const direction = Math.sign(deltaX);
-        card.style.setProperty("--swipe-x", `${direction * 300}px`);
+        card.style.setProperty(
+          "--swipe-x",
+          `${direction * endDeltaX.current}px`,
+        );
         card.style.setProperty("--swipe-rotate", `${direction * 20}deg`);
 
         setTimeout(() => {
@@ -153,7 +156,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
         }
       });
     },
-    [applySwipeStyles, handleEnd]
+    [applySwipeStyles, handleEnd],
   ); // handleEnd is now a valid dependency
 
   useEffect(() => {
@@ -193,14 +196,16 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
     width: 0,
     height: 0,
   });
+  const endDeltaX = useRef(300);
   useEffect(() => {
     if (container.current) {
       const resizeObserver = new ResizeObserver(() => {
         const newWidth =
           Math.min(
             container.current.clientWidth,
-            container.current.clientHeight
+            container.current.clientHeight,
           ) / 2;
+        endDeltaX.current = newWidth;
         setCardSize({
           width: newWidth,
           height: newWidth * 1.375,
@@ -217,6 +222,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
     } else {
       const cb = () => {
         const newWidth = Math.min(innerWidth, innerHeight) / 2;
+        endDeltaX.current = newWidth;
         setCardSize({
           width: newWidth,
           height: newWidth * 1.375,
@@ -239,7 +245,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
     length: number,
     multipy: number,
     type: "order" | "mid" = "order",
-    original = 0
+    original = 0,
   ) => {
     const mid = Math.round((length - 1) / 2);
     return index > mid
@@ -276,10 +282,10 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
               cardOrder.length) *
               0.8 *
               (Math.min(containerSize.width, containerSize.height) /
-                Math.max(containerSize.width, containerSize.height))
+                Math.max(containerSize.width, containerSize.height)),
           )}px`,
         },
-        0
+        0,
       );
     });
     return () => {
@@ -320,7 +326,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
               "--rotateZ": `${binaryControl(
                 displayIndex,
                 imageList.length,
-                8
+                8,
               )}deg`,
               "--translateX": `${binaryControl(
                 displayIndex,
@@ -329,7 +335,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
                   cardOrder.length) *
                   0.8 *
                   (Math.min(containerSize.width, containerSize.height) /
-                    Math.max(containerSize.width, containerSize.height))
+                    Math.max(containerSize.width, containerSize.height)),
               )}px`,
               zIndex: imageList.length - displayIndex,
               width: cardSize.width,
@@ -339,7 +345,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
                          displayIndex,
                          imageList.length,
                          50,
-                         "mid"
+                         "mid",
                        )}px)
                        ${`translateX(calc(var(--swipe-x, 0px) + var(--translateX)))`}
                        rotateY(var(--swipe-rotate, 0deg)) 

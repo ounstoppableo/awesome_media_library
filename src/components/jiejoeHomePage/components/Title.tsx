@@ -30,7 +30,7 @@ export default function Title(props: {
         {
           x: 0,
         },
-        0
+        0,
       );
       tm.fromTo(brandScrollerReverse.current, { x: "100%" }, { x: 0 }, 0);
     }

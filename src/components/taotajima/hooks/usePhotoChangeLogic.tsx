@@ -4,11 +4,13 @@ import { useEffect, useRef } from "react";
 import Sketch from "@/utils/sketch";
 import { setTaotajimaLoading } from "@/store/loading/loading-slice";
 import { useAppDispatch } from "@/store/hooks";
+import { App } from "antd";
 
 export default function usePhotoChangeLogic(props: any) {
-  const { nextCb, prevCb, clearCb, data, togglePageControl } = props;
+  const { nextCb, prevCb, clearCb, data, togglePageControl, back } = props;
   const sketch = useRef<any>(null);
   const dispatch = useAppDispatch();
+  const { message } = App.useApp();
 
   // 照片翻页
   useEffect(() => {
@@ -26,6 +28,11 @@ export default function usePhotoChangeLogic(props: any) {
       uniforms: {},
       displacement: "/3d/disp1.jpg",
       images: data.children.map((item: CategoryItem) => item.sourcePath),
+      initiateErrorCb: () => {
+        back();
+        message.warning("打开摄影集时似乎出现了一点问题😇");
+        sketch.current = null;
+      },
       fragment: `
             uniform float time;
             uniform float progress;
@@ -96,7 +103,7 @@ export default function usePhotoChangeLogic(props: any) {
       },
     });
     return () => {
-      sketch.current.destroy();
+      sketch.current?.destroy();
     };
   }, [data]);
   return { sketch };

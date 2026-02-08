@@ -24,6 +24,7 @@ export default function useSmoothScrollerLogic() {
   const removeScrollCb = (cb: (params?: any) => any) => {
     _scrollCbs.current = _scrollCbs.current.filter((_cb) => _cb !== cb);
   };
+  const mobileInit = useRef(false);
   useEffect(() => {
     if (
       !(
@@ -44,6 +45,11 @@ export default function useSmoothScrollerLogic() {
           _scrollCbs.current.forEach((cb: any) => cb?.());
         },
       });
+
+      if ((window as any).scrollSmoother && innerWidth / innerHeight < 1.2) {
+        (window as any).scrollSmoother.refresh();
+        mobileInit.current = true;
+      }
     }
 
     return () => {

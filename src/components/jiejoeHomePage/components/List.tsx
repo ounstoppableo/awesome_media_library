@@ -2,10 +2,9 @@ import ClientPortal from "@/components/clientPortal";
 import dayjs from "dayjs";
 import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 
 export default function List(props: any) {
-  const { data, windowTrackRef, clickCb } = props;
+  const { data, windowTrackRef, clickCb, resizeObserverCb } = props;
   const container = useRef<any>(null);
   const [currentMouseHoverIndex, setCurrentMouseHoverIndex] = useState(-1);
   const imageRef = useRef<any>(null);
@@ -61,8 +60,8 @@ export default function List(props: any) {
             {
               scale: 1,
               rotate: 0,
-            }
-          )
+            },
+          ),
         );
       }
     }
@@ -96,37 +95,40 @@ export default function List(props: any) {
           scaleY: 1,
           duration,
         },
-        0
+        0,
       );
-      tm.to(
-        item.querySelector(".sequenceNumber"),
-        {
-          textShadow: `  
+      item.querySelector(".sequenceNumber") &&
+        tm.to(
+          item.querySelector(".sequenceNumber"),
+          {
+            textShadow: `  
 2px 0 0 var(--themeColor),
 -2px 0 0 var(--themeColor),
 0 2px 0 var(--themeColor),
 0 -2px 0 var(--themeColor)`,
-          color: "var(--themeColor)",
-          duration,
-        },
-        0
-      );
-      tm.to(
-        item.querySelector(".otherText"),
-        {
-          color: "black",
-          duration,
-        },
-        0
-      );
-      tm.to(
-        item.querySelector(".date"),
-        {
-          color: "black",
-          duration,
-        },
-        0
-      );
+            color: "var(--themeColor)",
+            duration,
+          },
+          0,
+        );
+      item.querySelector(".otherText") &&
+        tm.to(
+          item.querySelector(".otherText"),
+          {
+            color: "black",
+            duration,
+          },
+          0,
+        );
+      item.querySelector(".date") &&
+        tm.to(
+          item.querySelector(".date"),
+          {
+            color: "black",
+            duration,
+          },
+          0,
+        );
     });
     return () => {
       tms.current.forEach((tm) => {
@@ -150,6 +152,19 @@ export default function List(props: any) {
     previousMouseHoverIndex.current = currentMouseHoverIndex;
   }, [currentMouseHoverIndex, showPhotoContainer]);
 
+  const [aspect, setAspect] = useState(2);
+  useEffect(() => {
+    const cb = () => {
+      setAspect(innerWidth / innerHeight);
+    };
+    cb();
+    resizeObserverCb.current.push(cb);
+    return () => {
+      resizeObserverCb.current = resizeObserverCb.current.filter(
+        (_cb: any) => _cb !== cb,
+      );
+    };
+  }, []);
   return (
     <div className="w-full flex-1 p-[12vmin] pt-0">
       <div
@@ -163,6 +178,11 @@ export default function List(props: any) {
           <div
             ref={(el) => {
               items.current[index] = el;
+            }}
+            onTouchEnd={() => {
+              requestAnimationFrame(() => {
+                tms.current[index].reverse();
+              });
             }}
             onClick={() => clickCb(item)}
             className={`border-1 ${
@@ -197,10 +217,15 @@ export default function List(props: any) {
                   + {item.chineseTitle} +
                 </div>
               </div>
-              <div className="flex-1"></div>
-              <div className="text-white text-[3vmin] leading-[3vmin] date">
-                {dayjs(item.date).format("YYYY-MM-DD")}
-              </div>
+
+              {aspect > 1.4 && (
+                <>
+                  <div className="flex-1"></div>
+                  <div className="text-white text-[3vmin] leading-[3vmin] date">
+                    {dayjs(item.date).format("YYYY-MM-DD")}
+                  </div>
+                </>
+              )}
             </div>
             <div className="absolute inset-0 bg-white scale-y-0 origin-center z-0 background"></div>
           </div>

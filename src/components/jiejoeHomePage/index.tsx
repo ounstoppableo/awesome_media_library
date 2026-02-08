@@ -149,6 +149,7 @@ export default function JiejoeHomePage(props: any) {
                   clickCb={(info: any) => {
                     handleExplore(info);
                   }}
+                  resizeObserverCb={resizeObserverCb}
                 ></List>
               )}
             </div>

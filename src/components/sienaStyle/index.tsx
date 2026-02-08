@@ -102,6 +102,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         currentDirection !== "x" && toggleToHorizontal();
       }
     };
+    cb();
     window.addEventListener("resize", cb);
     return () => {
       window.removeEventListener("resize", cb);
@@ -162,16 +163,16 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                       generateKey(
                         Array.from(
                           { length: repeatCount },
-                          (_, i) => data
+                          (_, i) => data,
                         ).flat()[currentIndex].id as any,
-                        currentIndex
-                      )
+                        currentIndex,
+                      ),
                     );
                     setRepeatCount(
                       Math.floor(
                         (5 * innerWidth) /
-                          scrollContainerItems.current[0].offsetWidth
-                      )
+                          scrollContainerItems.current[0].offsetWidth,
+                      ),
                     );
                   }
                 }}
@@ -286,8 +287,8 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                         currentIndex > index
                           ? "down"
                           : currentIndex < index
-                          ? "up"
-                          : ""
+                            ? "up"
+                            : "",
                       )
                     }
                   >
@@ -320,7 +321,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
         {currentReadPhotoId ? (
           (
             data.find(
-              (item: any) => item.id + "" === getIdFromKey(currentReadPhotoId)
+              (item: any) => item.id + "" === getIdFromKey(currentReadPhotoId),
             ) as any
           )?.children?.length >= 3 ? (
             <div
@@ -344,7 +345,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                 className="w-fit flex-1 flex gap-8 overflow-hidden"
               >
                 {Array.from({ length: repeatCount }, (_, i) =>
-                  getCurrentReadPhotoChildren("front")
+                  getCurrentReadPhotoChildren("front"),
                 )
                   .flat()
                   .map((item: any, index) => (
@@ -366,7 +367,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                 className="w-fit flex-1 flex gap-8 overflow-hidden"
               >
                 {Array.from({ length: repeatCount }, (_, i) =>
-                  getCurrentReadPhotoChildren("back")
+                  getCurrentReadPhotoChildren("back"),
                 )
                   .flat()
                   .map((item: any, index) => (
@@ -406,7 +407,7 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                 init={init}
                 info={
                   data.find(
-                    (item: any) => item.id === getIdFromKey(currentReadPhotoId)
+                    (item: any) => item.id === getIdFromKey(currentReadPhotoId),
                   ) ||
                   Array.from({ length: repeatCount }, (_, i) => data).flat()[
                     currentIndex
@@ -434,12 +435,12 @@ export default function SienaStyle({}: React.HTMLAttributes<HTMLDivElement>): JS
                   handleExplore(
                     data.find(
                       (item: any) =>
-                        item.id === getIdFromKey(currentReadPhotoId)
+                        item.id === getIdFromKey(currentReadPhotoId),
                     ) ||
                       Array.from(
                         { length: repeatCount },
-                        (_, i) => data
-                      ).flat()[currentIndex]
+                        (_, i) => data,
+                      ).flat()[currentIndex],
                   )
                 }
               />

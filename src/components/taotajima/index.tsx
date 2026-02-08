@@ -173,6 +173,7 @@ export default function Taotajima() {
     prevCb: prevCb,
     nextCb: nextCb,
     togglePageControl,
+    back,
   });
 
   return (
@@ -190,7 +191,7 @@ export default function Taotajima() {
             <div className="flex text-xl text-white justify-between w-full">
               <div className=" flex gap-4">
                 <div
-                  className="flex cursor-pointer"
+                  className="flex cursor-pointer gap-1"
                   ref={backBtnRef}
                   onMouseEnter={animatePageToggleBtn.bind(
                     null,
@@ -206,8 +207,8 @@ export default function Taotajima() {
                   )}
                 >
                   <svg
-                    viewBox="0 0 35 7"
-                    className="w-12 fill-white arrow origin-right"
+                    viewBox="0 0 40 10"
+                    className="w-[6vmin] fill-white arrow origin-right"
                   >
                     <polyline points="360,7 0,7 21,0 21,6 360,6"></polyline>
                   </svg>
@@ -221,15 +222,20 @@ export default function Taotajima() {
                 </div>
               </div>
               <div className="flex text-2xl gap-4 h-fit">
-                <div className="select-none text-[2.5vmin]">Blog</div>
+                <div className="select-none text-[2.5vmin]">Navg</div>
                 <div className="w-[.0625rem] h-[4vmin] bg-white/80 rotate-20"></div>
-                <div className="text-[2.5vmin] cursor-pointer relative after:bottom-0 after:left-0 after:absolute after:border-b-2 after:border-white hover:after:w-full after:transition-all after:w-0">
+                <div
+                  onClick={() => {
+                    window.open(`${location.protocol}//${location.hostname}`);
+                  }}
+                  className="text-[2.5vmin] cursor-pointer relative after:bottom-0 after:left-0 after:absolute after:border-b-2 after:border-white hover:after:w-full after:transition-all after:w-0"
+                >
                   Unstoppable840
                 </div>
               </div>
             </div>
             {data.children.length >= 1 ? (
-              <div className="absolute top-1/2 left-1/2 -translate-1/2 flex gap-[4vmin] items-center max-w-[50dvw]">
+              <div className="absolute top-1/2 left-1/2 -translate-1/2 flex gap-[4vmin] items-center w-[50dvw] [@media(max-aspect-ratio:1.6/1)]:w-[80dvw]">
                 <div className=" text-white gap-[3vmin] flex flex-col items-start">
                   <div
                     className=" gap-[2vmin] flex flex-col items-start relative opacity-0"
@@ -350,10 +356,10 @@ export default function Taotajima() {
             <div className="flex-1"></div>
             {data.children?.length >= 2 && (
               <>
-                <div className="relative text-white text-xl flex gap-[10dvw] max-w-[50dvw] select-none">
+                <div className="relative text-white text-xl flex gap-[10dvw] w-[50dvw] select-none [@media(max-aspect-ratio:1.6/1)]:w-[80dvw]">
                   {
                     <div
-                      className="relative flex flex-col items-end w-[20dvw] cursor-pointer"
+                      className="relative flex flex-col items-end flex-1 cursor-pointer"
                       ref={leftBtnRef}
                       onMouseEnter={() => {
                         if (togglePageControl.current) return;
@@ -410,7 +416,7 @@ export default function Taotajima() {
                   }
                   {
                     <div
-                      className="relative flex flex-col items-start w-[20dvw] cursor-pointer"
+                      className="relative flex flex-col items-start flex-1 cursor-pointer"
                       ref={rightBtnRef}
                       onMouseEnter={() => {
                         if (togglePageControl.current) return;

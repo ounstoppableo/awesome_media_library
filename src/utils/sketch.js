@@ -29,6 +29,7 @@ class Sketch {
     this.container = document.getElementById(this.contentId);
     this.direction = -1;
     this.destroyFlag = false;
+    this.initiateErrorCb = opts.initiateErrorCb;
 
     this.slider = document.getElementById(this.sliderId);
     this.images = opts.images;
@@ -104,6 +105,9 @@ class Sketch {
         onReady();
       } else {
         video.addEventListener("loadedmetadata", onReady, { once: true });
+        video.addEventListener("error", (e) => {
+          reject(e);
+        });
       }
 
       video.play().catch(() => {});
@@ -113,12 +117,17 @@ class Sketch {
   async updateImages() {
     for (let i = 0; i < this.images.length; i++) {
       const url = this.images[i];
-      await new Promise(async (resolve) => {
+      await new Promise(async (resolve, reject) => {
         if (isVideo(url)) {
           await this.loadVideoTexture(url, i);
           resolve(1);
         } else {
-          this.textures[i] = new THREE.TextureLoader().load(url, resolve);
+          this.textures[i] = new THREE.TextureLoader().load(
+            url,
+            resolve,
+            undefined,
+            reject,
+          );
         }
       });
       this.texturesSize.push({
@@ -129,13 +138,18 @@ class Sketch {
     this.imagesLoadedCb?.();
   }
 
-  initiate(cb) {
-    return Promise.all([this.updateImages()]).then(() => {
-      if (this.destroyFlag) return;
-      this.videoPlay();
-      this.eventRigister();
-      cb();
-    });
+  async initiate(cb) {
+    try {
+      await Promise.all([this.updateImages()]).then(() => {
+        if (this.destroyFlag) return;
+        this.videoPlay();
+        this.eventRigister();
+        cb();
+      });
+    } catch (err) {
+      this.initiateErrorCb?.(err);
+      this.destroy();
+    }
   }
 
   eventRigister() {
