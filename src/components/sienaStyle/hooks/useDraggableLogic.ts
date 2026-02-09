@@ -10,6 +10,7 @@ export default function useDraggableLogic(props: any) {
     init,
     odometer,
     currentDirection,
+    currentDirectionSync,
     scrollContainer,
     dualScrollRef,
     loop,
@@ -35,11 +36,11 @@ export default function useDraggableLogic(props: any) {
       if (!init) return;
       const odometerDistance = odometer.current?.parentElement?.offsetWidth;
       const wrapperSize =
-        currentDirection === "y"
+        currentDirectionSync.current === "y"
           ? scrollWrapper.current?.offsetHeight
           : scrollWrapper.current?.offsetWidth;
       const scrollSize =
-        currentDirection === "y"
+        currentDirectionSync.current === "y"
           ? scrollContainer.current?.offsetHeight
           : scrollContainer.current?.offsetWidth;
 
@@ -47,9 +48,9 @@ export default function useDraggableLogic(props: any) {
         () => {
           dualScrollRef.current[0] &&
             gsap.set(dualScrollRef.current[0], {
-              [currentDirection]: "+=1",
+              [currentDirectionSync.current]: "+=1",
               modifiers: {
-                [currentDirection]: function (offset) {
+                [currentDirectionSync.current]: function (offset) {
                   return loop.current(offset) + "px";
                 },
               },
@@ -58,9 +59,9 @@ export default function useDraggableLogic(props: any) {
         () => {
           dualScrollRef.current[1] &&
             gsap.set(dualScrollRef.current[1], {
-              [currentDirection]: "-=1",
+              [currentDirectionSync.current]: "-=1",
               modifiers: {
-                [currentDirection]: function (offset) {
+                [currentDirectionSync.current]: function (offset) {
                   return loop.current(offset) + "px";
                 },
               },
@@ -70,27 +71,28 @@ export default function useDraggableLogic(props: any) {
 
       if (currentReadPhotoId) {
         gsap.set(scrollContainer.current, {
-          [currentDirection]: 0,
+          [currentDirectionSync.current]: 0,
         });
         gsap.fromTo(
           dualScrollRef.current[0],
-          { [currentDirection]: snap[snap.length - 1] },
+          { [currentDirectionSync.current]: snap[snap.length - 1] },
           {
-            [currentDirection]: snap[Math.ceil(snap.length / 2) - 1],
+            [currentDirectionSync.current]:
+              snap[Math.ceil(snap.length / 2) - 1],
           }
         );
         gsap.fromTo(
           dualScrollRef.current[1],
-          { [currentDirection]: 0 },
+          { [currentDirectionSync.current]: 0 },
           {
-            [currentDirection]:
+            [currentDirectionSync.current]:
               snap[Math.ceil(snap.length / 2) - 1] + (snap[0] - snap[1]),
           }
         );
         trickerQueue.forEach((trickerCb) => gsap.ticker.add(trickerCb));
         dragInst.current = [
           ...Draggable.create(dualScrollRef.current[0], {
-            type: currentDirection,
+            type: currentDirectionSync.current,
             cursor: "grab",
             activeCursor: "grabbing",
             allowEventDefault: false,
@@ -100,9 +102,10 @@ export default function useDraggableLogic(props: any) {
                 gsap.ticker.remove(trickerCb)
               );
               gsap.set(dualScrollRef.current[1], {
-                [currentDirection]: -this[currentDirection],
+                [currentDirectionSync.current]:
+                  -this[currentDirectionSync.current],
                 modifiers: {
-                  [currentDirection]: function (offset) {
+                  [currentDirectionSync.current]: function (offset) {
                     return loop.current(offset) + "px";
                   },
                 },
@@ -110,7 +113,9 @@ export default function useDraggableLogic(props: any) {
               odometer.current &&
                 gsap.to(odometer.current, {
                   x:
-                    ((this["pointer" + currentDirection.toUpperCase()] -
+                    ((this[
+                      "pointer" + currentDirectionSync.current.toUpperCase()
+                    ] -
                       wrapperSize! / 2) /
                       wrapperSize!) *
                     odometerDistance!,
@@ -124,17 +129,19 @@ export default function useDraggableLogic(props: any) {
             },
             onThrowUpdate() {
               gsap.set(dualScrollRef.current[1], {
-                [currentDirection]: -this[currentDirection],
+                [currentDirectionSync.current]:
+                  -this[currentDirectionSync.current],
                 modifiers: {
-                  [currentDirection]: function (offset) {
+                  [currentDirectionSync.current]: function (offset) {
                     return loop.current(offset) + "px";
                   },
                 },
               });
               gsap.set(this.target, {
-                [currentDirection]: this[currentDirection],
+                [currentDirectionSync.current]:
+                  this[currentDirectionSync.current],
                 modifiers: {
-                  [currentDirection]: function (offset) {
+                  [currentDirectionSync.current]: function (offset) {
                     return loop.current(offset) + "px";
                   },
                 },
@@ -145,16 +152,17 @@ export default function useDraggableLogic(props: any) {
             },
           }),
           ...Draggable.create(dualScrollRef.current[1], {
-            type: currentDirection,
+            type: currentDirectionSync.current,
             cursor: "grab",
             activeCursor: "grabbing",
             allowEventDefault: false,
             inertia: true,
             onDrag: function () {
               gsap.set(dualScrollRef.current[0], {
-                [currentDirection]: -this[currentDirection],
+                [currentDirectionSync.current]:
+                  -this[currentDirectionSync.current],
                 modifiers: {
-                  [currentDirection]: function (offset) {
+                  [currentDirectionSync.current]: function (offset) {
                     return loop.current(offset) + "px";
                   },
                 },
@@ -162,7 +170,9 @@ export default function useDraggableLogic(props: any) {
               odometer.current &&
                 gsap.to(odometer.current, {
                   x:
-                    ((this["pointer" + currentDirection.toUpperCase()] -
+                    ((this[
+                      "pointer" + currentDirectionSync.current.toUpperCase()
+                    ] -
                       wrapperSize! / 2) /
                       wrapperSize!) *
                     odometerDistance!,
@@ -176,17 +186,19 @@ export default function useDraggableLogic(props: any) {
             },
             onThrowUpdate() {
               gsap.set(dualScrollRef.current[0], {
-                [currentDirection]: -this[currentDirection],
+                [currentDirectionSync.current]:
+                  -this[currentDirectionSync.current],
                 modifiers: {
-                  [currentDirection]: function (offset) {
+                  [currentDirectionSync.current]: function (offset) {
                     return loop.current(offset) + "px";
                   },
                 },
               });
               gsap.set(this.target, {
-                [currentDirection]: this[currentDirection],
+                [currentDirectionSync.current]:
+                  this[currentDirectionSync.current],
                 modifiers: {
-                  [currentDirection]: function (offset) {
+                  [currentDirectionSync.current]: function (offset) {
                     return loop.current(offset) + "px";
                   },
                 },
@@ -195,7 +207,7 @@ export default function useDraggableLogic(props: any) {
           }),
         ];
       } else {
-        if (currentDirection === "x") {
+        if (currentDirectionSync.current === "x") {
           gsap.fromTo(
             scrollContainer.current,
             { gap: Math.abs(snap[0] - snap[1]) * 2 },
@@ -203,18 +215,24 @@ export default function useDraggableLogic(props: any) {
           );
         }
         dragInst.current = Draggable.create(scrollContainer.current, {
-          type: currentDirection,
+          type: currentDirectionSync.current,
           cursor: "grab",
           activeCursor: "grabbing",
           allowEventDefault: false,
           inertia: true,
           onDrag: function () {
-            switchToItemWithEffect(null, null, this[currentDirection]);
+            switchToItemWithEffect(
+              null,
+              null,
+              this[currentDirectionSync.current]
+            );
 
             odometer.current &&
               gsap.to(odometer.current, {
                 x:
-                  ((this["pointer" + currentDirection.toUpperCase()] -
+                  ((this[
+                    "pointer" + currentDirectionSync.current.toUpperCase()
+                  ] -
                     wrapperSize! / 2) /
                     wrapperSize!) *
                   odometerDistance!,
@@ -228,15 +246,16 @@ export default function useDraggableLogic(props: any) {
           },
           onThrowUpdate() {
             gsap.set(this.target, {
-              [currentDirection]: this[currentDirection],
+              [currentDirectionSync.current]:
+                this[currentDirectionSync.current],
               modifiers: {
-                [currentDirection]: function (offset) {
+                [currentDirectionSync.current]: function (offset) {
                   return loop.current(offset) + "px";
                 },
               },
             });
           },
-          snap: { [currentDirection]: snap },
+          snap: { [currentDirectionSync.current]: snap },
         });
       }
 
@@ -272,15 +291,15 @@ export default function useDraggableLogic(props: any) {
     dragInst.current[0].disable();
     twine.current = gsap.to(scrollContainer.current, {
       overwrite: false,
-      [currentDirection]:
+      [currentDirectionSync.current]:
         snap[type === "down" ? currentIndex - 1 : currentIndex + 1],
       onUpdate: () => {
         const offset = gsap.getProperty(
           scrollContainer.current,
-          currentDirection
+          currentDirectionSync.current
         );
         gsap.set(scrollContainer.current, {
-          [currentDirection]: loop.current(offset),
+          [currentDirectionSync.current]: loop.current(offset),
         });
         handleControlCursor(
           type === "down" ? currentIndex - 1 : currentIndex + 1
@@ -289,10 +308,10 @@ export default function useDraggableLogic(props: any) {
       onComplete: () => {
         const offset = gsap.getProperty(
           scrollContainer.current,
-          currentDirection
+          currentDirectionSync.current
         );
         gsap.set(scrollContainer.current, {
-          [currentDirection]: loop.current(offset),
+          [currentDirectionSync.current]: loop.current(offset),
         });
         handleControlCursor(
           type === "down" ? currentIndex - 1 : currentIndex + 1
@@ -312,7 +331,7 @@ export default function useDraggableLogic(props: any) {
           if (scrollContainer.current === null) return;
           const offset = +gsap.getProperty(
             scrollContainer.current,
-            currentDirection
+            currentDirectionSync.current
           );
           setCurrentIndex(
             snap.findIndex(

@@ -115,8 +115,10 @@ export default function useBaseLogic(props: any) {
               const imgEl = imageContainerItems.current[i];
               if (!imgEl) continue;
               const changeOffset =
-                ((_snap[i] - offset) * 3 * imageSize) / scrollContainerSize;
-              const maxChangeOffset = (imageSize - itemSize) / 2;
+                ((_snap[i] - offset) * 3 * imageSize) / scrollContainerSize ||
+                0;
+              const maxChangeOffset = (imageSize - itemSize) / 2 || 0;
+              if (!changeOffset || !maxChangeOffset) continue;
               gsap[animateType](imgEl, {
                 [currentDirectionSync.current]:
                   changeOffset < -maxChangeOffset
@@ -341,7 +343,6 @@ export default function useBaseLogic(props: any) {
   const clearItemEffect = contextSafe(() => {
     for (let i = 0; i < imageContainerItems.current.length; i++) {
       gsap.set(imageContainerItems.current[i], {
-        transform: "translate(-50%,-50%)",
         filter: "unset",
       });
       gsap.set(scrollContainerItems.current[i], {
@@ -367,6 +368,7 @@ export default function useBaseLogic(props: any) {
   return {
     init,
     currentDirection,
+    currentDirectionSync,
     scrollContainerItems,
     currentReadPhotoId,
     dualScrollRef,
