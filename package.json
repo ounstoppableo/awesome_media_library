@@ -5,7 +5,7 @@
   "scripts": {
     "dev:server": "nodemon",
     "dev": "dotenv -e .env.local -- concurrently \"cross-env-shell next dev --turbo -p $SERVER_PORT\" \"cross-env-shell npm run dev:server\"",
-    "build": "next build && tsup server.ts --format esm --target node18",
+    "build": "cross-env-shell NODE_OPTIONS=--max-old-space-size=2048 NEXT_CPU_COUNT=1 \"next build && tsup server.ts --format esm --target node18\"",
     "build:next": "next build",
     "build:fileUpload": "tsup server.ts --format esm --target node18",
     "start": "cross-env NODE_ENV=production concurrently \"node start-next.mjs\" \"node dist/server.mjs\""
