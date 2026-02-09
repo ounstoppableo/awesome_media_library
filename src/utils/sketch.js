@@ -44,7 +44,7 @@ class Sketch {
       70,
       window.innerWidth / window.innerHeight,
       0.001,
-      1000,
+      1000
     );
 
     this.camera.position.set(0, 0, 2);
@@ -118,14 +118,18 @@ class Sketch {
     return this.images.map((url, i) => {
       const promise = new Promise(async (resolve, reject) => {
         if (isVideo(url)) {
-          await this.loadVideoTexture(url, i);
-          resolve(1);
+          try {
+            await this.loadVideoTexture(url, i);
+            resolve(1);
+          } catch (err) {
+            reject(err);
+          }
         } else {
           this.textures[i] = new THREE.TextureLoader().load(
             url,
             resolve,
             undefined,
-            reject,
+            reject
           );
         }
       }).then(() => {
@@ -181,7 +185,7 @@ class Sketch {
           item,
           this.uniforms[item].min,
           this.uniforms[item].max,
-          0.01,
+          0.01
         );
     });
   }
@@ -367,7 +371,7 @@ class Sketch {
     // this.plane.rotation.y = 0.4*Math.sin(this.time)
     // this.plane.rotation.x = 0.5*Math.sin(0.4*this.time)
     this.currentRequestAnimation = requestAnimationFrame(
-      this.render.bind(this),
+      this.render.bind(this)
     );
     this.renderer.render(this.scene, this.camera);
   }

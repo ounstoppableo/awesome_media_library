@@ -100,7 +100,7 @@ export default function Taotajima() {
           data.children[current].chineseTitle ||
             data.children[current].englishTitle,
           data.children[current].introduce,
-          "prev",
+          "prev"
         )
         .toShow("prev")
         .then(() => {
@@ -126,7 +126,7 @@ export default function Taotajima() {
           data.children[current].chineseTitle ||
             data.children[current].englishTitle,
           data.children[current].introduce,
-          "next",
+          "next"
         )
         .toShow("next")
         .then(() => {
@@ -152,7 +152,7 @@ export default function Taotajima() {
             return;
           }
           const coverIndex = data.children.findIndex(
-            (item: CategoryItem) => item.mediaId === data.mediaId,
+            (item: CategoryItem) => item.mediaId === data.mediaId
           );
           const cover = data.children.splice(coverIndex, 1);
           data.children = [...cover, ...data.children];
@@ -197,13 +197,13 @@ export default function Taotajima() {
                     null,
                     backBtnRef,
                     "left",
-                    "enter",
+                    "enter"
                   )}
                   onMouseLeave={animatePageToggleBtn.bind(
                     null,
                     backBtnRef,
                     "left",
-                    "leave",
+                    "leave"
                   )}
                 >
                   <svg
@@ -226,7 +226,7 @@ export default function Taotajima() {
                 <div className="w-[.0625rem] h-[4vmin] bg-white/80 rotate-20"></div>
                 <div
                   onClick={() => {
-                    window.open(`${location.protocol}//${location.hostname}`);
+                    window.open(process.env.NEXT_PUBLIC_NAVG_URL);
                   }}
                   className="text-[2.5vmin] cursor-pointer relative after:bottom-0 after:left-0 after:absolute after:border-b-2 after:border-white hover:after:w-full after:transition-all after:w-0"
                 >
@@ -276,7 +276,9 @@ export default function Taotajima() {
                             className="cursor-pointer w-[3vmin] hover:text-[var(--themeColor)] transition-all duration-300"
                             onClick={() => {
                               navigator.clipboard.writeText(
-                                `请欣赏unstoppable840的摄影作品「${data.chineseTitle || data.englishTitle}」\n网址:${`${window.origin}/?categoryId=${currentId}`}`,
+                                `请欣赏unstoppable840的摄影作品「${
+                                  data.chineseTitle || data.englishTitle
+                                }」\n网址:${`${window.origin}/?categoryId=${currentId}`}`
                               );
                               toast("分享作品💌", {
                                 description: "您已成功复制文案🎉",
@@ -302,7 +304,9 @@ export default function Taotajima() {
                             className="cursor-pointer w-[3vmin] hover:text-[var(--themeColor)] transition-all duration-300"
                             onClick={() => {
                               navigator.clipboard.writeText(
-                                `请欣赏unstoppable840的摄影作品「${data.chineseTitle || data.englishTitle}」\n网址:${`${window.origin}/?categoryId=${currentId}`}`,
+                                `请欣赏unstoppable840的摄影作品「${
+                                  data.chineseTitle || data.englishTitle
+                                }」\n网址:${`${window.origin}/?categoryId=${currentId}`}`
                               );
                               toast("分享作品💌", {
                                 description: "您已成功复制文案🎉",
@@ -310,7 +314,9 @@ export default function Taotajima() {
                                   label: "跳转",
                                   onClick: () => {
                                     window.open(
-                                      `https://twitter.com/intent/tweet?url=${`${window.origin}/?categoryId=${currentId}`}&text=${`请欣赏unstoppable840的摄影作品「${data.chineseTitle || data.englishTitle}」`}`,
+                                      `https://twitter.com/intent/tweet?url=${`${window.origin}/?categoryId=${currentId}`}&text=${`请欣赏unstoppable840的摄影作品「${
+                                        data.chineseTitle || data.englishTitle
+                                      }」`}`
                                     );
                                   },
                                 },
@@ -341,7 +347,7 @@ export default function Taotajima() {
                           location.origin +
                             "/" +
                             data.children[current].sourcePath,
-                          "_blank",
+                          "_blank"
                         );
                       }}
                     />
@@ -377,7 +383,7 @@ export default function Taotajima() {
                           async (current: number) => {
                             await prevCb(current);
                             togglePageControl.current = null;
-                          },
+                          }
                         );
                       }}
                     >
@@ -435,7 +441,7 @@ export default function Taotajima() {
                           async (current: number) => {
                             await nextCb(current);
                             togglePageControl.current = null;
-                          },
+                          }
                         );
                       }}
                     >

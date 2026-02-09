@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { BsTelegram, BsTiktok, BsWechat } from "react-icons/bs";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 function StackedCircularFooter() {
   return (
@@ -43,7 +44,7 @@ function StackedCircularFooter() {
               }}
               transition={{ duration: 0.5 }}
               onClick={() => {
-                window.open(`${location.protocol}//${location.hostname}`);
+                window.open(process.env.NEXT_PUBLIC_NAVG_URL);
               }}
             >
               <Home className="h-[2vmin] w-[2vmin]"></Home>
@@ -58,9 +59,7 @@ function StackedCircularFooter() {
               }}
               transition={{ duration: 0.5 }}
               onClick={() => {
-                window.open(
-                  `${location.protocol}//${location.hostname}:${5005}`,
-                );
+                window.open(process.env.NEXT_PUBLIC_BLOG_URL);
               }}
             >
               <Newspaper className="h-[2vmin] w-[2vmin]"></Newspaper>
@@ -75,9 +74,7 @@ function StackedCircularFooter() {
               }}
               transition={{ duration: 0.5 }}
               onClick={() => {
-                window.open(
-                  `${location.protocol}//${location.hostname}:${5115}`,
-                );
+                window.open(process.env.NEXT_PUBLIC_CHAT_URL);
               }}
             >
               <MessageSquareMore className="h-[2vmin] w-[2vmin]"></MessageSquareMore>
@@ -92,9 +89,7 @@ function StackedCircularFooter() {
               }}
               transition={{ duration: 0.5 }}
               onClick={() => {
-                window.open(
-                  `${location.protocol}//${location.hostname}:${5225}`,
-                );
+                window.open(process.env.NEXT_PUBLIC_COMP_URL);
               }}
             >
               <Component className="h-[2vmin] w-[2vmin]"></Component>
@@ -141,7 +136,7 @@ function StackedCircularFooter() {
                     label: "跳转",
                     onClick: () => {
                       window.open(
-                        "https://www.douyin.com/user/MS4wLjABAAAAMGRrZUXRe73YTqqyHcSIM--FWZthFME5nD7xZsGt2d4?from_tab_name=main",
+                        "https://www.douyin.com/user/MS4wLjABAAAAMGRrZUXRe73YTqqyHcSIM--FWZthFME5nD7xZsGt2d4?from_tab_name=main"
                       );
                     },
                   },
@@ -183,7 +178,7 @@ function StackedCircularFooter() {
               transition={{ duration: 0.5 }}
               onClick={() => {
                 navigator.clipboard.writeText(
-                  "https://github.com/ounstoppableo",
+                  "https://github.com/ounstoppableo"
                 );
                 toast("交个朋友😘", {
                   description: "您已成功复制博主Github网址🎉",
