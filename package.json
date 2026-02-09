@@ -3,13 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev:next": "next dev --turbo -p 9999",
     "dev:server": "nodemon",
-    "dev": "concurrently \"npm run dev:next\" \"npm run dev:server\"",
+    "dev": "dotenv -e .env.local -- concurrently \"cross-env-shell next dev --turbo -p $SERVER_PORT\" \"cross-env-shell npm run dev:server\"",
     "build": "next build && tsup server.ts --format esm --target node18",
     "build:next": "next build",
     "build:fileUpload": "tsup server.ts --format esm --target node18",
-    "start": "cross-env NODE_ENV=production concurrently \"next start\" \"node dist/server.mjs\""
+    "start": "dotenv -e .env.local -- cross-env NODE_ENV=production concurrently \"cross-env-shell next start -p $SERVER_PORT\" \"node dist/server.mjs\""
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.24.0",
