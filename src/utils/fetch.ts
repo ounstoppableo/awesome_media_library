@@ -31,8 +31,11 @@ export class FetchInterceptor {
         finalOptions.headers["Authorization"] = `${token}`;
       }
     }
-    if (!(finalOptions.body instanceof FormData)) {
-      finalOptions.body = JSON.stringify(finalOptions.body);
+    if (
+      !(finalOptions.body instanceof FormData) &&
+      options.method?.toLocaleLowerCase() === "post"
+    ) {
+      finalOptions.body = JSON.stringify(finalOptions.body || {});
     }
     try {
       const response = await fetch(this.baseURL + url, finalOptions);

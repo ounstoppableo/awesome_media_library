@@ -75,7 +75,7 @@ export default function MediaLibrary(props: {
     import("@/utils/fileUploadProceed/index").then(
       (fileSplitAndUploadWorker) => {
         setWorker(fileSplitAndUploadWorker.default);
-      }
+      },
     );
   }, []);
 
@@ -84,10 +84,10 @@ export default function MediaLibrary(props: {
     return innerWidth > 1024
       ? 4
       : innerWidth > 768
-      ? 3
-      : innerWidth > 640
-      ? 2
-      : 1;
+        ? 3
+        : innerWidth > 640
+          ? 2
+          : 1;
   };
   const headerHeight = () => {
     return (
@@ -111,7 +111,7 @@ export default function MediaLibrary(props: {
     tags: [],
   } as any;
 
-  const [searchParams, setSearchParams] = useState<{
+  const [searchParams, _setSearchParams] = useState<{
     id?: any;
     type: "audio" | "video" | "image" | "all";
     timeType: "all" | "today" | "week" | "month" | "year";
@@ -119,6 +119,11 @@ export default function MediaLibrary(props: {
     status?: { value: string; label: string }[];
     title?: string;
   }>({ ...defaultSearchParams });
+  const searchParamsRef = useRef<any>(searchParams);
+  const setSearchParams = (data: any) => {
+    searchParamsRef.current = data;
+    _setSearchParams(data);
+  };
 
   const { isAuth } = useAuthLogic();
 
@@ -185,10 +190,10 @@ export default function MediaLibrary(props: {
           });
           setMediaData(
             Array.from(
-              new Set([...res.data, ...mediaData].map((item) => item.id))
+              new Set([...res.data, ...mediaData].map((item) => item.id)),
             )
               .sort((a, b) => b - a)
-              .map((item) => map[item])
+              .map((item) => map[item]),
           );
         }
         if (res.data.length === 0) {
@@ -242,18 +247,18 @@ export default function MediaLibrary(props: {
         setSearchParams(
           Object.assign(
             {
-              ...searchParams,
+              ...searchParamsRef.current,
             },
             mediaDataRef.current[mediaDataRef.current.length - 1]?.id
               ? { id: mediaDataRef.current[mediaDataRef.current.length - 1].id }
-              : {}
-          )
+              : {},
+          ),
         );
       }
     };
     listContainerRef.current.addEventListener("wheel", _cb);
     return () => listContainerRef.current?.removeEventListener("wheel", _cb);
-  }, [searchParams]);
+  }, []);
 
   const [multiTagSelectorJsx, setMultiTagSelectorJsx] = useState(
     <MultipleSelector
@@ -262,7 +267,7 @@ export default function MediaLibrary(props: {
         label: item,
       }))}
       emptyIndicator={<p className="text-center text-sm">No results found</p>}
-    />
+    />,
   );
 
   const [multiStatusSelectorJsx, setMultiStatusSelectorJsx] = useState(
@@ -283,7 +288,7 @@ export default function MediaLibrary(props: {
       }}
       className=""
       emptyIndicator={<p className="text-center text-sm">No results found</p>}
-    />
+    />,
   );
 
   const [resetFlag, setResetFlag] = useState<boolean>(false);
@@ -309,7 +314,7 @@ export default function MediaLibrary(props: {
           <SelectValue placeholder="挑选标签" />
         </SelectTrigger>
         <SelectContent></SelectContent>
-      </Select>
+      </Select>,
     );
     requestAnimationFrame(() => {
       setMultiStatusSelectorJsx(
@@ -332,7 +337,7 @@ export default function MediaLibrary(props: {
           emptyIndicator={
             <p className="text-center text-sm">No results found</p>
           }
-        />
+        />,
       );
     });
   };
@@ -344,7 +349,7 @@ export default function MediaLibrary(props: {
           <SelectValue placeholder="挑选标签" />
         </SelectTrigger>
         <SelectContent></SelectContent>
-      </Select>
+      </Select>,
     );
     requestAnimationFrame(() => {
       setMultiTagSelectorJsx(
@@ -366,7 +371,7 @@ export default function MediaLibrary(props: {
           emptyIndicator={
             <p className="text-center text-sm">No results found</p>
           }
-        />
+        />,
       );
     });
   };
