@@ -23,14 +23,14 @@ export async function POST(_req: NextRequest) {
     let sql = `SELECT * FROM media where `;
     const params: any[] = [];
     if (body.tags && body.tags.length > 0) {
-      sql += `tags REGEXP ?`;
+      sql += `tags REGEXP ? `;
       params.push(body.tags.join("|"));
     }
     if (body.status && body.status.length > 0) {
-      sql += `AND status REGEXP ?`;
+      sql += `AND status REGEXP ? `;
       params.push(body.status.join("|"));
     }
-    sql += `ORDER BY RAND() LIMIT ?`;
+    sql += `ORDER BY RAND() LIMIT ? `;
     params.push(body.count);
 
     const data: any[] = ((await getPool().query(sql, params))[0] as any) || [];
