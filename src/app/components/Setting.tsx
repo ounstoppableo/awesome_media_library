@@ -42,6 +42,7 @@ import {
   selectAssetsManageOpenStatus,
   setOpen as setAssetsManangeOpen,
 } from "@/store/assetsManageControl/assetsManage-slice";
+import gsap from "gsap";
 
 export default function Settiing(props: any) {
   const { showSetting } = props;
@@ -55,23 +56,107 @@ export default function Settiing(props: any) {
     wsInitMessageTool(message);
   }, []);
 
+  // 移动逻辑
+  const [open, setOpen] = useState(false);
+  const [moveFlag, setMoveFlag] = useState(false);
+  const menuContainerRef = useRef(null);
+  const triggerBtnRef = useRef<any>(null);
+  const triggerBtnRect = useRef({ x: 0, y: 0, width: 0, height: 0 });
+  const xTo = useRef<any>(() => {});
+  const yTo = useRef<any>(() => {});
+  useEffect(() => {
+    if (showSetting) {
+      triggerBtnRect.current = triggerBtnRef.current.getBoundingClientRect();
+      gsap.set(menuContainerRef.current, {
+        x:
+          innerWidth -
+          Math.min(innerHeight, innerWidth) * 0.06 -
+          triggerBtnRect.current.width,
+        y:
+          innerHeight -
+          Math.min(innerHeight, innerWidth) * 0.06 -
+          triggerBtnRect.current.width,
+      });
+      xTo.current = gsap.quickTo(menuContainerRef.current, "x", {
+        duration: 0.1,
+      });
+      yTo.current = gsap.quickTo(menuContainerRef.current, "y", {
+        duration: 0.1,
+      });
+    }
+
+    const resizeCb = () => {
+      requestAnimationFrame(() => {
+        triggerBtnRect.current = triggerBtnRef.current.getBoundingClientRect();
+        gsap.set(menuContainerRef.current, {
+          x:
+            innerWidth -
+            Math.min(innerHeight, innerWidth) * 0.06 -
+            triggerBtnRect.current.width,
+          y:
+            innerHeight -
+            Math.min(innerHeight, innerWidth) * 0.06 -
+            triggerBtnRect.current.width,
+        });
+      });
+    };
+
+    window.addEventListener("resize", resizeCb);
+    return () => {
+      window.removeEventListener("resize", resizeCb);
+    };
+  }, [showSetting]);
+
   return (
     <AnimatePresence>
       {showSetting && (
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 8 }}
+          ref={menuContainerRef}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="fixed bottom-[6vmin] right-[6vmin] z-[calc(var(--maxZIndex)_-_1)]"
+          className="fixed top-0 left-0 z-[calc(var(--maxZIndex)_-_1)]"
         >
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="rounded-full">
+          <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
+            <DropdownMenuTrigger
+              asChild
+              style={{ touchAction: "none" }}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setMoveFlag(true);
+                setOpen(false);
+                triggerBtnRect.current =
+                  triggerBtnRef.current.getBoundingClientRect();
+                e.currentTarget.setPointerCapture(e.pointerId);
+              }}
+              onPointerUp={() => {
+                setMoveFlag(false);
+              }}
+              onPointerMove={(e) => {
+                if (moveFlag) {
+                  xTo.current(e.clientX - triggerBtnRect.current.width / 2);
+                  yTo.current(e.clientY - triggerBtnRect.current.height / 2);
+                }
+              }}
+            >
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full"
+                ref={triggerBtnRef}
+                onClick={() => {
+                  setOpen(!open);
+                }}
+              >
                 <Settings className="size-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48 z-[calc(var(--maxZIndex)_-_1)]">
+            <DropdownMenuContent
+              side={"top"}
+              className="w-48 z-[calc(var(--maxZIndex)_-_1)]"
+            >
               <DropdownMenuItem
                 onClick={() => {
                   dispatch(
