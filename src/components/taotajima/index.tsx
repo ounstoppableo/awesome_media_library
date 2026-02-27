@@ -31,6 +31,9 @@ import { CategoryDetail, CategoryItem } from "@/types/media";
 import { App } from "antd";
 import { toast } from "sonner";
 import { RiTiktokLine, RiTwitterXLine } from "@remixicon/react";
+import { useSelector } from "react-redux";
+import { selectAppOpenMethod } from "@/store/appOpenMethod/appOpenMethod-slice";
+import { handleSendMsg } from "@/utils/iframeCommunication/server";
 
 /**
  * 操作量：图片尺寸、canvas尺寸(坐标轴尺度)、缩放比例
@@ -58,6 +61,7 @@ export default function Taotajima() {
   const [data, setData] = useState<CategoryDetail | null>(null);
   const { resizeObserverCb } = useResizeLogic();
   const { message } = App.useApp();
+  const appOpenMethod = useAppSelector(selectAppOpenMethod);
 
   const {
     animateOpacity,
@@ -226,7 +230,16 @@ export default function Taotajima() {
                 <div className="w-[.0625rem] h-[4vmin] bg-white/80 rotate-20"></div>
                 <div
                   onClick={() => {
-                    window.open(process.env.NEXT_PUBLIC_NAVG_URL);
+                    if (appOpenMethod === "inner") {
+                      handleSendMsg({
+                        type: "openApp",
+                        data: {
+                          appId: "Navigation",
+                        },
+                      });
+                    } else {
+                      window.open(process.env.NEXT_PUBLIC_NAVG_URL);
+                    }
                   }}
                   className="text-[2.5vmin] cursor-pointer relative after:bottom-0 after:left-0 after:absolute after:border-b-2 after:border-white hover:after:w-full after:transition-all after:w-0"
                 >

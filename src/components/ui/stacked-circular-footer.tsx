@@ -17,8 +17,12 @@ import {
 import { BsTelegram, BsTiktok, BsWechat } from "react-icons/bs";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { useAppSelector } from "@/store/hooks";
+import { selectAppOpenMethod } from "@/store/appOpenMethod/appOpenMethod-slice";
+import { handleSendMsg } from "@/utils/iframeCommunication/server";
 
 function StackedCircularFooter() {
+  const appOpenMethod = useAppSelector(selectAppOpenMethod);
   return (
     <footer className="bg-transparent pb-[4vmin] h-full flex justify-center items-center">
       <div className="container mx-auto px-[2%] md:px-[3%]">
@@ -44,7 +48,16 @@ function StackedCircularFooter() {
               }}
               transition={{ duration: 0.5 }}
               onClick={() => {
-                window.open(process.env.NEXT_PUBLIC_NAVG_URL);
+                if (appOpenMethod === "inner") {
+                  handleSendMsg({
+                    type: "openApp",
+                    data: {
+                      appId: "Navigation",
+                    },
+                  });
+                } else {
+                  window.open(process.env.NEXT_PUBLIC_NAVG_URL);
+                }
               }}
             >
               <Home className="h-[2vmin] w-[2vmin]"></Home>
@@ -59,7 +72,16 @@ function StackedCircularFooter() {
               }}
               transition={{ duration: 0.5 }}
               onClick={() => {
-                window.open(process.env.NEXT_PUBLIC_BLOG_URL);
+                if (appOpenMethod === "inner") {
+                  handleSendMsg({
+                    type: "openApp",
+                    data: {
+                      appId: "Blog",
+                    },
+                  });
+                } else {
+                  window.open(process.env.NEXT_PUBLIC_BLOG_URL);
+                }
               }}
             >
               <Newspaper className="h-[2vmin] w-[2vmin]"></Newspaper>
@@ -74,7 +96,16 @@ function StackedCircularFooter() {
               }}
               transition={{ duration: 0.5 }}
               onClick={() => {
-                window.open(process.env.NEXT_PUBLIC_CHAT_URL);
+                if (appOpenMethod === "inner") {
+                  handleSendMsg({
+                    type: "openApp",
+                    data: {
+                      appId: "ChatPlatform",
+                    },
+                  });
+                } else {
+                  window.open(process.env.NEXT_PUBLIC_CHAT_URL);
+                }
               }}
             >
               <MessageSquareMore className="h-[2vmin] w-[2vmin]"></MessageSquareMore>
@@ -89,7 +120,16 @@ function StackedCircularFooter() {
               }}
               transition={{ duration: 0.5 }}
               onClick={() => {
-                window.open(process.env.NEXT_PUBLIC_COMP_URL);
+                if (appOpenMethod === "inner") {
+                  handleSendMsg({
+                    type: "openApp",
+                    data: {
+                      appId: "ComponentLibrary",
+                    },
+                  });
+                } else {
+                  window.open(process.env.NEXT_PUBLIC_COMP_URL);
+                }
               }}
             >
               <Component className="h-[2vmin] w-[2vmin]"></Component>

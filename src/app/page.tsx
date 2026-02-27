@@ -52,6 +52,11 @@ import {
 } from "@/store/taotajimaControl/taotajima-slice";
 import AssetsListDialog from "./components/AssetsListDialog";
 import { Toaster } from "@/components/ui/sonner";
+import {
+  iframeCommunicationProcessor,
+  serverListener,
+} from "@/utils/iframeCommunication/server";
+import { setAppOpenMethod } from "@/store/appOpenMethod/appOpenMethod-slice";
 
 export default function Home() {
   const router = useRouter();
@@ -77,6 +82,33 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    const theme = searchParams.get("theme");
+    const themeSetCb = (theme: any) => {
+      const darkMode = JSON.parse(localStorage.getItem("darkMode") || "true");
+      if (
+        (theme === "darkMode" && !darkMode) ||
+        (theme === "default" && darkMode)
+      ) {
+        dispatch(setDarkMode({ darkMode: !darkMode }));
+      }
+    };
+    themeSetCb(theme);
+    serverListener();
+    iframeCommunicationProcessor["themeChangeProcessor"] = {
+      tag: "themeChange",
+      cb: (res: any) => {
+        themeSetCb(res.theme);
+      },
+    };
+    iframeCommunicationProcessor["appOpenMethodrocessor"] = {
+      tag: "appOpenMethod",
+      cb: (res: any) => {
+        dispatch(setAppOpenMethod({ appOpenMethod: res.appOpenMethod }));
+      },
+    };
+  }, []);
+
   return (
     <ThemeProvider>
       <ConfigProvider
@@ -96,7 +128,7 @@ export default function Home() {
               dispatch(setSienaOpen({ open: !sienaOpenStatus }));
             }}
             className={cn(
-              "transition-all duration-300 hover:bg-white [--stroke:white] hover:[--stroke:black] absolute focus:outline-none top-[6vmin] right-[8vmin] z-120 w-8 h-8 bg-transparent rounded-full flex justify-center items-center cursor-pointer",
+              "transition-all duration-300 hover:bg-white [--stroke:white] hover:[--stroke:black] absolute focus:outline-none top-[6vmin] right-[8vmin] z-120 w-8 h-8 bg-transparent rounded-full flex justify-center items-center cursor-pointer"
             )}
           >
             <MenuToggleIcon

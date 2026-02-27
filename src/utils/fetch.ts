@@ -2,6 +2,7 @@
 
 import { codeMap, codeMapMsg } from "./backendStatus";
 import { CommonResponse } from "@/types/response";
+import { handleSendMsg } from "./iframeCommunication/server";
 let message: any;
 function initMessageTool(tool: any) {
   message = tool;
@@ -57,6 +58,10 @@ export class FetchInterceptor {
       if (res.code === codeMap.limitsOfAuthority) {
         localStorage.setItem("token", "");
         window.history.replaceState({}, "", window.location.pathname);
+        handleSendMsg({
+          type: "loginExpire",
+          data: {},
+        });
       }
       message?.warning?.(res.msg);
     }

@@ -7,6 +7,7 @@ import jiejoeReducer from "./jiejoeControl/jiejoeControl-slice";
 import darkModeReducer from "./darkMode/darkMode-slice";
 import mediaLibraryReducer from "./mediaLibraryControl/mediaLibrary-slice";
 import assetManageReducer from "./assetsManageControl/assetsManage-slice";
+import appOpenMethodReducer from "./appOpenMethod/appOpenMethod-slice";
 
 // ...
 export const makeStore = () => {
@@ -19,6 +20,7 @@ export const makeStore = () => {
       darkMode: darkModeReducer,
       mediaLibraryControl: mediaLibraryReducer,
       assetsManageControl: assetManageReducer,
+      appOpenMethod: appOpenMethodReducer,
     },
   });
 };
